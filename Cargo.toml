@@ -1,0 +1,20 @@
+[package]
+name = "web-push"
+version = "0.1.0"
+authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
+license = "MIT"
+homepage = "https://github.com/pimeys/rust-web-push"
+
+[dependencies]
+futures = "0.1"
+tokio-core = "0.1"
+tokio-service = "0.1"
+hyper = { git = "https://github.com/hyperium/hyper"}
+hyper-tls = { git = "https://github.com/hyperium/hyper-tls" }
+rustc-serialize = "0.3.19"
+rand = "0.3"
+openssl = "0.9"
+
+[dependencies.btls]
+features = ["gnutls-ecdsa"]
+git = "https://gitlab.com/ilari_l/btls.git"
