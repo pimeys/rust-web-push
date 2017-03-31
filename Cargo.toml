@@ -11,10 +11,7 @@ tokio-core = "0.1"
 tokio-service = "0.1"
 hyper = { git = "https://github.com/hyperium/hyper"}
 hyper-tls = { git = "https://github.com/hyperium/hyper-tls" }
-rustc-serialize = "0.3.19"
-rand = "0.3"
-openssl = "0.9"
-
-[dependencies.btls]
-features = ["gnutls-ecdsa"]
-git = "https://gitlab.com/ilari_l/btls.git"
+rustc-serialize = "0.3"
+ring = "0.7"
+untrusted = "0.3"
+rust-crypto = "0.2"
