@@ -15,13 +15,13 @@ use hyper::header::{Authorization, ContentLength, RetryAfter};
 use hyper::Post;
 use futures::{Future, Poll};
 use futures::future::{ok, err};
-use ring::{hmac, hkdf, agreement, rand, digest, error};
-use crypto::aes_gcm::AesGcm;
-use crypto::aes::KeySize;
+use futures::stream::Stream;
+use ring::{hmac, hkdf, agreement, rand, digest, error, aead};
 use std::convert::From;
 use crypto::aead::AeadEncryptor;
 use std::error::Error;
 use std::fmt;
+use std::io::{self, Write};
 use tokio_core::reactor::Handle;
 use tokio_service::Service;
 use rustc_serialize::base64::{ToBase64, URL_SAFE};
@@ -123,61 +123,56 @@ impl<'a> WebPushMessageBuilder<'a> {
 
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         if let Some(payload) = self.payload {
-            let rng               = rand::SystemRandom::new();
-            let private_key       = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &rng).unwrap();
-            let mut public_key    = [0u8; agreement::PUBLIC_KEY_MAX_LEN];
-            let public_key        = &mut public_key[..private_key.public_key_len()];
-            let mut random_bytes  = [0u8; 16];
+            let rng              = rand::SystemRandom::new();
+            let private_key      = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &rng).unwrap();
+            let mut public_key   = [0u8; agreement::PUBLIC_KEY_MAX_LEN];
+            let public_key       = &mut public_key[..private_key.public_key_len()];
+            let mut random_bytes = [0u8; 16];
+            let alg              = &agreement::ECDH_P256;
+            let auth_input       = Input::from(self.p256dh);
 
             rng.fill(&mut random_bytes)?;
-
-            let salt = hmac::SigningKey::new(&digest::SHA256, &random_bytes);
-
             private_key.compute_public_key(public_key)?;
 
-            agreement::agree_ephemeral(private_key, &agreement::ECDH_P256, Input::from(self.p256dh), WebPushError::KeyAgreement, |shared_secret| {
+            agreement::agree_ephemeral(private_key, alg, auth_input, WebPushError::KeyAgreement, |shared_secret| {
+                let salt               = hmac::SigningKey::new(&digest::SHA256, &random_bytes);
                 let client_auth_secret = hmac::SigningKey::new(&digest::SHA256, self.auth);
 
-                let mut auth_info: Vec<u8> = Vec::new();
-                auth_info.extend_from_slice("WebPush: info".as_bytes());
-                auth_info.push(0);
-                auth_info.extend_from_slice(self.p256dh);
-                auth_info.extend_from_slice(public_key);
-                auth_info.push(1);
+                let mut context: Vec<u8> = Vec::new();
+                context.extend_from_slice("P-256\0".as_bytes());
+                context.push((self.p256dh.len() >> 8) as u8);
+                context.push((self.p256dh.len() & 0xff) as u8);
+                context.extend_from_slice(self.p256dh);
+                context.push((public_key.len() >> 8) as u8);
+                context.push((public_key.len() & 0xff) as u8);
+                context.extend_from_slice(public_key);
 
                 let mut prk = [0u8; 32];
-                hkdf::extract_and_expand(&client_auth_secret, &shared_secret, &auth_info, &mut prk);
+                hkdf::extract_and_expand(&client_auth_secret, &shared_secret, "Content-Encoding: auth\0".as_bytes(), &mut prk);
 
-                let mut content_encryption_info: Vec<u8> = Vec::new();
-                content_encryption_info.extend_from_slice("Content-Encoding: aes128gcm".as_bytes());
-                content_encryption_info.push(0);
-                content_encryption_info.push(1);
+                let mut cek_info: Vec<u8> = Vec::new();
+                cek_info.extend_from_slice("Content-Encoding: aesgcm\x00".as_bytes());
+                cek_info.extend_from_slice(&context);
 
                 let mut content_encryption_key = [0u8; 16];
-                hkdf::extract_and_expand(&salt, &prk, &content_encryption_info, &mut content_encryption_key);
+                hkdf::extract_and_expand(&salt, &prk, &cek_info, &mut content_encryption_key);
 
                 let mut nonce_info: Vec<u8> = Vec::new();
-                nonce_info.extend_from_slice("Content-Encoding: nonce".as_bytes());
-                nonce_info.push(0);
-                nonce_info.push(1);
+                nonce_info.extend_from_slice("Content-Encoding: nonce\x00".as_bytes());
+                nonce_info.extend_from_slice(&context);
+
                 let mut nonce = [0u8; 12];
                 hkdf::extract_and_expand(&salt, &prk, &nonce_info, &mut nonce);
 
-                //let mut padded_payload = [0u8; 4080];
-                //Self::pad(payload, &mut padded_payload);
+                let mut padded_payload = [0u8; 4080];
+                Self::pad(payload, &mut padded_payload);
 
-                let mut aes_gcm = AesGcm::new(KeySize::KeySize128, &shared_secret, &nonce, "".as_bytes());
+                let sealing_key = aead::SealingKey::new(&aead::AES_128_GCM, &content_encryption_key)?;
                 let mut encrypted_payload = [0u8; 4080];
-                let mut encrypted_payload = &mut encrypted_payload[..payload.len()];
-                let mut tag = [0u8; 16];
 
-                aes_gcm.encrypt(&payload, &mut encrypted_payload, &mut tag);
+                aead::seal_in_place(&sealing_key, &nonce, "".as_bytes(), &mut encrypted_payload, 16)?;
 
-                let mut full_payload = Vec::with_capacity(encrypted_payload.len() + tag.len());
-                full_payload.extend_from_slice(&encrypted_payload);
-                full_payload.extend_from_slice(&tag);
-
-                let web_push_payload = WebPushPayload::new(full_payload, public_key.to_vec(), random_bytes.to_vec());
+                let web_push_payload = WebPushPayload::new(encrypted_payload.to_vec(), public_key.to_vec(), random_bytes.to_vec());
 
                 Ok(WebPushMessage {
                     gcm_key: self.gcm_key.map(|k| k.to_string()),
@@ -205,7 +200,7 @@ impl<'a> WebPushMessageBuilder<'a> {
         output[1] = (padding_size & 0xff) as u8;
 
         for i in 0..payload_len {
-            output[i + 2 + padding_size] = payload[i];
+            output[padding_size + i] = payload[i];
         }
     }
 
@@ -303,17 +298,18 @@ impl Service for WebPushSender {
         let mut request = HttpRequest::new(Post, message.endpoint.parse().unwrap());
 
         if let Some(payload) = message.payload {
-            request.headers_mut().set_raw("content-encoding", "aesgcm");
+            request.headers_mut().set_raw("Content-Encoding", "aesgcm");
+            request.headers_mut().set_raw("Crypto-Key", format!("keyid=p256dh;dh={}", payload.public_key.to_base64(URL_SAFE)));
+            request.headers_mut().set_raw("Encryption", format!("keyid=p256dh;salt={}", payload.salt.to_base64(URL_SAFE)));
             request.headers_mut().set(ContentLength(payload.content.len() as u64));
-            request.headers_mut().set_raw("encryption", format!("keyid=p256dh;salt={}", payload.salt.to_base64(URL_SAFE)));
-            request.headers_mut().set_raw("crypto-key", format!("keyid=p256dh;dh={}", payload.public_key.to_base64(URL_SAFE)));
-
             request.set_body(payload.content);
         }
 
         if let Some(ttl) = message.ttl {
             request.headers_mut().set_raw("TTL", format!("{}", ttl));
         }
+
+        println!("{:?}", request);
 
         let request_f = self.client.request(request).map_err(|_| { WebPushError::Unspecified });
 
@@ -325,10 +321,24 @@ impl Service for WebPushSender {
                     ok(()),
                 StatusCode::Unauthorized =>
                     err(WebPushError::Unauthorized),
-                StatusCode::BadRequest =>
-                    err(WebPushError::BadRequest),
-                status if status.is_server_error() =>
-                    err(WebPushError::ServerError(retry_after)),
+                StatusCode::BadRequest => {
+                    let printer = response.body().for_each(|chunk| {
+                        io::stdout().write_all(&chunk).map_err(From::from)
+                    });
+
+                    let mut core = tokio_core::reactor::Core::new().unwrap();
+                    core.run(printer).unwrap();
+                    err(WebPushError::BadRequest)
+                },
+                status if status.is_server_error() => {
+                    let printer = response.body().for_each(|chunk| {
+                        io::stdout().write_all(&chunk).map_err(From::from)
+                    });
+
+                    let mut core = tokio_core::reactor::Core::new().unwrap();
+                    core.run(printer).unwrap();
+                    err(WebPushError::ServerError(retry_after))
+                },
                 status => {
                     println!("{:?}", status);
                     err(WebPushError::Unspecified)
