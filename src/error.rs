@@ -12,6 +12,7 @@ pub enum WebPushError {
     ServerError(Option<RetryAfter>),
     ContentTooLong,
     NotImplemented(&'static str),
+    InvalidUri,
 }
 
 impl From<error::Unspecified> for WebPushError {
@@ -33,6 +34,8 @@ impl Error for WebPushError {
                 "Server was unable to process the request, please try again later",
             WebPushError::ContentTooLong =>
                 "Maximum allowed payload size is 4078 bytes",
+            WebPushError::InvalidUri =>
+                "The provided URI is invalid",
             WebPushError::NotImplemented(msg) => msg,
         }
     }

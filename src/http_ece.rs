@@ -26,7 +26,7 @@ impl<'a> HttpEce<'a> {
     }
 
     pub fn encrypt(&self, content: &'a [u8]) -> Result<WebPushPayload, WebPushError> {
-        if content.len() > 4078 { return Err(WebPushError::ContentTooLong) }
+        if content.len() > 3800 { return Err(WebPushError::ContentTooLong) }
 
         let private_key        = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
         let mut public_key     = [0u8; agreement::PUBLIC_KEY_MAX_LEN];
@@ -41,7 +41,7 @@ impl<'a> HttpEce<'a> {
         agreement::agree_ephemeral(private_key, agr, peer_input, WebPushError::Unspecified, |shared_secret| {
             match self.coding {
                 ContentCoding::AesGcm => {
-                    let mut payload = [0u8; 4096];
+                    let mut payload = [0u8; 3818];
                     front_pad(content, &mut payload);
 
                     self.aes_gcm(shared_secret, public_key, &salt_bytes, &mut payload)?;
