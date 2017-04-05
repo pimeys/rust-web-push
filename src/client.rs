@@ -133,13 +133,14 @@ impl Service for WebPushClient {
 
                 let push_f = request_f.and_then(move |response: HttpResponse| {
                     let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
+                    let response_status = response.status().clone();
 
-                    match response.status() {
+                    match response_status {
                         status if status.is_success() =>
                             ok(()),
-                        &StatusCode::Unauthorized =>
+                        StatusCode::Unauthorized =>
                             err(WebPushError::Unauthorized),
-                        &StatusCode::BadRequest => {
+                        StatusCode::BadRequest => {
                             err(WebPushError::BadRequest)
                         },
                         status if status.is_server_error() =>
