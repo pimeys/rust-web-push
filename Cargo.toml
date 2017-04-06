@@ -15,3 +15,6 @@ rustc-serialize = "0.3"
 ring = "0.7"
 untrusted = "0.3"
 rust-crypto = "0.2"
+
+[dev-dependencies]
+argparse = "0.2"

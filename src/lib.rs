@@ -15,7 +15,7 @@
 //! use rustc_serialize::base64::FromBase64;
 //!
 //! # fn main() {
-//! let endpoint = "https://some_push_server.com/token";
+//! let endpoint = "https://updates.push.services.mozilla.com/wpush/v1/...";
 //! let p256dh = "key_from_browser_as_base64".from_base64().unwrap();
 //! let auth = "auth_from_browser_as_base64".from_base64().unwrap();
 //!
