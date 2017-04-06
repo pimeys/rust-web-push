@@ -2,7 +2,7 @@
 name = "web-push"
 version = "0.1.0"
 authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
-license = "MIT"
+license = "Apache 2.0"
 homepage = "https://github.com/pimeys/rust-web-push"
 
 [dependencies]
