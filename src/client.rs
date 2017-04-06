@@ -54,6 +54,7 @@ impl WebPushClient {
         }
     }
 
+    /// A future which sends a web push notification.
     pub fn send(&self, message: WebPushMessage) -> WebPushResponse {
         self.call(message)
     }

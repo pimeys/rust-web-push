@@ -11,7 +11,7 @@ pub enum WebPushError {
     BadRequest,
     ServerError(Option<RetryAfter>),
     ContentTooLong,
-    NotImplemented(&'static str),
+    NotImplemented,
     InvalidUri,
 }
 
@@ -36,7 +36,8 @@ impl Error for WebPushError {
                 "Maximum allowed payload size is 3800 characters",
             WebPushError::InvalidUri =>
                 "The provided URI is invalid",
-            WebPushError::NotImplemented(msg) => msg,
+            WebPushError::NotImplemented =>
+                "The feature is not implemented yet",
         }
     }
 
