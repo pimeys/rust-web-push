@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `verify_rsa` fn in crate `ring`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, verify_rsa">
+
+    <title>ring::signature::primitive::verify_rsa - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>ring</a>::<wbr><a href='../index.html'>signature</a>::<wbr><a href='index.html'>primitive</a></p><script>window.sidebarCurrent = {name: 'verify_rsa', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='../../index.html'>ring</a>::<wbr><a href='../index.html'>signature</a>::<wbr><a href='index.html'>primitive</a>::<wbr><a class='fn' href=''>verify_rsa</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../../src/ring/rsa/verification.rs.html#108-161' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn verify_rsa(params: &amp;<a class='struct' href='../../../ring/signature/struct.RSAParameters.html' title='ring::signature::RSAParameters'>RSAParameters</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (n, e): <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='../../../untrusted/struct.Input.html' title='untrusted::Input'>Input</a>, <a class='struct' href='../../../untrusted/struct.Input.html' title='untrusted::Input'>Input</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; msg: <a class='struct' href='../../../untrusted/struct.Input.html' title='untrusted::Input'>Input</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; signature: <a class='struct' href='../../../untrusted/struct.Input.html' title='untrusted::Input'>Input</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../../../ring/error/struct.Unspecified.html' title='ring::error::Unspecified'>Unspecified</a>&gt;</pre><div class='docblock'><p>Lower-level API for the verification of RSA signatures.</p>
+
+<p>When the public key is in DER-encoded PKCS#1 ASN.1 format, it is
+recommended to use <code>ring::signature::verify()</code> with
+<code>ring::signature::RSA_PKCS1_*</code>, because <code>ring::signature::verify()</code>
+will handle the parsing in that case. Otherwise, this function can be used
+to pass in the raw bytes for the public key components as
+<code>untrusted::Input</code> arguments.</p>
+
+<p><code>params</code> determine what algorithm parameters (padding, digest algorithm,
+key length range, etc.) are used in the verification. <code>msg</code> is the message
+and <code>signature</code> is the signature.</p>
+
+<p><code>n</code> is the public key modulus and <code>e</code> is the public key exponent. Both are
+interpreted as unsigned big-endian encoded values. Both must be positive
+and neither may have any leading zeros.</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "ring";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

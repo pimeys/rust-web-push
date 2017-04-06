@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Status` struct in crate `openssl`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Status">
+
+    <title>openssl::ocsp::Status - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>openssl</a>::<wbr><a href='index.html'>ocsp</a></p><script>window.sidebarCurrent = {name: 'Status', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>openssl</a>::<wbr><a href='index.html'>ocsp</a>::<wbr><a class='struct' href=''>Status</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/openssl/ocsp.rs.html#106-117' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Status&lt;'a&gt; {
+    pub status: <a class='struct' href='../../openssl/ocsp/struct.OcspCertStatus.html' title='openssl::ocsp::OcspCertStatus'>OcspCertStatus</a>,
+    pub reason: <a class='struct' href='../../openssl/ocsp/struct.OcspRevokedStatus.html' title='openssl::ocsp::OcspRevokedStatus'>OcspRevokedStatus</a>,
+    pub revocation_time: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a>&gt;,
+    pub this_update: &amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a>,
+    pub next_update: &amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a>,
+}</pre><h2 class='fields'>Fields</h2><span id='structfield.status' class='structfield'>
+                           <span id='status.v' class='invisible'>
+                           <code>status: <a class='struct' href='../../openssl/ocsp/struct.OcspCertStatus.html' title='openssl::ocsp::OcspCertStatus'>OcspCertStatus</a></code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>The overall status of the response.</p>
+</div><span id='structfield.reason' class='structfield'>
+                           <span id='reason.v' class='invisible'>
+                           <code>reason: <a class='struct' href='../../openssl/ocsp/struct.OcspRevokedStatus.html' title='openssl::ocsp::OcspRevokedStatus'>OcspRevokedStatus</a></code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>If <code>status</code> is <code>CERT_STATUS_REVOKED</code>, the reason for the revocation.</p>
+</div><span id='structfield.revocation_time' class='structfield'>
+                           <span id='revocation_time.v' class='invisible'>
+                           <code>revocation_time: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a>&gt;</code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>If <code>status</code> is <code>CERT_STATUS_REVOKED</code>, the time at which the certificate was revoked.</p>
+</div><span id='structfield.this_update' class='structfield'>
+                           <span id='this_update.v' class='invisible'>
+                           <code>this_update: &amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a></code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>The time that this revocation check was performed.</p>
+</div><span id='structfield.next_update' class='structfield'>
+                           <span id='next_update.v' class='invisible'>
+                           <code>next_update: &amp;'a <a class='struct' href='../../openssl/asn1/struct.Asn1GeneralizedTimeRef.html' title='openssl::asn1::Asn1GeneralizedTimeRef'>Asn1GeneralizedTimeRef</a></code>
+                           </span></span><span class='stab '></span><div class='docblock'><p>The time at which this revocation check expires.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;'a&gt; <a class='struct' href='../../openssl/ocsp/struct.Status.html' title='openssl::ocsp::Status'>Status</a>&lt;'a&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/openssl/ocsp.rs.html#119-136' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.check_validity' class='method'><span id='check_validity.v' class='invisible'><code>fn <a href='#method.check_validity' class='fnname'>check_validity</a>(&amp;self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nsec: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; maxsec: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>&gt;)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='../../openssl/error/struct.ErrorStack.html' title='openssl::error::ErrorStack'>ErrorStack</a>&gt;</code></span></h4>
+<div class='docblock'><p>Checks validity of the <code>this_update</code> and <code>next_update</code> fields.</p>
+
+<p>The <code>nsec</code> parameter specifies an amount of slack time that will be used when comparing
+those times with the current time to account for delays and clock skew.</p>
+
+<p>The <code>maxsec</code> parameter limits the maximum age of the <code>this_update</code> parameter to prohibit
+very old responses.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "openssl";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

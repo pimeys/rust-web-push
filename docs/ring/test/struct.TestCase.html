@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `TestCase` struct in crate `ring`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, TestCase">
+
+    <title>ring::test::TestCase - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>ring</a>::<wbr><a href='index.html'>test</a></p><script>window.sidebarCurrent = {name: 'TestCase', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ring</a>::<wbr><a href='index.html'>test</a>::<wbr><a class='struct' href=''>TestCase</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ring/test.rs.html#132-134' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct TestCase { /* fields omitted */ }</pre><div class='docblock'><p>A test case. A test case consists of a set of named attributes. Every
+attribute in the test case must be consumed exactly once; this helps catch
+typos and omissions.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../ring/test/struct.TestCase.html' title='ring::test::TestCase'>TestCase</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ring/test.rs.html#136-218' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.consume_digest_alg' class='method'><span id='consume_digest_alg.v' class='invisible'><code>fn <a href='#method.consume_digest_alg' class='fnname'>consume_digest_alg</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;'static <a class='struct' href='../../ring/digest/struct.Algorithm.html' title='ring::digest::Algorithm'>Algorithm</a>&gt;</code></span></h4>
+<div class='docblock'><p>Maps the strings &quot;SHA1&quot;, &quot;SHA256&quot;, &quot;SHA384&quot;, and &quot;SHA512&quot; to digest
+algorithms, maps &quot;SHA224&quot; to <code>None</code>, and panics on other (erroneous)
+inputs. &quot;SHA224&quot; is mapped to None because <em>ring</em> intentionally does
+not support SHA224, but we need to consume test vectors from NIST that
+have SHA224 vectors in them.</p>
+</div><h4 id='method.consume_bytes' class='method'><span id='consume_bytes.v' class='invisible'><code>fn <a href='#method.consume_bytes' class='fnname'>consume_bytes</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;</code></span></h4>
+<div class='docblock'><p>Returns the value of an attribute that is encoded as a sequence of an
+even number of hex digits, or as a double-quoted UTF-8 string. The
+empty (zero-length) value is represented as &quot;&quot;.</p>
+</div><h4 id='method.consume_usize' class='method'><span id='consume_usize.v' class='invisible'><code>fn <a href='#method.consume_usize' class='fnname'>consume_usize</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></h4>
+<div class='docblock'><p>Returns the value of an attribute that is an integer, in decimal
+notation.</p>
+</div><h4 id='method.consume_usize_bits' class='method'><span id='consume_usize_bits.v' class='invisible'><code>fn <a href='#method.consume_usize_bits' class='fnname'>consume_usize_bits</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; BitLength</code></span></h4>
+<div class='docblock'><p>Returns the value of an attribute that is an integer, in decimal
+notation, as a bit length.</p>
+</div><h4 id='method.consume_string' class='method'><span id='consume_string.v' class='invisible'><code>fn <a href='#method.consume_string' class='fnname'>consume_string</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></span></h4>
+<div class='docblock'><p>Returns the raw value of an attribute, without any unquoting or
+other interpretation.</p>
+</div><h4 id='method.consume_optional_string' class='method'><span id='consume_optional_string.v' class='invisible'><code>fn <a href='#method.consume_optional_string' class='fnname'>consume_optional_string</a>(&amp;mut self, key: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></span></h4>
+<div class='docblock'><p>Like <code>consume_string()</code> except it returns <code>None</code> if the test case
+doesn&#39;t have the attribute.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ring";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
