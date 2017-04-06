@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ForeignTypeRef` trait in crate `foreign_types`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ForeignTypeRef">
+
+    <title>foreign_types::ForeignTypeRef - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>foreign_types</a></p><script>window.sidebarCurrent = {name: 'ForeignTypeRef', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='index.html'>foreign_types</a>::<wbr><a class='trait' href=''>ForeignTypeRef</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/foreign_types/lib.rs.html#195-216' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait ForeignTypeRef: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> {
+    type <a href='#associatedtype.CType' class='type'>CType</a>;
+    unsafe fn <a href='#method.from_ptr' class='fnname'>from_ptr</a>&lt;'a&gt;(ptr: *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a>) -&gt; &amp;'a Self { ... }
+    unsafe fn <a href='#method.from_ptr_mut' class='fnname'>from_ptr_mut</a>&lt;'a&gt;(ptr: *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a>) -&gt; &amp;'a mut Self { ... }
+    fn <a href='#method.as_ptr' class='fnname'>as_ptr</a>(&amp;self) -&gt; *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a> { ... }
+}</pre><div class='docblock'><p>A trait implemented by types which reference borrowed foreign types.</p>
+</div>
+            <h2 id='associated-types'>Associated Types</h2>
+            <div class='methods'>
+        <h3 id='associatedtype.CType' class='method'><span id='CType.t' class='invisible'><code>type <a href='#associatedtype.CType' class='type'>CType</a></code></span></h3><div class='docblock'><p>The raw C type.</p>
+</div></div>
+            <h2 id='provided-methods'>Provided Methods</h2>
+            <div class='methods'>
+        <h3 id='method.from_ptr' class='method'><span id='from_ptr.v' class='invisible'><code>unsafe fn <a href='#method.from_ptr' class='fnname'>from_ptr</a>&lt;'a&gt;(ptr: *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a>) -&gt; &amp;'a Self</code></span></h3><div class='docblock'><p>Constructs a shared instance of this type from its raw type.</p>
+</div><h3 id='method.from_ptr_mut' class='method'><span id='from_ptr_mut.v' class='invisible'><code>unsafe fn <a href='#method.from_ptr_mut' class='fnname'>from_ptr_mut</a>&lt;'a&gt;(ptr: *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a>) -&gt; &amp;'a mut Self</code></span></h3><div class='docblock'><p>Constructs a mutable reference of this type from its raw type.</p>
+</div><h3 id='method.as_ptr' class='method'><span id='as_ptr.v' class='invisible'><code>fn <a href='#method.as_ptr' class='fnname'>as_ptr</a>(&amp;self) -&gt; *mut Self::<a class='trait' href='../foreign_types/trait.ForeignTypeRef.html' title='foreign_types::ForeignTypeRef'>CType</a></code></span></h3><div class='docblock'><p>Returns a raw pointer to the wrapped value.</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    </ul><script type="text/javascript" async
+                         src="../implementors/foreign_types/trait.ForeignTypeRef.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "foreign_types";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

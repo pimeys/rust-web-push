@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["OpenSslType","A type implemented by wrappers over foreign types."],["OpenSslTypeRef","A trait implemented by types which reference borrowed foreign types."]]});

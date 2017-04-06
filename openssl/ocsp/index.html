@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ocsp` mod in crate `openssl`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ocsp">
+
+    <title>openssl::ocsp - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>openssl</a></p><script>window.sidebarCurrent = {name: 'ocsp', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>openssl</a>::<wbr><a class='mod' href=''>ocsp</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/openssl/ocsp.rs.html#1-304' title='goto source code'>[src]</a></span></h1>
+<h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Flag.html'
+                                  title='openssl::ocsp::Flag'>Flag</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspBasicResponse.html'
+                                  title='openssl::ocsp::OcspBasicResponse'>OcspBasicResponse</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspBasicResponseRef.html'
+                                  title='openssl::ocsp::OcspBasicResponseRef'>OcspBasicResponseRef</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspCertId.html'
+                                  title='openssl::ocsp::OcspCertId'>OcspCertId</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspCertIdRef.html'
+                                  title='openssl::ocsp::OcspCertIdRef'>OcspCertIdRef</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspCertStatus.html'
+                                  title='openssl::ocsp::OcspCertStatus'>OcspCertStatus</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspOneReq.html'
+                                  title='openssl::ocsp::OcspOneReq'>OcspOneReq</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspOneReqRef.html'
+                                  title='openssl::ocsp::OcspOneReqRef'>OcspOneReqRef</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspRequest.html'
+                                  title='openssl::ocsp::OcspRequest'>OcspRequest</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspRequestRef.html'
+                                  title='openssl::ocsp::OcspRequestRef'>OcspRequestRef</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspResponse.html'
+                                  title='openssl::ocsp::OcspResponse'>OcspResponse</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspResponseRef.html'
+                                  title='openssl::ocsp::OcspResponseRef'>OcspResponseRef</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspResponseStatus.html'
+                                  title='openssl::ocsp::OcspResponseStatus'>OcspResponseStatus</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OcspRevokedStatus.html'
+                                  title='openssl::ocsp::OcspRevokedStatus'>OcspRevokedStatus</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Status.html'
+                                  title='openssl::ocsp::Status'>Status</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.CERT_STATUS_GOOD.html'
+                                  title='openssl::ocsp::CERT_STATUS_GOOD'>CERT_STATUS_GOOD</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.CERT_STATUS_REVOKED.html'
+                                  title='openssl::ocsp::CERT_STATUS_REVOKED'>CERT_STATUS_REVOKED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.CERT_STATUS_UNKNOWN.html'
+                                  title='openssl::ocsp::CERT_STATUS_UNKNOWN'>CERT_STATUS_UNKNOWN</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_CA_SIGN.html'
+                                  title='openssl::ocsp::FLAG_NO_CA_SIGN'>FLAG_NO_CA_SIGN</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_CERTS.html'
+                                  title='openssl::ocsp::FLAG_NO_CERTS'>FLAG_NO_CERTS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_CHAIN.html'
+                                  title='openssl::ocsp::FLAG_NO_CHAIN'>FLAG_NO_CHAIN</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_CHECKS.html'
+                                  title='openssl::ocsp::FLAG_NO_CHECKS'>FLAG_NO_CHECKS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_DELEGATED.html'
+                                  title='openssl::ocsp::FLAG_NO_DELEGATED'>FLAG_NO_DELEGATED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_EXPLICIT.html'
+                                  title='openssl::ocsp::FLAG_NO_EXPLICIT'>FLAG_NO_EXPLICIT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_INTERN.html'
+                                  title='openssl::ocsp::FLAG_NO_INTERN'>FLAG_NO_INTERN</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_TIME.html'
+                                  title='openssl::ocsp::FLAG_NO_TIME'>FLAG_NO_TIME</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_NO_VERIFY.html'
+                                  title='openssl::ocsp::FLAG_NO_VERIFY'>FLAG_NO_VERIFY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_RESPID_KEY.html'
+                                  title='openssl::ocsp::FLAG_RESPID_KEY'>FLAG_RESPID_KEY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.FLAG_TRUST_OTHER.html'
+                                  title='openssl::ocsp::FLAG_TRUST_OTHER'>FLAG_TRUST_OTHER</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_INTERNAL_ERROR.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_INTERNAL_ERROR'>RESPONSE_STATUS_INTERNAL_ERROR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_MALFORMED_REQUEST.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_MALFORMED_REQUEST'>RESPONSE_STATUS_MALFORMED_REQUEST</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_SIG_REQUIRED.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_SIG_REQUIRED'>RESPONSE_STATUS_SIG_REQUIRED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_SUCCESSFUL.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_SUCCESSFUL'>RESPONSE_STATUS_SUCCESSFUL</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_TRY_LATER.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_TRY_LATER'>RESPONSE_STATUS_TRY_LATER</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.RESPONSE_STATUS_UNAUTHORIZED.html'
+                                  title='openssl::ocsp::RESPONSE_STATUS_UNAUTHORIZED'>RESPONSE_STATUS_UNAUTHORIZED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_AFFILIATION_CHANGED.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_AFFILIATION_CHANGED'>REVOKED_STATUS_AFFILIATION_CHANGED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_CA_COMPROMISE.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_CA_COMPROMISE'>REVOKED_STATUS_CA_COMPROMISE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_CERTIFICATE_HOLD.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_CERTIFICATE_HOLD'>REVOKED_STATUS_CERTIFICATE_HOLD</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_CESSATION_OF_OPERATION.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_CESSATION_OF_OPERATION'>REVOKED_STATUS_CESSATION_OF_OPERATION</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_KEY_COMPROMISE.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_KEY_COMPROMISE'>REVOKED_STATUS_KEY_COMPROMISE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_NO_STATUS.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_NO_STATUS'>REVOKED_STATUS_NO_STATUS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_REMOVE_FROM_CRL.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_REMOVE_FROM_CRL'>REVOKED_STATUS_REMOVE_FROM_CRL</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_SUPERSEDED.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_SUPERSEDED'>REVOKED_STATUS_SUPERSEDED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.REVOKED_STATUS_UNSPECIFIED.html'
+                                  title='openssl::ocsp::REVOKED_STATUS_UNSPECIFIED'>REVOKED_STATUS_UNSPECIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "openssl";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
