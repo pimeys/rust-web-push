@@ -2,6 +2,7 @@ use ring::{hmac, hkdf, agreement, rand, digest, aead};
 use untrusted::Input;
 use error::WebPushError;
 use message::WebPushPayload;
+use rustc_serialize::base64::{ToBase64, URL_SAFE};
 
 pub enum ContentCoding {
     AesGcm,
@@ -46,10 +47,15 @@ impl<'a> HttpEce<'a> {
 
                     self.aes_gcm(shared_secret, public_key, &salt_bytes, &mut payload)?;
 
+                    let mut crypto_headers = Vec::new();
+                    crypto_headers.push(("Crypto-Key", format!("keyid=p256dh;dh={}", public_key.to_base64(URL_SAFE))));
+                    crypto_headers.push(("Encryption", format!("keyid=p256dh;salt={}", salt_bytes.to_base64(URL_SAFE))));
+
                     Ok(WebPushPayload {
                         content: payload.to_vec(),
                         public_key: public_key.to_vec(),
                         salt: salt_bytes.to_vec(),
+                        crypto_headers: crypto_headers,
                     })
                 },
                 ContentCoding::Aes128Gcm =>

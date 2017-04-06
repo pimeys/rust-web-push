@@ -5,7 +5,7 @@ use hyper::header::{ContentLength, RetryAfter, Authorization, ContentType};
 use hyper::{Post, Uri};
 use futures::{Future, Poll};
 use futures::future::{ok, err};
-use rustc_serialize::base64::{ToBase64, URL_SAFE, STANDARD};
+use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::json;
 use tokio_core::reactor::Handle;
 use tokio_service::Service;
@@ -125,8 +125,9 @@ impl Service for WebPushClient {
                 };
 
                 if let Some(payload) = message.payload {
-                    request.headers_mut().set_raw("Crypto-Key", format!("keyid=p256dh;dh={}", payload.public_key.to_base64(URL_SAFE)));
-                    request.headers_mut().set_raw("Encryption", format!("keyid=p256dh;salt={}", payload.salt.to_base64(URL_SAFE)));
+                    for (k, v) in payload.crypto_headers.into_iter() {
+                        request.headers_mut().set_raw(k, v);
+                    }
                 }
 
                 let request_f = self.client.request(request).map_err(|_| { WebPushError::Unspecified });

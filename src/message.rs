@@ -6,6 +6,7 @@ pub struct WebPushPayload {
     pub content: Vec<u8>,
     pub public_key: Vec<u8>,
     pub salt: Vec<u8>,
+    pub crypto_headers: Vec<(&'static str, String)>
 }
 
 #[derive(Debug)]
