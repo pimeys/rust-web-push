@@ -25,6 +25,7 @@ pub struct WebPushMessageBuilder<'a> {
     p256dh: &'a [u8],
     payload: Option<&'a [u8]>,
     ttl: Option<u32>,
+    encoding: ContentEncoding,
 }
 
 impl<'a> WebPushMessageBuilder<'a> {
@@ -32,11 +33,12 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> WebPushMessageBuilder<'a> {
+    pub fn new(encoding: ContentEncoding, endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> WebPushMessageBuilder<'a> {
         WebPushMessageBuilder {
             endpoint: endpoint,
             auth: auth,
             p256dh: p256dh,
+            encoding: encoding,
             ttl: None,
             gcm_key: None,
             payload: None,
@@ -65,7 +67,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// something was wrong in the given public key or authentication.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         if let Some(payload) = self.payload {
-            let http_ece = HttpEce::new(ContentEncoding::AesGcm, self.p256dh, self.auth);
+            let http_ece = HttpEce::new(self.encoding, self.p256dh, self.auth);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),

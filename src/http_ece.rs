@@ -12,24 +12,24 @@ pub enum ContentEncoding {
 pub struct HttpEce<'a> {
     peer_public_key: &'a [u8],
     peer_secret: &'a [u8],
-    coding: ContentEncoding,
+    encoding: ContentEncoding,
     rng: rand::SystemRandom,
 }
 
 impl<'a> HttpEce<'a> {
-    /// Create a new encryptor. The content coding has preliminary support for
+    /// Create a new encryptor. The content encoding has preliminary support for
     /// Aes128Gcm, which is the 8th draft of the Encrypted Content-Encoding, but
     /// currently using it will return an error when trying to encrypt. There is
     /// no real support yet for the encoding in web browsers.
     ///
     /// `peer_public_key` is the `p256dh` and `peer_secret` the `auth` from
     /// browser subscription info.
-    pub fn new(coding: ContentEncoding, peer_public_key: &'a [u8], peer_secret: &'a [u8]) -> HttpEce<'a> {
+    pub fn new(encoding: ContentEncoding, peer_public_key: &'a [u8], peer_secret: &'a [u8]) -> HttpEce<'a> {
         HttpEce {
             rng: rand::SystemRandom::new(),
             peer_public_key: peer_public_key,
             peer_secret: peer_secret,
-            coding: coding,
+            encoding: encoding,
         }
     }
 
@@ -50,7 +50,7 @@ impl<'a> HttpEce<'a> {
         private_key.compute_public_key(public_key)?;
 
         agreement::agree_ephemeral(private_key, agr, peer_input, WebPushError::Unspecified, |shared_secret| {
-            match self.coding {
+            match self.encoding {
                 ContentEncoding::AesGcm => {
                     let mut payload = [0u8; 3818];
                     front_pad(content, &mut payload);
