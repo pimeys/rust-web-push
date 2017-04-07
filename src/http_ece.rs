@@ -63,8 +63,6 @@ impl<'a> HttpEce<'a> {
 
                     Ok(WebPushPayload {
                         content: payload.to_vec(),
-                        public_key: public_key.to_vec(),
-                        salt: salt_bytes.to_vec(),
                         crypto_headers: crypto_headers,
                         content_encoding: "aesgcm"
                     })

@@ -4,8 +4,6 @@ use error::WebPushError;
 #[derive(Debug, PartialEq)]
 pub struct WebPushPayload {
     pub content: Vec<u8>,
-    pub public_key: Vec<u8>,
-    pub salt: Vec<u8>,
     pub crypto_headers: Vec<(&'static str, String)>,
     pub content_encoding: &'static str,
 }
