@@ -106,6 +106,7 @@
 <span id="61">61</span>
 <span id="62">62</span>
 <span id="63">63</span>
+<span id="64">64</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! # Web Push</span>
 <span class='doccomment'>//!</span>
@@ -128,8 +129,9 @@
 <span class='doccomment'>//! let p256dh = &quot;key_from_browser_as_base64&quot;.from_base64().unwrap();</span>
 <span class='doccomment'>//! let auth = &quot;auth_from_browser_as_base64&quot;.from_base64().unwrap();</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! let mut builder = WebPushMessageBuilder::new(ContentEncoding::AesGcm, endpoint, &amp;auth, &amp;p256dh);</span>
-<span class='doccomment'>//! builder.set_payload(&quot;Encrypted payload to be sent in the notification&quot;.as_bytes());</span>
+<span class='doccomment'>//! let mut builder = WebPushMessageBuilder::new(endpoint, &amp;auth, &amp;p256dh);</span>
+<span class='doccomment'>//! let content = &quot;Encrypted payload to be sent in the notification&quot;.as_bytes();</span>
+<span class='doccomment'>//! builder.set_payload(ContentEncoding::AesGcm, content);</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! match builder.build() {</span>
 <span class='doccomment'>//!    Ok(message) =&gt; {</span>
