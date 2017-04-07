@@ -88,22 +88,22 @@ impl<'a> HttpEce<'a> {
         context.push((as_public_key.len() & 0xff) as u8);
         context.extend_from_slice(as_public_key);
 
-        let mut ikm = [0u8; 32];
-        hkdf::extract_and_expand(&client_auth_secret, &shared_secret, "Content-Encoding: auth\0".as_bytes(), &mut ikm);
+        let mut prk = [0u8; 32];
+        hkdf::extract_and_expand(&client_auth_secret, &shared_secret, "Content-Encoding: auth\0".as_bytes(), &mut prk);
 
         let mut cek_info = Vec::with_capacity(165);
         cek_info.extend_from_slice("Content-Encoding: aesgcm\0".as_bytes());
         cek_info.extend_from_slice(&context);
 
         let mut content_encryption_key = [0u8; 16];
-        hkdf::extract_and_expand(&salt, &ikm, &cek_info, &mut content_encryption_key);
+        hkdf::extract_and_expand(&salt, &prk, &cek_info, &mut content_encryption_key);
 
         let mut nonce_info = Vec::with_capacity(164);
         nonce_info.extend_from_slice("Content-Encoding: nonce\0".as_bytes());
         nonce_info.extend_from_slice(&context);
 
         let mut nonce = [0u8; 12];
-        hkdf::extract_and_expand(&salt, &ikm, &nonce_info, &mut nonce);
+        hkdf::extract_and_expand(&salt, &prk, &nonce_info, &mut nonce);
 
         let sealing_key = aead::SealingKey::new(&aead::AES_128_GCM, &content_encryption_key)?;
         aead::seal_in_place(&sealing_key, &nonce, "".as_bytes(), &mut payload, 16)?;
