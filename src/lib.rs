@@ -19,8 +19,9 @@
 //! let p256dh = "key_from_browser_as_base64".from_base64().unwrap();
 //! let auth = "auth_from_browser_as_base64".from_base64().unwrap();
 //!
-//! let mut builder = WebPushMessageBuilder::new(ContentEncoding::AesGcm, endpoint, &auth, &p256dh);
-//! builder.set_payload("Encrypted payload to be sent in the notification".as_bytes());
+//! let mut builder = WebPushMessageBuilder::new(endpoint, &auth, &p256dh);
+//! let content = "Encrypted payload to be sent in the notification".as_bytes();
+//! builder.set_payload(ContentEncoding::AesGcm, content);
 //!
 //! match builder.build() {
 //!    Ok(message) => {

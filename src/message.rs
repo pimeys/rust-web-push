@@ -18,14 +18,18 @@ pub struct WebPushMessage {
     pub payload: Option<WebPushPayload>,
 }
 
+struct WebPushPayloadBuilder<'a> {
+    pub content: &'a [u8],
+    pub encoding: ContentEncoding,
+}
+
 pub struct WebPushMessageBuilder<'a> {
     gcm_key: Option<&'a str>,
     endpoint: &'a str,
     auth: &'a [u8],
     p256dh: &'a [u8],
-    payload: Option<&'a [u8]>,
+    payload: Option<WebPushPayloadBuilder<'a>>,
     ttl: Option<u32>,
-    encoding: ContentEncoding,
 }
 
 impl<'a> WebPushMessageBuilder<'a> {
@@ -33,12 +37,11 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(encoding: ContentEncoding, endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> WebPushMessageBuilder<'a> {
+    pub fn new(endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> WebPushMessageBuilder<'a> {
         WebPushMessageBuilder {
             endpoint: endpoint,
             auth: auth,
             p256dh: p256dh,
-            encoding: encoding,
             ttl: None,
             gcm_key: None,
             payload: None,
@@ -59,21 +62,24 @@ impl<'a> WebPushMessageBuilder<'a> {
 
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
-    pub fn set_payload(&mut self, payload: &'a [u8]) {
-        self.payload = Some(payload);
+    pub fn set_payload(&mut self, encoding: ContentEncoding, payload: &'a [u8]) {
+        self.payload = Some(WebPushPayloadBuilder {
+            content: payload,
+            encoding: encoding,
+        });
     }
 
     /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
     /// something was wrong in the given public key or authentication.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         if let Some(payload) = self.payload {
-            let http_ece = HttpEce::new(self.encoding, self.p256dh, self.auth);
+            let http_ece = HttpEce::new(payload.encoding, self.p256dh, self.auth);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
                 endpoint: self.endpoint.to_string(),
                 ttl: self.ttl,
-                payload: Some(http_ece.encrypt(payload)?),
+                payload: Some(http_ece.encrypt(payload.content)?),
             })
         } else {
             Ok(WebPushMessage {
