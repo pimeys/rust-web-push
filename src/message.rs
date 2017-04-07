@@ -1,4 +1,4 @@
-use http_ece::{HttpEce, ContentCoding};
+use http_ece::{HttpEce, ContentEncoding};
 use error::WebPushError;
 
 #[derive(Debug, PartialEq)]
@@ -6,7 +6,8 @@ pub struct WebPushPayload {
     pub content: Vec<u8>,
     pub public_key: Vec<u8>,
     pub salt: Vec<u8>,
-    pub crypto_headers: Vec<(&'static str, String)>
+    pub crypto_headers: Vec<(&'static str, String)>,
+    pub content_encoding: &'static str,
 }
 
 #[derive(Debug)]
@@ -64,7 +65,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// something was wrong in the given public key or authentication.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         if let Some(payload) = self.payload {
-            let http_ece = HttpEce::new(ContentCoding::AesGcm, self.p256dh, self.auth);
+            let http_ece = HttpEce::new(ContentEncoding::AesGcm, self.p256dh, self.auth);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),

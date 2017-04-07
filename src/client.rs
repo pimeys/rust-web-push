@@ -101,7 +101,7 @@ impl WebPushClient {
         }
 
         if let Some(ref payload) = message.payload {
-            request.headers_mut().set_raw("Content-Encoding", "aesgcm");
+            request.headers_mut().set_raw("Content-Encoding", payload.content_encoding);
             request.headers_mut().set(ContentLength(payload.content.len() as u64));
             request.set_body(payload.content.clone());
         }

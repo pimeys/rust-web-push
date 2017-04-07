@@ -60,4 +60,4 @@ mod message;
 pub use error::WebPushError;
 pub use client::{WebPushResponse, WebPushClient};
 pub use message::{WebPushMessage, WebPushMessageBuilder, WebPushPayload};
-pub use http_ece::ContentCoding;
+pub use http_ece::ContentEncoding;

@@ -4,7 +4,7 @@ use error::WebPushError;
 use message::WebPushPayload;
 use rustc_serialize::base64::{ToBase64, URL_SAFE};
 
-pub enum ContentCoding {
+pub enum ContentEncoding {
     AesGcm,
     Aes128Gcm,
 }
@@ -12,7 +12,7 @@ pub enum ContentCoding {
 pub struct HttpEce<'a> {
     peer_public_key: &'a [u8],
     peer_secret: &'a [u8],
-    coding: ContentCoding,
+    coding: ContentEncoding,
     rng: rand::SystemRandom,
 }
 
@@ -24,7 +24,7 @@ impl<'a> HttpEce<'a> {
     ///
     /// `peer_public_key` is the `p256dh` and `peer_secret` the `auth` from
     /// browser subscription info.
-    pub fn new(coding: ContentCoding, peer_public_key: &'a [u8], peer_secret: &'a [u8]) -> HttpEce<'a> {
+    pub fn new(coding: ContentEncoding, peer_public_key: &'a [u8], peer_secret: &'a [u8]) -> HttpEce<'a> {
         HttpEce {
             rng: rand::SystemRandom::new(),
             peer_public_key: peer_public_key,
@@ -51,7 +51,7 @@ impl<'a> HttpEce<'a> {
 
         agreement::agree_ephemeral(private_key, agr, peer_input, WebPushError::Unspecified, |shared_secret| {
             match self.coding {
-                ContentCoding::AesGcm => {
+                ContentEncoding::AesGcm => {
                     let mut payload = [0u8; 3818];
                     front_pad(content, &mut payload);
 
@@ -66,9 +66,10 @@ impl<'a> HttpEce<'a> {
                         public_key: public_key.to_vec(),
                         salt: salt_bytes.to_vec(),
                         crypto_headers: crypto_headers,
+                        content_encoding: "aesgcm"
                     })
                 },
-                ContentCoding::Aes128Gcm => Err(WebPushError::NotImplemented),
+                ContentEncoding::Aes128Gcm => Err(WebPushError::NotImplemented),
             }
         })
     }
@@ -127,7 +128,7 @@ fn front_pad(payload: &[u8], output: &mut [u8]) {
 
 #[cfg(test)]
 mod tests {
-    use http_ece::{HttpEce, ContentCoding, front_pad};
+    use http_ece::{HttpEce, ContentEncoding, front_pad};
     use error::WebPushError;
     use rustc_serialize::base64::{FromBase64, ToBase64, URL_SAFE};
 
@@ -135,7 +136,7 @@ mod tests {
     fn test_payload_too_big() {
         let p256dh = "BLMaF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fj5ErfTNH_l9WHE9Ig".from_base64().unwrap();
-        let http_ece = HttpEce::new(ContentCoding::AesGcm, &p256dh, &auth);
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth);
         let content = [0u8; 3801];
 
         assert_eq!(Err(WebPushError::ContentTooLong), http_ece.encrypt(&content));
@@ -145,7 +146,7 @@ mod tests {
     fn test_aes128gcm() {
         let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
-        let http_ece = HttpEce::new(ContentCoding::Aes128Gcm, &p256dh, &auth);
+        let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth);
         let content = [0u8; 10];
 
         assert_eq!(Err(WebPushError::NotImplemented), http_ece.encrypt(&content));
@@ -155,7 +156,7 @@ mod tests {
     fn test_aesgcm() {
         let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
-        let http_ece = HttpEce::new(ContentCoding::AesGcm, &p256dh, &auth);
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth);
         let content = "This is test data. XXX".as_bytes();
         let shared_secret = "9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=".from_base64().unwrap();
         let as_pubkey = "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=".from_base64().unwrap();
