@@ -227,8 +227,6 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>ring</span>::{<span class='ident'>hmac</span>, <span class='ident'>hkdf</span>, <span class='ident'>agreement</span>, <span class='ident'>rand</span>, <span class='ident'>digest</span>, <span class='ident'>aead</span>};
 <span class='kw'>use</span> <span class='ident'>untrusted</span>::<span class='ident'>Input</span>;
@@ -295,8 +293,6 @@
 
                     <span class='prelude-val'>Ok</span>(<span class='ident'>WebPushPayload</span> {
                         <span class='ident'>content</span>: <span class='ident'>payload</span>.<span class='ident'>to_vec</span>(),
-                        <span class='ident'>public_key</span>: <span class='ident'>public_key</span>.<span class='ident'>to_vec</span>(),
-                        <span class='ident'>salt</span>: <span class='ident'>salt_bytes</span>.<span class='ident'>to_vec</span>(),
                         <span class='ident'>crypto_headers</span>: <span class='ident'>crypto_headers</span>,
                         <span class='ident'>content_encoding</span>: <span class='string'>&quot;aesgcm&quot;</span>
                     })
