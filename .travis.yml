@@ -1,0 +1,15 @@
+language: rust
+matrix:
+  include:
+    - rust: beta
+    - rust: stable
+
+cache:
+  apt: true
+  directories:
+    - target/debug/deps
+    - target/debug/build
+
+script:
+  - cargo build
+  - cargo test
