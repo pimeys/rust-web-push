@@ -127,8 +127,9 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>http_ece</span>::{<span class='ident'>HttpEce</span>, <span class='ident'>ContentCoding</span>};
+<span class='kw'>use</span> <span class='ident'>http_ece</span>::{<span class='ident'>HttpEce</span>, <span class='ident'>ContentEncoding</span>};
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>WebPushError</span>;
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>PartialEq</span>)]</span>
@@ -136,7 +137,8 @@
     <span class='kw'>pub</span> <span class='ident'>content</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
     <span class='kw'>pub</span> <span class='ident'>public_key</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
     <span class='kw'>pub</span> <span class='ident'>salt</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
-    <span class='kw'>pub</span> <span class='ident'>crypto_headers</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>
+    <span class='kw'>pub</span> <span class='ident'>crypto_headers</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>,
+    <span class='kw'>pub</span> <span class='ident'>content_encoding</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>,
 }
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
@@ -194,7 +196,7 @@
     <span class='doccomment'>/// something was wrong in the given public key or authentication.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>build</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>WebPushMessage</span>, <span class='ident'>WebPushError</span><span class='op'>&gt;</span> {
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>payload</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>payload</span> {
-            <span class='kw'>let</span> <span class='ident'>http_ece</span> <span class='op'>=</span> <span class='ident'>HttpEce</span>::<span class='ident'>new</span>(<span class='ident'>ContentCoding</span>::<span class='ident'>AesGcm</span>, <span class='self'>self</span>.<span class='ident'>p256dh</span>, <span class='self'>self</span>.<span class='ident'>auth</span>);
+            <span class='kw'>let</span> <span class='ident'>http_ece</span> <span class='op'>=</span> <span class='ident'>HttpEce</span>::<span class='ident'>new</span>(<span class='ident'>ContentEncoding</span>::<span class='ident'>AesGcm</span>, <span class='self'>self</span>.<span class='ident'>p256dh</span>, <span class='self'>self</span>.<span class='ident'>auth</span>);
 
             <span class='prelude-val'>Ok</span>(<span class='ident'>WebPushMessage</span> {
                 <span class='ident'>gcm_key</span>: <span class='self'>self</span>.<span class='ident'>gcm_key</span>.<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>k</span><span class='op'>|</span> <span class='ident'>k</span>.<span class='ident'>to_string</span>()),

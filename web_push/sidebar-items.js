@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ContentCoding",""],["WebPushError",""]],"struct":[["WebPushClient",""],["WebPushMessage",""],["WebPushMessageBuilder",""],["WebPushPayload",""],["WebPushResponse",""]]});
+initSidebarItems({"enum":[["ContentEncoding",""],["WebPushError",""]],"struct":[["WebPushClient",""],["WebPushMessage",""],["WebPushMessageBuilder",""],["WebPushPayload",""],["WebPushResponse",""]]});
