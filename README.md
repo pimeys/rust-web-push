@@ -1,6 +1,8 @@
 Rust Web Push
 =============
 
+[![Travis Build Status](https://travis-ci.org/pimeys/rust-web-push.svg?branch=master)](https://travis-ci.org/pimeys/rust-web-push)
+
 Web push notification sender.
 
 Documentation
