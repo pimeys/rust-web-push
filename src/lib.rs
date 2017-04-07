@@ -46,6 +46,7 @@
 extern crate hyper;
 extern crate futures;
 extern crate tokio_core;
+extern crate tokio_timer;
 extern crate tokio_service;
 extern crate hyper_tls;
 extern crate rustc_serialize;

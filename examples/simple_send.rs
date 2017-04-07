@@ -9,6 +9,7 @@ use web_push::{WebPushMessageBuilder, WebPushClient, ContentEncoding};
 use argparse::{ArgumentParser, Store, StoreOption};
 use std::fs::File;
 use std::io::Read;
+use std::time::Duration;
 
 #[derive(RustcDecodable, RustcEncodable)]
 struct SubscriptionKeys {
@@ -73,7 +74,7 @@ fn main() {
             let handle = core.handle();
             let client = WebPushClient::new(&handle);
 
-            let work = client.send(message);
+            let work = client.send_with_timeout(message, Duration::from_millis(1000));
 
             match core.run(work) {
                 Err(error) => println!("ERROR: {:?}", error),

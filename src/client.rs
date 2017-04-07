@@ -9,8 +9,10 @@ use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::json;
 use tokio_core::reactor::Handle;
 use tokio_service::Service;
+use tokio_timer::{Timer, Timeout};
 use hyper::status::StatusCode;
 use std::fmt;
+use std::time::Duration;
 
 use error::WebPushError;
 use message::WebPushMessage;
@@ -40,6 +42,7 @@ impl Future for WebPushResponse {
 
 pub struct WebPushClient {
     client: Client<HttpsConnector>,
+    timer: Timer,
 }
 
 impl WebPushClient {
@@ -51,12 +54,18 @@ impl WebPushClient {
 
         WebPushClient {
             client: client,
+            timer: Timer::default(),
         }
     }
 
-    /// A future which sends a web push notification.
+    /// Sends a notification. Never times out.
     pub fn send(&self, message: WebPushMessage) -> WebPushResponse {
         self.call(message)
+    }
+
+    /// Sends a notification with a timeout. Triggers `WebPushError::TimeoutError` if the request takes too long.
+    pub fn send_with_timeout(&self, message: WebPushMessage, timeout: Duration) -> Timeout<WebPushResponse> {
+        self.timer.timeout(self.send(message), timeout)
     }
 
     fn build_gcm_request(message: &WebPushMessage) -> HttpRequest {

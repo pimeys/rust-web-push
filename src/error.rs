@@ -3,6 +3,8 @@ use std::convert::From;
 use std::fmt;
 use ring::error;
 use hyper::header::RetryAfter;
+use tokio_timer::TimeoutError;
+use client::WebPushResponse;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -13,6 +15,13 @@ pub enum WebPushError {
     ContentTooLong,
     NotImplemented,
     InvalidUri,
+    TimeoutError,
+}
+
+impl From<TimeoutError<WebPushResponse>> for WebPushError {
+    fn from(_: TimeoutError<WebPushResponse>) -> WebPushError {
+        WebPushError::TimeoutError
+    }
 }
 
 impl From<error::Unspecified> for WebPushError {
@@ -38,6 +47,8 @@ impl Error for WebPushError {
                 "The provided URI is invalid",
             WebPushError::NotImplemented =>
                 "The feature is not implemented yet",
+            WebPushError::TimeoutError =>
+                "The request timed out"
         }
     }
 
