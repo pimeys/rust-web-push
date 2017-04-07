@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `tokio_timer` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, tokio_timer">
+
+    <title>tokio_timer - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'tokio_timer', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>tokio_timer</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/tokio_timer/lib.rs.html#1-237' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Timer facilities for Tokio</p>
+
+<p>The default timer implementation is a hashed timing wheel. This structure
+provides the best runtime characteristics for the majority of network
+application patterns <strong>as long as it is correctly configured</strong>. A hashed
+timing wheel&#39;s worst case is <code>O(n)</code> where <code>n</code> is the number of pending
+timeouts.</p>
+
+<p>Most useful functions are on <a href="struct.Timer.html"><code>Timer</code></a>.</p>
+
+<h2 id='example' class='section-header'><a href='#example'>Example</a></h2>
+<p>Here is a simple example of how to use the timer.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>tokio_timer</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>futures</span>;
+
+<span class='kw'>use</span> <span class='ident'>tokio_timer</span>::<span class='kw-2'>*</span>;
+<span class='kw'>use</span> <span class='ident'>futures</span>::<span class='kw-2'>*</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>time</span>::<span class='kw-2'>*</span>;
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='comment'>// Create a new timer with default settings. While this is the easiest way</span>
+    <span class='comment'>// to get a timer, usually you will want to tune the config settings for</span>
+    <span class='comment'>// your usage patterns.</span>
+    <span class='kw'>let</span> <span class='ident'>timer</span> <span class='op'>=</span> <span class='ident'>Timer</span>::<span class='ident'>default</span>();
+
+    <span class='comment'>// Set a timeout that expires in 500 milliseconds</span>
+    <span class='kw'>let</span> <span class='ident'>sleep</span> <span class='op'>=</span> <span class='ident'>timer</span>.<span class='ident'>sleep</span>(<span class='ident'>Duration</span>::<span class='ident'>from_millis</span>(<span class='number'>500</span>));
+
+    <span class='comment'>// Use the `Future::wait` to block the current thread until `Sleep`</span>
+    <span class='comment'>// future completes.</span>
+    <span class='comment'>//</span>
+    <span class='ident'>sleep</span>.<span class='ident'>wait</span>();
+}</pre>
+
+<h2 id='hashed-timing-wheel' class='section-header'><a href='#hashed-timing-wheel'>Hashed Timing Wheel</a></h2>
+<p>The hashed timing wheel timer is a coarse grained timer that is optimized
+for cases where the timeout range is relatively uniform and high precision
+is not needed. These requirements are very common with network related
+applications as most timeouts tend to be a constant range (for example, 30
+seconds) and timeouts are used more as a safe guard than for high
+precision.</p>
+
+<p>The timer is inspired by the <a href="http://www.cs.columbia.edu/%7Enahum/w6998/papers/ton97-timing-wheels.pdf">paper by Varghese and
+Lauck</a>.</p>
+
+<p>A hashed wheel timer is implemented as a vector of &quot;slots&quot; that represent
+time slices. The default slot size is 100ms. As time progresses, the timer
+walks over each slot and looks in the slot to find all timers that are due
+to expire. When the timer reaches the end of the vector, it starts back at
+the beginning.</p>
+
+<p>Given the fact that the timer operates in ticks, a timeout can only be as
+precise as the tick duration. If the tick size is 100ms, any timeout
+request that falls within that 100ms slot will be triggered at the same
+time.</p>
+
+<p>A timer is assigned to a slot by taking the expiration instant and
+assigning it to a slot, factoring in wrapping. When there are more than one
+timeouts assigned to a given slot, they are stored in a linked list.</p>
+
+<p>This structure allows constant time timer operations <strong>as long as timeouts
+don&#39;t collide</strong>. In other words, if two timeouts are set to expire at
+exactly <code>num-slots * tick-duration</code> time apart, they will be assigned to
+the same bucket.</p>
+
+<p>The best way to avoid collisions is to ensure that no timeout is set that
+is for greater than <code>num-slots * tick-duration</code> into the future.</p>
+
+<p>A timer can be configured with <code>Builder</code>.</p>
+
+<h2 id='runtime-details' class='section-header'><a href='#runtime-details'>Runtime details</a></h2>
+<p>When creating a timer, a thread is spawned. The timing details are managed
+on this thread. When <code>Timer::set_timeout</code> is called, a request is sent to
+the thread over a bounded channel.</p>
+
+<p>All storage needed to run the timer is pre-allocated, which means that the
+timer system is able to run without any runtime allocations. The one
+exception would be if the timer&#39;s <code>max_capacity</code> is larger than the
+<code>initial_capacity</code>, in which case timeout storage is allocated in chunks as
+needed. Timeout storage can grow but never shrink.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Builder.html'
+                                  title='tokio_timer::Builder'>Builder</a></td>
+                           <td class='docblock-short'>
+                                <p>Configures and builds a <code>Timer</code></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Interval.html'
+                                  title='tokio_timer::Interval'>Interval</a></td>
+                           <td class='docblock-short'>
+                                <p>A stream representing notifications at fixed interval</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Sleep.html'
+                                  title='tokio_timer::Sleep'>Sleep</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>Future</code> that does nothing and completes after the requested duration</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Timeout.html'
+                                  title='tokio_timer::Timeout'>Timeout</a></td>
+                           <td class='docblock-short'>
+                                <p>Allows a given <code>Future</code> to execute for a max duration</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.TimeoutStream.html'
+                                  title='tokio_timer::TimeoutStream'>TimeoutStream</a></td>
+                           <td class='docblock-short'>
+                                <p>Allows a given <code>Stream</code> to take a max duration to yield the next value.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Timer.html'
+                                  title='tokio_timer::Timer'>Timer</a></td>
+                           <td class='docblock-short'>
+                                <p>A facility for scheduling timeouts</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.TimeoutError.html'
+                                  title='tokio_timer::TimeoutError'>TimeoutError</a></td>
+                           <td class='docblock-short'>
+                                <p>The error type for timeout operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.TimerError.html'
+                                  title='tokio_timer::TimerError'>TimerError</a></td>
+                           <td class='docblock-short'>
+                                <p>The error type for timer operations.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.wheel.html'
+                                  title='tokio_timer::wheel'>wheel</a></td>
+                           <td class='docblock-short'>
+                                <p>Configure and build a <code>Timer</code> backed by a hashed wheel.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "tokio_timer";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

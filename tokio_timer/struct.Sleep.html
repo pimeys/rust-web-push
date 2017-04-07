@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `WebPushResponse` struct in crate `web_push`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, WebPushResponse">
+    <meta name="description" content="API documentation for the Rust `Sleep` struct in crate `tokio_timer`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Sleep">
 
-    <title>web_push::WebPushResponse - Rust</title>
+    <title>tokio_timer::Sleep - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../normalize.css">
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
@@ -29,7 +29,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>web_push</a></p><script>window.sidebarCurrent = {name: 'WebPushResponse', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='index.html'>tokio_timer</a></p><script>window.sidebarCurrent = {name: 'Sleep', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -44,20 +44,35 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>web_push</a>::<wbr><a class='struct' href=''>WebPushResponse</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>tokio_timer</a>::<wbr><a class='struct' href=''>Sleep</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/web_push/client.rs.html#20' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct WebPushResponse(_);</pre><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../web_push/struct.WebPushResponse.html' title='web_push::WebPushResponse'>WebPushResponse</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/client.rs.html#28-32' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.fmt' class='method'><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+               </span><a class='srclink' href='../src/tokio_timer/timer.rs.html#21-25' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'><div class="docblock attributes">#[must_use = "futures do nothing unless polled"]
+</div>pub struct Sleep { /* fields omitted */ }</pre><div class='docblock'><p>A <code>Future</code> that does nothing and completes after the requested duration</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../tokio_timer/struct.Sleep.html' title='tokio_timer::Sleep'>Sleep</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/tokio_timer/timer.rs.html#151-187' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.is_expired' class='method'><span id='is_expired.v' class='invisible'><code>fn <a href='#method.is_expired' class='fnname'>is_expired</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></span></h4>
+<div class='docblock'><p>Returns true if the <code>Sleep</code> is expired.</p>
+
+<p>A <code>Sleep</code> is expired when the requested duration has elapsed. In
+practice, the <code>Sleep</code> can expire slightly before the requested duration
+as the timer is not precise.</p>
+
+<p>See the crate docs for more detail.</p>
+</div><h4 id='method.remaining' class='method'><span id='remaining.v' class='invisible'><code>fn <a href='#method.remaining' class='fnname'>remaining</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/std/time/duration/struct.Duration.html' title='std::time::duration::Duration'>Duration</a></code></span></h4>
+<div class='docblock'><p>Returns the duration remaining</p>
+</div><h4 id='method.timer' class='method'><span id='timer.v' class='invisible'><code>fn <a href='#method.timer' class='fnname'>timer</a>(&amp;self) -&gt; &amp;<a class='struct' href='../tokio_timer/struct.Timer.html' title='tokio_timer::Timer'>Timer</a></code></span></h4>
+<div class='docblock'><p>Returns a ref to the timer backing this <code>Sleep</code></p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../tokio_timer/struct.Sleep.html' title='tokio_timer::Sleep'>Sleep</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/tokio_timer/timer.rs.html#20' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
 <div class='docblock'><p>Formats the value using the given formatter.</p>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Future</a> for <a class='struct' href='../web_push/struct.WebPushResponse.html' title='web_push::WebPushResponse'>WebPushResponse</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/client.rs.html#34-41' title='goto source code'>[src]</a></span></h3>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Future</a> for <a class='struct' href='../tokio_timer/struct.Sleep.html' title='tokio_timer::Sleep'>Sleep</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/tokio_timer/timer.rs.html#189-252' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='associatedtype.Item' class='type'><span id='Item.t' class='invisible'><code>type <a href='../futures/future/trait.Future.html#associatedtype.Item' class='type'>Item</a> = <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a></code></span></h4>
 <div class='docblock'><p>The type of value that this future will resolved with if it is successful. <a href="../futures/future/trait.Future.html#associatedtype.Item">Read more</a></p>
-</div><h4 id='associatedtype.Error' class='type'><span id='Error.t' class='invisible'><code>type <a href='../futures/future/trait.Future.html#associatedtype.Error' class='type'>Error</a> = <a class='enum' href='../web_push/enum.WebPushError.html' title='web_push::WebPushError'>WebPushError</a></code></span></h4>
+</div><h4 id='associatedtype.Error' class='type'><span id='Error.t' class='invisible'><code>type <a href='../futures/future/trait.Future.html#associatedtype.Error' class='type'>Error</a> = <a class='enum' href='../tokio_timer/enum.TimerError.html' title='tokio_timer::TimerError'>TimerError</a></code></span></h4>
 <div class='docblock'><p>The type of error that this future will resolve with if it fails in a normal fashion. <a href="../futures/future/trait.Future.html#associatedtype.Error">Read more</a></p>
-</div><h4 id='method.poll' class='method'><span id='poll.v' class='invisible'><code>fn <a href='../futures/future/trait.Future.html#tymethod.poll' class='fnname'>poll</a>(&amp;mut self) -&gt; <a class='type' href='../futures/poll/type.Poll.html' title='futures::poll::Poll'>Poll</a>&lt;Self::<a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Item</a>, Self::<a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Error</a>&gt;</code></span></h4>
+</div><h4 id='method.poll' class='method'><span id='poll.v' class='invisible'><code>fn <a href='../futures/future/trait.Future.html#tymethod.poll' class='fnname'>poll</a>(&amp;mut self) -&gt; <a class='type' href='../futures/poll/type.Poll.html' title='futures::poll::Poll'>Poll</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='enum' href='../tokio_timer/enum.TimerError.html' title='tokio_timer::TimerError'>TimerError</a>&gt;</code></span></h4>
 <div class='docblock'><p>Query this future to see if its value has become available, registering interest if it is not. <a href="../futures/future/trait.Future.html#tymethod.poll">Read more</a></p>
 </div><h4 id='method.wait' class='method'><span id='wait.v' class='invisible'><code>fn <a href='../futures/future/trait.Future.html#method.wait' class='fnname'>wait</a>(self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;Self::<a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Item</a>, Self::<a class='trait' href='../futures/future/trait.Future.html' title='futures::future::Future'>Error</a>&gt;</code></span></h4>
 <div class='docblock'><p>Block the current thread until this future is resolved. <a href="../futures/future/trait.Future.html#method.wait">Read more</a></p>
@@ -99,6 +114,9 @@
 <div class='docblock'><p>Catches unwinding panics while polling the future. <a href="../futures/future/trait.Future.html#method.catch_unwind">Read more</a></p>
 </div><h4 id='method.shared' class='method'><span id='shared.v' class='invisible'><code>fn <a href='../futures/future/trait.Future.html#method.shared' class='fnname'>shared</a>(self) -&gt; <a class='struct' href='../futures/future/shared/struct.Shared.html' title='futures::future::shared::Shared'>Shared</a>&lt;Self&gt;</code></span></h4>
 <div class='docblock'><p>Create a cloneable handle to this future where all handles will resolve to the same result. <a href="../futures/future/trait.Future.html#method.shared">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a> for <a class='struct' href='../tokio_timer/struct.Sleep.html' title='tokio_timer::Sleep'>Sleep</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/tokio_timer/timer.rs.html#254-260' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.drop' class='method'><span id='drop.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#tymethod.drop' class='fnname'>drop</a>(&amp;mut self)</code></span></h4>
+<div class='docblock'><p>A method called when the value goes out of scope. <a href="https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#tymethod.drop">Read more</a></p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
 
@@ -154,7 +172,7 @@
 
     <script>
         window.rootPath = "../";
-        window.currentCrate = "web_push";
+        window.currentCrate = "tokio_timer";
     </script>
     <script src="../jquery.js"></script>
     <script src="../main.js"></script>

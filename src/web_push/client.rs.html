@@ -206,6 +206,15 @@
 <span id="161">161</span>
 <span id="162">162</span>
 <span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>hyper</span>::<span class='ident'>client</span>::<span class='ident'>Client</span>;
 <span class='kw'>use</span> <span class='ident'>hyper_tls</span>::<span class='ident'>HttpsConnector</span>;
@@ -218,8 +227,10 @@
 <span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::<span class='ident'>json</span>;
 <span class='kw'>use</span> <span class='ident'>tokio_core</span>::<span class='ident'>reactor</span>::<span class='ident'>Handle</span>;
 <span class='kw'>use</span> <span class='ident'>tokio_service</span>::<span class='ident'>Service</span>;
+<span class='kw'>use</span> <span class='ident'>tokio_timer</span>::{<span class='ident'>Timer</span>, <span class='ident'>Timeout</span>};
 <span class='kw'>use</span> <span class='ident'>hyper</span>::<span class='ident'>status</span>::<span class='ident'>StatusCode</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>time</span>::<span class='ident'>Duration</span>;
 
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>WebPushError</span>;
 <span class='kw'>use</span> <span class='ident'>message</span>::<span class='ident'>WebPushMessage</span>;
@@ -249,6 +260,7 @@
 
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>WebPushClient</span> {
     <span class='ident'>client</span>: <span class='ident'>Client</span><span class='op'>&lt;</span><span class='ident'>HttpsConnector</span><span class='op'>&gt;</span>,
+    <span class='ident'>timer</span>: <span class='ident'>Timer</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>WebPushClient</span> {
@@ -260,12 +272,18 @@
 
         <span class='ident'>WebPushClient</span> {
             <span class='ident'>client</span>: <span class='ident'>client</span>,
+            <span class='ident'>timer</span>: <span class='ident'>Timer</span>::<span class='ident'>default</span>(),
         }
     }
 
-    <span class='doccomment'>/// A future which sends a web push notification.</span>
+    <span class='doccomment'>/// Sends a notification. Never times out.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>message</span>: <span class='ident'>WebPushMessage</span>) <span class='op'>-&gt;</span> <span class='ident'>WebPushResponse</span> {
         <span class='self'>self</span>.<span class='ident'>call</span>(<span class='ident'>message</span>)
+    }
+
+    <span class='doccomment'>/// Sends a notification with a timeout. Triggers `WebPushError::TimeoutError` if the request takes too long.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send_with_timeout</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>message</span>: <span class='ident'>WebPushMessage</span>, <span class='ident'>timeout</span>: <span class='ident'>Duration</span>) <span class='op'>-&gt;</span> <span class='ident'>Timeout</span><span class='op'>&lt;</span><span class='ident'>WebPushResponse</span><span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>timer</span>.<span class='ident'>timeout</span>(<span class='self'>self</span>.<span class='ident'>send</span>(<span class='ident'>message</span>), <span class='ident'>timeout</span>)
     }
 
     <span class='kw'>fn</span> <span class='ident'>build_gcm_request</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span><span class='ident'>WebPushMessage</span>) <span class='op'>-&gt;</span> <span class='ident'>HttpRequest</span> {
