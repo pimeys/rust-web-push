@@ -244,24 +244,24 @@
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>HttpEce</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
     <span class='ident'>peer_public_key</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>],
     <span class='ident'>peer_secret</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>],
-    <span class='ident'>coding</span>: <span class='ident'>ContentEncoding</span>,
+    <span class='ident'>encoding</span>: <span class='ident'>ContentEncoding</span>,
     <span class='ident'>rng</span>: <span class='ident'>rand</span>::<span class='ident'>SystemRandom</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>HttpEce</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Create a new encryptor. The content coding has preliminary support for</span>
+    <span class='doccomment'>/// Create a new encryptor. The content encoding has preliminary support for</span>
     <span class='doccomment'>/// Aes128Gcm, which is the 8th draft of the Encrypted Content-Encoding, but</span>
     <span class='doccomment'>/// currently using it will return an error when trying to encrypt. There is</span>
     <span class='doccomment'>/// no real support yet for the encoding in web browsers.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// `peer_public_key` is the `p256dh` and `peer_secret` the `auth` from</span>
     <span class='doccomment'>/// browser subscription info.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>coding</span>: <span class='ident'>ContentEncoding</span>, <span class='ident'>peer_public_key</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>], <span class='ident'>peer_secret</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>HttpEce</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>encoding</span>: <span class='ident'>ContentEncoding</span>, <span class='ident'>peer_public_key</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>], <span class='ident'>peer_secret</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>HttpEce</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
         <span class='ident'>HttpEce</span> {
             <span class='ident'>rng</span>: <span class='ident'>rand</span>::<span class='ident'>SystemRandom</span>::<span class='ident'>new</span>(),
             <span class='ident'>peer_public_key</span>: <span class='ident'>peer_public_key</span>,
             <span class='ident'>peer_secret</span>: <span class='ident'>peer_secret</span>,
-            <span class='ident'>coding</span>: <span class='ident'>coding</span>,
+            <span class='ident'>encoding</span>: <span class='ident'>encoding</span>,
         }
     }
 
@@ -282,7 +282,7 @@
         <span class='ident'>private_key</span>.<span class='ident'>compute_public_key</span>(<span class='ident'>public_key</span>)<span class='question-mark'>?</span>;
 
         <span class='ident'>agreement</span>::<span class='ident'>agree_ephemeral</span>(<span class='ident'>private_key</span>, <span class='ident'>agr</span>, <span class='ident'>peer_input</span>, <span class='ident'>WebPushError</span>::<span class='ident'>Unspecified</span>, <span class='op'>|</span><span class='ident'>shared_secret</span><span class='op'>|</span> {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>coding</span> {
+            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>encoding</span> {
                 <span class='ident'>ContentEncoding</span>::<span class='ident'>AesGcm</span> <span class='op'>=&gt;</span> {
                     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>payload</span> <span class='op'>=</span> [<span class='number'>0u8</span>; <span class='number'>3818</span>];
                     <span class='ident'>front_pad</span>(<span class='ident'>content</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>payload</span>);

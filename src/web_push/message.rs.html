@@ -128,6 +128,8 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>http_ece</span>::{<span class='ident'>HttpEce</span>, <span class='ident'>ContentEncoding</span>};
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>WebPushError</span>;
@@ -156,6 +158,7 @@
     <span class='ident'>p256dh</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>],
     <span class='ident'>payload</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]<span class='op'>&gt;</span>,
     <span class='ident'>ttl</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u32</span><span class='op'>&gt;</span>,
+    <span class='ident'>encoding</span>: <span class='ident'>ContentEncoding</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>WebPushMessageBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
@@ -163,11 +166,12 @@
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// All parameters are from the subscription info given by browser when</span>
     <span class='doccomment'>/// subscribing to push notifications.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>endpoint</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>, <span class='ident'>auth</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>], <span class='ident'>p256dh</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>WebPushMessageBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>encoding</span>: <span class='ident'>ContentEncoding</span>, <span class='ident'>endpoint</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>, <span class='ident'>auth</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>], <span class='ident'>p256dh</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>WebPushMessageBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
         <span class='ident'>WebPushMessageBuilder</span> {
             <span class='ident'>endpoint</span>: <span class='ident'>endpoint</span>,
             <span class='ident'>auth</span>: <span class='ident'>auth</span>,
             <span class='ident'>p256dh</span>: <span class='ident'>p256dh</span>,
+            <span class='ident'>encoding</span>: <span class='ident'>encoding</span>,
             <span class='ident'>ttl</span>: <span class='prelude-val'>None</span>,
             <span class='ident'>gcm_key</span>: <span class='prelude-val'>None</span>,
             <span class='ident'>payload</span>: <span class='prelude-val'>None</span>,
@@ -196,7 +200,7 @@
     <span class='doccomment'>/// something was wrong in the given public key or authentication.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>build</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>WebPushMessage</span>, <span class='ident'>WebPushError</span><span class='op'>&gt;</span> {
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>payload</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>payload</span> {
-            <span class='kw'>let</span> <span class='ident'>http_ece</span> <span class='op'>=</span> <span class='ident'>HttpEce</span>::<span class='ident'>new</span>(<span class='ident'>ContentEncoding</span>::<span class='ident'>AesGcm</span>, <span class='self'>self</span>.<span class='ident'>p256dh</span>, <span class='self'>self</span>.<span class='ident'>auth</span>);
+            <span class='kw'>let</span> <span class='ident'>http_ece</span> <span class='op'>=</span> <span class='ident'>HttpEce</span>::<span class='ident'>new</span>(<span class='self'>self</span>.<span class='ident'>encoding</span>, <span class='self'>self</span>.<span class='ident'>p256dh</span>, <span class='self'>self</span>.<span class='ident'>auth</span>);
 
             <span class='prelude-val'>Ok</span>(<span class='ident'>WebPushMessage</span> {
                 <span class='ident'>gcm_key</span>: <span class='self'>self</span>.<span class='ident'>gcm_key</span>.<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>k</span><span class='op'>|</span> <span class='ident'>k</span>.<span class='ident'>to_string</span>()),

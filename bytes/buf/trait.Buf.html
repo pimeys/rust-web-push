@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/bytes/buf/buf.rs.html#31-653' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../../src/bytes/buf/buf.rs.html#32-654' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait Buf {
     fn <a href='#tymethod.remaining' class='fnname'>remaining</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
     fn <a href='#tymethod.bytes' class='fnname'>bytes</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>;
@@ -80,7 +80,8 @@
 <p>A buffer stores bytes in memory such that read operations are infallible.
 The underlying storage may or may not be in contiguous memory. A <code>Buf</code> value
 is a cursor into the buffer. Reading from <code>Buf</code> advances the cursor
-position.</p>
+position. It can be thought of as an efficient <code>Iterator</code> for collections of
+bytes.</p>
 
 <p>The simplest <code>Buf</code> is a <code>Cursor</code> wrapping a <code>[u8]</code>.</p>
 

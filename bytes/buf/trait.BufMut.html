@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/bytes/buf/buf_mut.rs.html#27-635' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../../src/bytes/buf/buf_mut.rs.html#27-637' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait BufMut {
     fn <a href='#tymethod.remaining_mut' class='fnname'>remaining_mut</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
     unsafe fn <a href='#tymethod.advance_mut' class='fnname'>advance_mut</a>(&amp;mut self, cnt: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>);
@@ -123,7 +123,7 @@ function that is documented to change the <code>BufMut</code>&#39;s current posi
 further into the underlying buffer.</p>
 
 <p>This function is unsafe because there is no guarantee that the bytes
-being advanced to have been initialized.</p>
+being advanced past have been initialized.</p>
 
 <h1 id='examples-1' class='section-header'><a href='#examples-1'>Examples</a></h1>
 <pre class='rust rust-example-rendered'>
@@ -150,11 +150,9 @@ being advanced to have been initialized.</p>
 <p>This function <strong>may</strong> panic if <code>cnt &gt; self.remaining_mut()</code>.</p>
 
 <h1 id='implementer-notes-1' class='section-header'><a href='#implementer-notes-1'>Implementer notes</a></h1>
-<p>It is recommended for implementations of <code>advance_mut</code> to panic if `cnt</p>
-
-<blockquote>
-<p>self.remaining_mut()<code>. If the implementation does not panic, the call must behave as if</code>cnt == self.remaining_mut()`.</p>
-</blockquote>
+<p>It is recommended for implementations of <code>advance_mut</code> to panic if
+<code>cnt &gt; self.remaining_mut()</code>. If the implementation does not panic,
+the call must behave as if <code>cnt == self.remaining_mut()</code>.</p>
 
 <p>A call with <code>cnt == 0</code> should never panic and be a no-op.</p>
 </div><h3 id='tymethod.bytes_mut' class='method'><span id='bytes_mut.v' class='invisible'><code>unsafe fn <a href='#tymethod.bytes_mut' class='fnname'>bytes_mut</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;mut [</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a></code></span></h3><div class='docblock'><p>Returns a mutable slice starting at the current BufMut position and of
@@ -187,8 +185,10 @@ functions.</p>
 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>buf</span>, <span class='string'>b&quot;hello&quot;</span>);</pre>
 
 <h1 id='implementer-notes-2' class='section-header'><a href='#implementer-notes-2'>Implementer notes</a></h1>
-<p>This function should never panic. Once the end of the buffer is reached,
-i.e., <code>BufMut::remaining_mut</code> returns 0, calls to <code>bytes_mut</code> should
+<p>This function should never panic. <code>bytes_mut</code> should return an empty
+slice <strong>if and only if</strong> <code>remaining_mut</code> returns 0. In other words,
+<code>bytes_mut</code> returning an empty slice implies that <code>remaining_mut</code> will
+return 0 and <code>remaining_mut</code> returning 0 implies that <code>bytes_mut</code> will
 return an empty slice.</p>
 </div></div>
             <h2 id='provided-methods'>Provided Methods</h2>

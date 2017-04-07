@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/pimeys/.cargo/git/checkouts/hyper-817b53a166fc1c58/66ad619/src/http/io.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/pimeys/.cargo/git/checkouts/hyper-817b53a166fc1c58/5c1cfa2/src/http/io.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>io.rs.html -- source</title>
@@ -385,6 +385,20 @@
 <span id="340">340</span>
 <span id="341">341</span>
 <span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
@@ -443,31 +457,33 @@
     }
 
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse</span><span class='op'>&lt;</span><span class='ident'>S</span>: <span class='ident'>Http1Transaction</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> ::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>MessageHead</span><span class='op'>&lt;</span><span class='ident'>S</span>::<span class='ident'>Incoming</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>reserve_read_buf</span>();
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>read_from_io</span>() {
-            <span class='prelude-val'>Ok</span>(<span class='number'>0</span>) <span class='op'>=&gt;</span> {
-                <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;parse eof&quot;</span>);
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>new</span>(<span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>UnexpectedEof</span>, <span class='string'>&quot;parse eof&quot;</span>).<span class='ident'>into</span>());
+        <span class='kw'>loop</span> {
+            <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>S</span>, _<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>read_buf</span>)) {
+                <span class='prelude-val'>Some</span>(<span class='ident'>head</span>) <span class='op'>=&gt;</span> {
+                    <span class='comment'>//trace!(&quot;parsed {} bytes out of {}&quot;, len, self.read_buf.len());</span>
+                    <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>head</span>.<span class='number'>0</span>))
+                },
+                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {
+                    <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>read_buf</span>.<span class='ident'>capacity</span>() <span class='op'>&gt;=</span> <span class='ident'>MAX_BUFFER_SIZE</span> {
+                        <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;MAX_BUFFER_SIZE reached, closing&quot;</span>);
+                        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(::<span class='ident'>Error</span>::<span class='ident'>TooLarge</span>);
+                    }
+                },
             }
-            <span class='prelude-val'>Ok</span>(_) <span class='op'>=&gt;</span> {},
-            <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>e</span>.<span class='ident'>kind</span>() {
-                <span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>WouldBlock</span> <span class='op'>=&gt;</span> {},
-                _ <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>into</span>())
-            }
-        }
-        <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>S</span>, _<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>read_buf</span>)) {
-            <span class='prelude-val'>Some</span>(<span class='ident'>head</span>) <span class='op'>=&gt;</span> {
-                <span class='comment'>//trace!(&quot;parsed {} bytes out of {}&quot;, len, self.read_buf.len());</span>
-                <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>head</span>.<span class='number'>0</span>))
-            },
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>read_buf</span>.<span class='ident'>capacity</span>() <span class='op'>&gt;=</span> <span class='ident'>MAX_BUFFER_SIZE</span> {
-                    <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;MAX_BUFFER_SIZE reached, closing&quot;</span>);
-                    <span class='prelude-val'>Err</span>(::<span class='ident'>Error</span>::<span class='ident'>TooLarge</span>)
-                } <span class='kw'>else</span> {
-                    <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>)
+            <span class='self'>self</span>.<span class='ident'>reserve_read_buf</span>();
+            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>read_from_io</span>() {
+                <span class='prelude-val'>Ok</span>(<span class='number'>0</span>) <span class='op'>=&gt;</span> {
+                    <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;parse eof&quot;</span>);
+                    <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>new</span>(<span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>UnexpectedEof</span>, <span class='string'>&quot;parse eof&quot;</span>).<span class='ident'>into</span>());
                 }
-            },
+                <span class='prelude-val'>Ok</span>(_) <span class='op'>=&gt;</span> {},
+                <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>e</span>.<span class='ident'>kind</span>() {
+                    <span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>WouldBlock</span> <span class='op'>=&gt;</span> {
+                        <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
+                    },
+                    _ <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>into</span>())
+                }
+            }
         }
     }
 
@@ -727,6 +743,18 @@ impl&lt;T: Write + ::vecio::Writev&gt; AtomicWrite for T {
     <span class='comment'>// so we are testing that the io_buf does not trigger a write</span>
     <span class='comment'>// when there is nothing to flush</span>
     <span class='ident'>io_buf</span>.<span class='ident'>flush</span>().<span class='ident'>expect</span>(<span class='string'>&quot;should short-circuit flush&quot;</span>);
+}
+
+<span class='attribute'>#[<span class='ident'>test</span>]</span>
+<span class='kw'>fn</span> <span class='ident'>test_parse_reads_until_blocked</span>() {
+    <span class='kw'>use</span> <span class='ident'>mock</span>::{<span class='ident'>AsyncIo</span>, <span class='ident'>Buf</span> <span class='kw'>as</span> <span class='ident'>MockBuf</span>};
+    <span class='comment'>// missing last line ending</span>
+    <span class='kw'>let</span> <span class='ident'>raw</span> <span class='op'>=</span> <span class='string'>&quot;HTTP/1.1 200 OK\r\n&quot;</span>;
+
+    <span class='kw'>let</span> <span class='ident'>mock</span> <span class='op'>=</span> <span class='ident'>AsyncIo</span>::<span class='ident'>new</span>(<span class='ident'>MockBuf</span>::<span class='ident'>wrap</span>(<span class='ident'>raw</span>.<span class='ident'>into</span>()), <span class='ident'>raw</span>.<span class='ident'>len</span>());
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buffered</span> <span class='op'>=</span> <span class='ident'>Buffered</span>::<span class='ident'>new</span>(<span class='ident'>mock</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>buffered</span>.<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='kw'>super</span>::<span class='ident'>ClientTransaction</span><span class='op'>&gt;</span>().<span class='ident'>unwrap</span>(), <span class='prelude-val'>None</span>);
+    <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>buffered</span>.<span class='ident'>io</span>.<span class='ident'>blocked</span>());
 }
 </pre>
 </section>

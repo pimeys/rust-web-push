@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/pimeys/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-0.1.12/src/sink/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/pimeys/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-0.1.13/src/sink/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
@@ -474,6 +474,8 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Asynchronous sinks</span>
 <span class='doccomment'>//!</span>
@@ -814,8 +816,10 @@
         <span class='ident'>map_err</span>::<span class='ident'>new</span>(<span class='self'>self</span>, <span class='ident'>f</span>)
     }
 
-    <span class='doccomment'>/// Map this sink&#39;s error to any error implementing `From` for</span>
-    <span class='doccomment'>/// this sink&#39;s `Error`, returning a new sink.</span>
+    <span class='doccomment'>/// Map this sink&#39;s error to any error implementing `From` for this sink&#39;s</span>
+    <span class='doccomment'>/// `Error`, returning a new sink.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// If wanting to map errors of a `Sink + Stream`, use `.sink_from_err().from_err()`.</span>
     <span class='kw'>fn</span> <span class='ident'>sink_from_err</span><span class='op'>&lt;</span><span class='ident'>E</span>: <span class='ident'>From</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>SinkError</span><span class='op'>&gt;&gt;</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>from_err</span>::<span class='ident'>SinkFromErr</span><span class='op'>&lt;</span><span class='self'>Self</span>, <span class='ident'>E</span><span class='op'>&gt;</span>
         <span class='kw'>where</span> <span class='self'>Self</span>: <span class='ident'>Sized</span>,
     {
