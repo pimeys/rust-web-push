@@ -145,7 +145,7 @@ impl Service for WebPushClient {
                 let push_f = request_f.and_then(move |response: HttpResponse| {
                     let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
                     let response_status = response.status().clone();
-                    println!("STATUS: {:?}", response_status);
+
                     match response_status {
                         status if status.is_success() =>
                             ok(()),
@@ -154,6 +154,15 @@ impl Service for WebPushClient {
                         StatusCode::BadRequest => {
                             err(WebPushError::BadRequest)
                         },
+                        StatusCode::Gone => {
+                            err(WebPushError::EndpointNotValid)
+                        },
+                        StatusCode::NotFound => {
+                            err(WebPushError::EndpointNotFound)
+                        },
+                        StatusCode::PayloadTooLarge => {
+                            err(WebPushError::PayloadTooLarge)
+                        }
                         status if status.is_server_error() =>
                             err(WebPushError::ServerError(retry_after)),
                         _ => {
