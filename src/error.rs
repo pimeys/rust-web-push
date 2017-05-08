@@ -12,10 +12,12 @@ pub enum WebPushError {
     Unauthorized,
     BadRequest,
     ServerError(Option<RetryAfter>),
-    ContentTooLong,
     NotImplemented,
     InvalidUri,
     TimeoutError,
+    EndpointNotValid,
+    EndpointNotFound,
+    PayloadTooLarge,
 }
 
 impl From<TimeoutError<WebPushResponse>> for WebPushError {
@@ -41,14 +43,18 @@ impl Error for WebPushError {
                 "Request was badly formed",
             WebPushError::ServerError(_) =>
                 "Server was unable to process the request, please try again later",
-            WebPushError::ContentTooLong =>
+            WebPushError::PayloadTooLarge =>
                 "Maximum allowed payload size is 3800 characters",
             WebPushError::InvalidUri =>
                 "The provided URI is invalid",
             WebPushError::NotImplemented =>
                 "The feature is not implemented yet",
             WebPushError::TimeoutError =>
-                "The request timed out"
+                "The request timed out",
+            WebPushError::EndpointNotValid =>
+                "The URL specified is no longer valid and should no longer be used",
+            WebPushError::EndpointNotFound =>
+                "The URL specified is invalid and should not be used again",
         }
     }
 
