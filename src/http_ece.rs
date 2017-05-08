@@ -37,7 +37,7 @@ impl<'a> HttpEce<'a> {
     /// characters, which is the largest that works with Google's and Mozilla's
     /// push servers.
     pub fn encrypt(&self, content: &'a [u8]) -> Result<WebPushPayload, WebPushError> {
-        if content.len() > 3800 { return Err(WebPushError::ContentTooLong) }
+        if content.len() > 3800 { return Err(WebPushError::PayloadTooLarge) }
 
         let private_key        = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
         let mut public_key     = [0u8; agreement::PUBLIC_KEY_MAX_LEN];

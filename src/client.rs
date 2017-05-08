@@ -154,6 +154,15 @@ impl Service for WebPushClient {
                         StatusCode::BadRequest => {
                             err(WebPushError::BadRequest)
                         },
+                        StatusCode::Gone => {
+                            err(WebPushError::EndpointNotValid)
+                        },
+                        StatusCode::NotFound => {
+                            err(WebPushError::EndpointNotFound)
+                        },
+                        StatusCode::PayloadTooLarge => {
+                            err(WebPushError::PayloadTooLarge)
+                        }
                         status if status.is_server_error() =>
                             err(WebPushError::ServerError(retry_after)),
                         _ => {
