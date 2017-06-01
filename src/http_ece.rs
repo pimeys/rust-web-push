@@ -138,7 +138,7 @@ mod tests {
         let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth);
         let content = [0u8; 3801];
 
-        assert_eq!(Err(WebPushError::ContentTooLong), http_ece.encrypt(&content));
+        assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
     }
 
     #[test]
