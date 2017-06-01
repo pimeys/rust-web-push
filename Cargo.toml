@@ -13,8 +13,8 @@ tokio-timer = "0.1"
 hyper = { git = "https://github.com/hyperium/hyper"}
 hyper-tls = { git = "https://github.com/hyperium/hyper-tls" }
 rustc-serialize = "0.3"
-ring = "0.7"
-untrusted = "0.3"
+ring = "0.9"
+untrusted = "0.5"
 rust-crypto = "0.2"
 
 [dev-dependencies]

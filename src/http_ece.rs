@@ -1,4 +1,5 @@
 use ring::{hmac, hkdf, agreement, rand, digest, aead};
+use ring::rand::SecureRandom;
 use untrusted::Input;
 use error::WebPushError;
 use message::WebPushPayload;
