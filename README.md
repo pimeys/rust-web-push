@@ -13,9 +13,6 @@ Documentation
 Overview
 --------
 
-Waiting for Hyper 0.11 to be released, until that happens this crate will stay
-out from crates.io (and might change a lot).
-
 Currently implements
 [HTTP-ECE Draft-3](https://datatracker.ietf.org/doc/draft-ietf-httpbis-encryption-encoding/03/?include_text=1)
 content encryption for notification payloads. The client requires

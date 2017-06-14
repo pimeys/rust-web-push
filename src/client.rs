@@ -10,7 +10,7 @@ use rustc_serialize::json;
 use tokio_core::reactor::Handle;
 use tokio_service::Service;
 use tokio_timer::{Timer, Timeout};
-use hyper::status::StatusCode;
+use hyper::StatusCode;
 use std::fmt;
 use std::time::Duration;
 
