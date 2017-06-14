@@ -12,7 +12,7 @@ Documentation
 
 To send a web push from command line, first subscribe to receive push
 notifications with your browser and store the subscription info into a json
-file. The should have the following content:
+file. It should have the following content:
 
 ``` json
 {
