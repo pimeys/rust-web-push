@@ -15,6 +15,4 @@ script:
   - cargo test
 
 after_success:
-  - '[ $TRAVIS_PULL_REQUEST = false ] && [ $TRAVIS_RUST_VERSION = stable ] &&
-    { [ "$TRAVIS_TAG" != "" ] || [ "$TRAVIS_BRANCH" == "master" ]; } &&
-    ./.travis/docs.sh
+  - '[ $TRAVIS_PULL_REQUEST = false ] && [ $TRAVIS_RUST_VERSION = stable ] && { [ "$TRAVIS_TAG" != "" ] || [ "$TRAVIS_BRANCH" == "master" ]; } && ./.travis/docs.sh'
