@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
 license = "Apache 2.0"
 homepage = "https://github.com/pimeys/rust-web-push"
+repository = "https://github.com/pimeys/rust-web-push"
+documentation = "https://pimeys.github.io/rust-web-push/web_push/index.html"
+readme = "README.md"
+keywords = ["web-push", "http-ece"]
+categories = ["web-programming", "asynchronous"]
+
+[badges]
+travis-ci = { repository = "pimeys/rust-web-push" }
 
 [dependencies]
 futures = "0.1"
