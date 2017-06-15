@@ -16,9 +16,20 @@ cd deploy_docs
 git config user.name "Julius de Bruijn"
 git config user.email "julius.debruijn@360dialog.com"
 
-rm -rf master
-mv ../target/doc ./master
-echo "<meta http-equiv=refresh content=0;url=web_push/index.html>" > ./master/index.html
+if [ "$TRAVIS_TAG" = "" ]; then
+    rm -rf master
+    mv ../target/doc ./master
+    echo "<meta http-equiv=refresh content=0;url=web_push/index.html>" > ./master/index.html
+else
+    rm -rf $TRAVIS_TAG
+    mv ../target/doc ./$TRAVIS_TAG
+    echo "<meta http-equiv=refresh content=0;url=web_push/index.html>" > ./$TRAVIS_TAG/index.html
+
+    latest=$(echo * | tr " " "\n" | sort -V -r | head -n1)
+    if [ "$TRAVIS_TAG" = "$latest" ]; then
+        echo "<meta http-equiv=refresh content=0;url=$latest/web_push/index.html>" > index.html
+    fi
+fi
 
 git add -A .
 git commit -m "rebuild pages at ${TRAVIS_COMMIT}"
