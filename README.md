@@ -2,14 +2,15 @@ Rust Web Push
 =============
 
 [![Travis Build Status](https://travis-ci.org/pimeys/rust-web-push.svg?branch=master)](https://travis-ci.org/pimeys/rust-web-push)
+[![](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
 
 Web push notification sender.
 
 Documentation
 -------------
 
-* [Released](https://pimeys.github.io/rust-web-push/web_push/index.html)
-* [Master](https://pimeys.github.io/rust-web-push/master/web_push/index.html)
+* [Released](https://pimeys.github.io/rust-web-push/index.html)
+* [Master](https://pimeys.github.io/rust-web-push/master/index.html)
 
 To send a web push from command line, first subscribe to receive push
 notifications with your browser and store the subscription info into a json
