@@ -108,6 +108,7 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! # Web Push</span>
 <span class="doccomment">//!</span>
@@ -138,7 +139,7 @@
 <span class="doccomment">//!    Ok(message) =&gt; {</span>
 <span class="doccomment">//!        let mut core = tokio_core::reactor::Core::new().unwrap();</span>
 <span class="doccomment">//!        let handle = core.handle();</span>
-<span class="doccomment">//!        let client = WebPushClient::new(&amp;handle);</span>
+<span class="doccomment">//!        let client = WebPushClient::new(&amp;handle).unwrap();</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!        let work = client.send(message);</span>
 <span class="doccomment">//!</span>
@@ -164,6 +165,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ring</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">untrusted</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">native_tls</span>;
 
 <span class="kw">mod</span> <span class="ident">client</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;

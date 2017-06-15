@@ -225,7 +225,7 @@
 <span id="180">180</span>
 <span id="181">181</span>
 </pre><pre class="rust ">
-<span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::<span class="ident">Client</span>;
+<span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::{<span class="ident">HttpConnector</span>, <span class="ident">Client</span>};
 <span class="kw">use</span> <span class="ident">hyper_tls</span>::<span class="ident">HttpsConnector</span>;
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::{<span class="ident">Request</span> <span class="kw">as</span> <span class="ident">HttpRequest</span>, <span class="ident">Response</span> <span class="kw">as</span> <span class="ident">HttpResponse</span>};
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">header</span>::{<span class="ident">ContentLength</span>, <span class="ident">RetryAfter</span>, <span class="ident">Authorization</span>, <span class="ident">ContentType</span>};
@@ -268,21 +268,21 @@
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushClient</span> {
-    <span class="ident">client</span>: <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">HttpsConnector</span><span class="op">&gt;</span>,
+    <span class="ident">client</span>: <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">HttpsConnector</span><span class="op">&lt;</span><span class="ident">HttpConnector</span><span class="op">&gt;&gt;</span>,
     <span class="ident">timer</span>: <span class="ident">Timer</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">WebPushClient</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="ident">Handle</span>) <span class="op">-&gt;</span> <span class="ident">WebPushClient</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="ident">Handle</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">WebPushClient</span>, <span class="ident">WebPushError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">configure</span>()
-            .<span class="ident">connector</span>(<span class="ident">HttpsConnector</span>::<span class="ident">new</span>(<span class="number">4</span>, <span class="ident">handle</span>))
+            .<span class="ident">connector</span>(<span class="ident">HttpsConnector</span>::<span class="ident">new</span>(<span class="number">4</span>, <span class="ident">handle</span>)<span class="question-mark">?</span>)
             .<span class="ident">keep_alive</span>(<span class="bool-val">true</span>)
             .<span class="ident">build</span>(<span class="ident">handle</span>);
 
-        <span class="ident">WebPushClient</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">WebPushClient</span> {
             <span class="ident">client</span>: <span class="ident">client</span>,
             <span class="ident">timer</span>: <span class="ident">Timer</span>::<span class="ident">default</span>(),
-        }
+        })
     }
 
     <span class="doccomment">/// Sends a notification. Never times out.</span>

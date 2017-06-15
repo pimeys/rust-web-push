@@ -113,6 +113,16 @@
 <span id="68">68</span>
 <span id="69">69</span>
 <span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">From</span>;
@@ -121,6 +131,7 @@
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">header</span>::<span class="ident">RetryAfter</span>;
 <span class="kw">use</span> <span class="ident">tokio_timer</span>::<span class="ident">TimeoutError</span>;
 <span class="kw">use</span> <span class="ident">client</span>::<span class="ident">WebPushResponse</span>;
+<span class="kw">use</span> <span class="ident">native_tls</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WebPushError</span> {
@@ -134,6 +145,7 @@
     <span class="ident">EndpointNotValid</span>,
     <span class="ident">EndpointNotFound</span>,
     <span class="ident">PayloadTooLarge</span>,
+    <span class="ident">TlsError</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">TimeoutError</span><span class="op">&lt;</span><span class="ident">WebPushResponse</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
@@ -145,6 +157,12 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">error</span>::<span class="ident">Unspecified</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">error</span>::<span class="ident">Unspecified</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">native_tls</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">native_tls</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+        <span class="ident">WebPushError</span>::<span class="ident">TlsError</span>
     }
 }
 
@@ -171,6 +189,8 @@
                 <span class="string">&quot;The URL specified is no longer valid and should no longer be used&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">EndpointNotFound</span> <span class="op">=&gt;</span>
                 <span class="string">&quot;The URL specified is invalid and should not be used again&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">TlsError</span> <span class="op">=&gt;</span>
+                <span class="string">&quot;Could not initialize a TLS connection&quot;</span>
         }
     }
 
