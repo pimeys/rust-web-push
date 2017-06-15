@@ -72,7 +72,7 @@ fn main() {
         Ok(message) => {
             let mut core = tokio_core::reactor::Core::new().unwrap();
             let handle = core.handle();
-            let client = WebPushClient::new(&handle);
+            let client = WebPushClient::new(&handle).unwrap();
 
             let work = client.send_with_timeout(message, Duration::from_millis(1000));
 

@@ -1,4 +1,4 @@
-use hyper::client::Client;
+use hyper::client::{HttpConnector, Client};
 use hyper_tls::HttpsConnector;
 use hyper::client::{Request as HttpRequest, Response as HttpResponse};
 use hyper::header::{ContentLength, RetryAfter, Authorization, ContentType};
@@ -41,21 +41,21 @@ impl Future for WebPushResponse {
 }
 
 pub struct WebPushClient {
-    client: Client<HttpsConnector>,
+    client: Client<HttpsConnector<HttpConnector>>,
     timer: Timer,
 }
 
 impl WebPushClient {
-    pub fn new(handle: &Handle) -> WebPushClient {
+    pub fn new(handle: &Handle) -> Result<WebPushClient, WebPushError> {
         let client = Client::configure()
-            .connector(HttpsConnector::new(4, handle))
+            .connector(HttpsConnector::new(4, handle)?)
             .keep_alive(true)
             .build(handle);
 
-        WebPushClient {
+        Ok(WebPushClient {
             client: client,
             timer: Timer::default(),
-        }
+        })
     }
 
     /// Sends a notification. Never times out.

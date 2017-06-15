@@ -5,6 +5,7 @@ use ring::error;
 use hyper::header::RetryAfter;
 use tokio_timer::TimeoutError;
 use client::WebPushResponse;
+use native_tls;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -18,6 +19,7 @@ pub enum WebPushError {
     EndpointNotValid,
     EndpointNotFound,
     PayloadTooLarge,
+    TlsError,
 }
 
 impl From<TimeoutError<WebPushResponse>> for WebPushError {
@@ -29,6 +31,12 @@ impl From<TimeoutError<WebPushResponse>> for WebPushError {
 impl From<error::Unspecified> for WebPushError {
     fn from(_: error::Unspecified) -> WebPushError {
         WebPushError::Unspecified
+    }
+}
+
+impl From<native_tls::Error> for WebPushError {
+    fn from(_: native_tls::Error) -> WebPushError {
+        WebPushError::TlsError
     }
 }
 
@@ -55,6 +63,8 @@ impl Error for WebPushError {
                 "The URL specified is no longer valid and should no longer be used",
             WebPushError::EndpointNotFound =>
                 "The URL specified is invalid and should not be used again",
+            WebPushError::TlsError =>
+                "Could not initialize a TLS connection"
         }
     }
 

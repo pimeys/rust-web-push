@@ -27,7 +27,7 @@
 //!    Ok(message) => {
 //!        let mut core = tokio_core::reactor::Core::new().unwrap();
 //!        let handle = core.handle();
-//!        let client = WebPushClient::new(&handle);
+//!        let client = WebPushClient::new(&handle).unwrap();
 //!
 //!        let work = client.send(message);
 //!
@@ -53,6 +53,7 @@ extern crate rustc_serialize;
 extern crate ring;
 extern crate crypto;
 extern crate untrusted;
+extern crate native_tls;
 
 mod client;
 mod error;
