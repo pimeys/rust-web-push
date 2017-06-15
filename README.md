@@ -2,7 +2,7 @@ Rust Web Push
 =============
 
 [![Travis Build Status](https://travis-ci.org/pimeys/rust-web-push.svg?branch=master)](https://travis-ci.org/pimeys/rust-web-push)
-[![](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
+[![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
 
 Web push notification sender.
 
