@@ -1,5 +1,6 @@
 [package]
 name = "web-push"
+description = "Web push notification client with support for http-ece encryption."
 version = "0.1.0"
 authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
 license = "Apache 2.0"
