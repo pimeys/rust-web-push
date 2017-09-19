@@ -12,7 +12,7 @@ use tokio_service::Service;
 use tokio_timer::{Timer, Timeout};
 use hyper::StatusCode;
 use std::fmt;
-use std::time::Duration;
+use std::time::{SystemTime, Duration};
 
 use error::WebPushError;
 use message::WebPushMessage;
@@ -147,27 +147,33 @@ impl Service for WebPushClient {
                     let response_status = response.status().clone();
 
                     match response_status {
-                        status if status.is_success() =>
-                            ok(()),
-                        StatusCode::Unauthorized =>
-                            err(WebPushError::Unauthorized),
-                        StatusCode::BadRequest => {
-                            err(WebPushError::BadRequest)
+                        status if status.is_success() => ok(()),
+                        StatusCode::Unauthorized    => err(WebPushError::Unauthorized),
+                        StatusCode::BadRequest      => err(WebPushError::BadRequest),
+                        StatusCode::Gone            => err(WebPushError::EndpointNotValid),
+                        StatusCode::NotFound        => err(WebPushError::EndpointNotFound),
+                        StatusCode::PayloadTooLarge => err(WebPushError::PayloadTooLarge),
+
+                        status if status.is_server_error() => {
+                            let retry_duration = match retry_after {
+                                Some(RetryAfter::Delay(duration)) =>
+                                    Some(duration),
+                                Some(RetryAfter::DateTime(retry_time)) => {
+                                    let retry_system_time: SystemTime = retry_time.into();
+
+                                    let duration = retry_system_time.
+                                        duration_since(SystemTime::now()).
+                                        unwrap_or(Duration::new(0, 0));
+
+                                    Some(duration)
+                                },
+                                None => None
+                            };
+
+                            err(WebPushError::ServerError(retry_duration))
                         },
-                        StatusCode::Gone => {
-                            err(WebPushError::EndpointNotValid)
-                        },
-                        StatusCode::NotFound => {
-                            err(WebPushError::EndpointNotFound)
-                        },
-                        StatusCode::PayloadTooLarge => {
-                            err(WebPushError::PayloadTooLarge)
-                        }
-                        status if status.is_server_error() =>
-                            err(WebPushError::ServerError(retry_after)),
-                        _ => {
+                        _ =>
                             err(WebPushError::Unspecified)
-                        }
                     }
                 });
 

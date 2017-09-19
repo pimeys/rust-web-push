@@ -1,25 +1,35 @@
-use std::time::{SystemTime, Duration};
 use std::error::Error;
 use std::convert::From;
 use std::fmt;
 use ring::error;
-use hyper::header::RetryAfter;
 use tokio_timer::TimeoutError;
 use client::WebPushResponse;
 use native_tls;
+use std::time::Duration;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
+    // An unknown error happened encrypting the message,
     Unspecified,
+    // Please provide valid credentials to send the notification
     Unauthorized,
+    // Request was badly formed
     BadRequest,
-    ServerError(Option<RetryAfter>),
+    // Contains an optional `Duration`, until the user can retry the request
+    ServerError(Option<Duration>),
+    // The feature is not implemented yet
     NotImplemented,
+    // The provided URI is invalid
     InvalidUri,
+    // The request timed out
     TimeoutError,
+    // The URL specified is no longer valid and should no longer be used
     EndpointNotValid,
+    // The URL specified is invalid and should not be used again
     EndpointNotFound,
+    // Maximum allowed payload size is 3800 characters
     PayloadTooLarge,
+    // Could not initialize a TLS connection
     TlsError,
 }
 
@@ -55,28 +65,6 @@ impl WebPushError {
             WebPushError::EndpointNotFound => "endpoint_not_found",
             WebPushError::PayloadTooLarge  => "payload_too_large",
             WebPushError::TlsError         => "tls_error",
-        }
-    }
-
-    /// In some cases the server tells the time when to try to send the
-    /// notification again. This is a helper method to get a duration from the
-    /// possible options.
-    pub fn retry_after(&self) -> Option<Duration> {
-        match *self {
-            WebPushError::ServerError(error) => {
-                match error {
-                    Some(RetryAfter::Delay(duration)) =>
-                        Some(duration),
-                    Some(RetryAfter::DateTime(retry_time)) => {
-                        let retry_system_time: SystemTime = retry_time.into();
-                        let duration = retry_system_time.duration_since(SystemTime::now()).unwrap_or(Duration::new(0, 0));
-
-                        Some(duration)
-                    },
-                    None => None
-                }
-            },
-            _ => None
         }
     }
 }
