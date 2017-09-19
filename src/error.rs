@@ -1,3 +1,4 @@
+use std::time::{SystemTime, Duration};
 use std::error::Error;
 use std::convert::From;
 use std::fmt;
@@ -37,6 +38,46 @@ impl From<error::Unspecified> for WebPushError {
 impl From<native_tls::Error> for WebPushError {
     fn from(_: native_tls::Error) -> WebPushError {
         WebPushError::TlsError
+    }
+}
+
+impl WebPushError {
+    pub fn short_description(&self) -> &'static str {
+        match *self {
+            WebPushError::Unspecified      => "unspecified",
+            WebPushError::Unauthorized     => "unauthorized",
+            WebPushError::BadRequest       => "bad_request",
+            WebPushError::ServerError(_)   => "server_error",
+            WebPushError::NotImplemented   => "not_implemented",
+            WebPushError::InvalidUri       => "invalid_uri",
+            WebPushError::TimeoutError     => "timeout_error",
+            WebPushError::EndpointNotValid => "endpoint_not_valid",
+            WebPushError::EndpointNotFound => "endpoint_not_found",
+            WebPushError::PayloadTooLarge  => "payload_too_large",
+            WebPushError::TlsError         => "tls_error",
+        }
+    }
+
+    /// In some cases the server tells the time when to try to send the
+    /// notification again. This is a helper method to get a duration from the
+    /// possible options.
+    pub fn retry_after(&self) -> Option<Duration> {
+        match *self {
+            WebPushError::ServerError(error) => {
+                match error {
+                    Some(RetryAfter::Delay(duration)) =>
+                        Some(duration),
+                    Some(RetryAfter::DateTime(retry_time)) => {
+                        let retry_system_time: SystemTime = retry_time.into();
+                        let duration = retry_system_time.duration_since(SystemTime::now()).unwrap_or(Duration::new(0, 0));
+
+                        Some(duration)
+                    },
+                    None => None
+                }
+            },
+            _ => None
+        }
     }
 }
 
