@@ -224,6 +224,12 @@
 <span id="179">179</span>
 <span id="180">180</span>
 <span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::{<span class="ident">HttpConnector</span>, <span class="ident">Client</span>};
 <span class="kw">use</span> <span class="ident">hyper_tls</span>::<span class="ident">HttpsConnector</span>;
@@ -239,7 +245,7 @@
 <span class="kw">use</span> <span class="ident">tokio_timer</span>::{<span class="ident">Timer</span>, <span class="ident">Timeout</span>};
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">StatusCode</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::{<span class="ident">SystemTime</span>, <span class="ident">Duration</span>};
 
 <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">use</span> <span class="ident">message</span>::<span class="ident">WebPushMessage</span>;
@@ -374,27 +380,33 @@
                     <span class="kw">let</span> <span class="ident">response_status</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">status</span>().<span class="ident">clone</span>();
 
                     <span class="kw">match</span> <span class="ident">response_status</span> {
-                        <span class="ident">status</span> <span class="kw">if</span> <span class="ident">status</span>.<span class="ident">is_success</span>() <span class="op">=&gt;</span>
-                            <span class="ident">ok</span>(()),
-                        <span class="ident">StatusCode</span>::<span class="ident">Unauthorized</span> <span class="op">=&gt;</span>
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span>),
-                        <span class="ident">StatusCode</span>::<span class="ident">BadRequest</span> <span class="op">=&gt;</span> {
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>)
+                        <span class="ident">status</span> <span class="kw">if</span> <span class="ident">status</span>.<span class="ident">is_success</span>() <span class="op">=&gt;</span> <span class="ident">ok</span>(()),
+                        <span class="ident">StatusCode</span>::<span class="ident">Unauthorized</span>    <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span>),
+                        <span class="ident">StatusCode</span>::<span class="ident">BadRequest</span>      <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>),
+                        <span class="ident">StatusCode</span>::<span class="ident">Gone</span>            <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">EndpointNotValid</span>),
+                        <span class="ident">StatusCode</span>::<span class="ident">NotFound</span>        <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">EndpointNotFound</span>),
+                        <span class="ident">StatusCode</span>::<span class="ident">PayloadTooLarge</span> <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>),
+
+                        <span class="ident">status</span> <span class="kw">if</span> <span class="ident">status</span>.<span class="ident">is_server_error</span>() <span class="op">=&gt;</span> {
+                            <span class="kw">let</span> <span class="ident">retry_duration</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">retry_after</span> {
+                                <span class="prelude-val">Some</span>(<span class="ident">RetryAfter</span>::<span class="ident">Delay</span>(<span class="ident">duration</span>)) <span class="op">=&gt;</span>
+                                    <span class="prelude-val">Some</span>(<span class="ident">duration</span>),
+                                <span class="prelude-val">Some</span>(<span class="ident">RetryAfter</span>::<span class="ident">DateTime</span>(<span class="ident">retry_time</span>)) <span class="op">=&gt;</span> {
+                                    <span class="kw">let</span> <span class="ident">retry_system_time</span>: <span class="ident">SystemTime</span> <span class="op">=</span> <span class="ident">retry_time</span>.<span class="ident">into</span>();
+
+                                    <span class="kw">let</span> <span class="ident">duration</span> <span class="op">=</span> <span class="ident">retry_system_time</span>.
+                                        <span class="ident">duration_since</span>(<span class="ident">SystemTime</span>::<span class="ident">now</span>()).
+                                        <span class="ident">unwrap_or</span>(<span class="ident">Duration</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="number">0</span>));
+
+                                    <span class="prelude-val">Some</span>(<span class="ident">duration</span>)
+                                },
+                                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            };
+
+                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="ident">retry_duration</span>))
                         },
-                        <span class="ident">StatusCode</span>::<span class="ident">Gone</span> <span class="op">=&gt;</span> {
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">EndpointNotValid</span>)
-                        },
-                        <span class="ident">StatusCode</span>::<span class="ident">NotFound</span> <span class="op">=&gt;</span> {
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">EndpointNotFound</span>)
-                        },
-                        <span class="ident">StatusCode</span>::<span class="ident">PayloadTooLarge</span> <span class="op">=&gt;</span> {
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>)
-                        }
-                        <span class="ident">status</span> <span class="kw">if</span> <span class="ident">status</span>.<span class="ident">is_server_error</span>() <span class="op">=&gt;</span>
-                            <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="ident">retry_after</span>)),
-                        _ <span class="op">=&gt;</span> {
+                        _ <span class="op">=&gt;</span>
                             <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>)
-                        }
                     }
                 });
 
