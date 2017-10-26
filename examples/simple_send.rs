@@ -68,6 +68,10 @@ fn main() {
         builder.set_gcm_key(gcm_key);
     }
 
+    if let Some(time) = ttl {
+        builder.set_ttl(time);
+    }
+
     match builder.build() {
         Ok(message) => {
             let mut core = tokio_core::reactor::Core::new().unwrap();

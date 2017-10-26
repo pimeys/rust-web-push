@@ -5,6 +5,7 @@ use hyper::header::{ContentLength, RetryAfter, Authorization, ContentType};
 use hyper::{Post, Uri};
 use futures::{Future, Poll};
 use futures::future::{ok, err};
+use futures::stream::Stream;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::json;
 use tokio_core::reactor::Handle;
@@ -146,35 +147,45 @@ impl Service for WebPushClient {
                     let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
                     let response_status = response.status().clone();
 
-                    match response_status {
-                        status if status.is_success() => ok(()),
-                        StatusCode::Unauthorized    => err(WebPushError::Unauthorized),
-                        StatusCode::BadRequest      => err(WebPushError::BadRequest),
-                        StatusCode::Gone            => err(WebPushError::EndpointNotValid),
-                        StatusCode::NotFound        => err(WebPushError::EndpointNotFound),
-                        StatusCode::PayloadTooLarge => err(WebPushError::PayloadTooLarge),
+                    response.body().map_err(|_| WebPushError::Unspecified).concat2().and_then(move |body| {
+                        match response_status {
+                            status if status.is_success() => ok(()),
+                            StatusCode::Unauthorized    => err(WebPushError::Unauthorized),
+                            StatusCode::BadRequest      => {
+                                match String::from_utf8(body.to_vec()) {
+                                    Ok(body_str) => match json::decode(&body_str) {
+                                        Ok(error_info) => err(WebPushError::BadRequest(Some(error_info))),
+                                        Err(_) => err(WebPushError::BadRequest(None))
+                                    },
+                                    Err(_) => err(WebPushError::BadRequest(None))
+                                }
+                            }
+                            StatusCode::Gone            => err(WebPushError::EndpointNotValid),
+                            StatusCode::NotFound        => err(WebPushError::EndpointNotFound),
+                            StatusCode::PayloadTooLarge => err(WebPushError::PayloadTooLarge),
 
-                        status if status.is_server_error() => {
-                            let retry_duration = match retry_after {
-                                Some(RetryAfter::Delay(duration)) =>
-                                    Some(duration),
-                                Some(RetryAfter::DateTime(retry_time)) => {
-                                    let retry_system_time: SystemTime = retry_time.into();
+                            status if status.is_server_error() => {
+                                let retry_duration = match retry_after {
+                                    Some(RetryAfter::Delay(duration)) =>
+                                        Some(duration),
+                                    Some(RetryAfter::DateTime(retry_time)) => {
+                                        let retry_system_time: SystemTime = retry_time.into();
 
-                                    let duration = retry_system_time.
-                                        duration_since(SystemTime::now()).
-                                        unwrap_or(Duration::new(0, 0));
+                                        let duration = retry_system_time.
+                                            duration_since(SystemTime::now()).
+                                            unwrap_or(Duration::new(0, 0));
 
-                                    Some(duration)
-                                },
-                                None => None
-                            };
+                                        Some(duration)
+                                    },
+                                    None => None
+                                };
 
-                            err(WebPushError::ServerError(retry_duration))
-                        },
-                        _ =>
-                            err(WebPushError::Unspecified)
-                    }
+                                err(WebPushError::ServerError(retry_duration))
+                            },
+                            _ =>
+                                err(WebPushError::Unspecified)
+                        }
+                    })
                 });
 
                 WebPushResponse(Box::new(push_f))

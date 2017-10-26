@@ -7,6 +7,14 @@ use client::WebPushResponse;
 use native_tls;
 use std::time::Duration;
 
+#[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
+pub struct ErrorInfo {
+    pub code: u16,
+    pub errno: u16,
+    pub error: String,
+    pub message: String,
+}
+
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
     // An unknown error happened encrypting the message,
@@ -14,7 +22,7 @@ pub enum WebPushError {
     // Please provide valid credentials to send the notification
     Unauthorized,
     // Request was badly formed
-    BadRequest,
+    BadRequest(Option<ErrorInfo>),
     // Contains an optional `Duration`, until the user can retry the request
     ServerError(Option<Duration>),
     // The feature is not implemented yet
@@ -56,7 +64,7 @@ impl WebPushError {
         match *self {
             WebPushError::Unspecified      => "unspecified",
             WebPushError::Unauthorized     => "unauthorized",
-            WebPushError::BadRequest       => "bad_request",
+            WebPushError::BadRequest(_)    => "bad_request",
             WebPushError::ServerError(_)   => "server_error",
             WebPushError::NotImplemented   => "not_implemented",
             WebPushError::InvalidUri       => "invalid_uri",
@@ -76,7 +84,7 @@ impl Error for WebPushError {
                 "An unknown error happened encrypting the message",
             WebPushError::Unauthorized =>
                 "Please provide valid credentials to send the notification",
-            WebPushError::BadRequest =>
+            WebPushError::BadRequest(_) =>
                 "Request was badly formed",
             WebPushError::ServerError(_) =>
                 "Server was unable to process the request, please try again later",
