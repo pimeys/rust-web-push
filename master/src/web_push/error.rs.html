@@ -152,6 +152,14 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">From</span>;
@@ -162,6 +170,14 @@
 <span class="kw">use</span> <span class="ident">native_tls</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">RustcDecodable</span>, <span class="ident">RustcEncodable</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ErrorInfo</span> {
+    <span class="kw">pub</span> <span class="ident">code</span>: <span class="ident">u16</span>,
+    <span class="kw">pub</span> <span class="ident">errno</span>: <span class="ident">u16</span>,
+    <span class="kw">pub</span> <span class="ident">error</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">message</span>: <span class="ident">String</span>,
+}
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WebPushError</span> {
     <span class="comment">// An unknown error happened encrypting the message,</span>
@@ -169,7 +185,7 @@
     <span class="comment">// Please provide valid credentials to send the notification</span>
     <span class="ident">Unauthorized</span>,
     <span class="comment">// Request was badly formed</span>
-    <span class="ident">BadRequest</span>,
+    <span class="ident">BadRequest</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ErrorInfo</span><span class="op">&gt;</span>),
     <span class="comment">// Contains an optional `Duration`, until the user can retry the request</span>
     <span class="ident">ServerError</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Duration</span><span class="op">&gt;</span>),
     <span class="comment">// The feature is not implemented yet</span>
@@ -211,7 +227,7 @@
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>      <span class="op">=&gt;</span> <span class="string">&quot;unspecified&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span>     <span class="op">=&gt;</span> <span class="string">&quot;unauthorized&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>       <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(_)    <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(_)   <span class="op">=&gt;</span> <span class="string">&quot;server_error&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>   <span class="op">=&gt;</span> <span class="string">&quot;not_implemented&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">InvalidUri</span>       <span class="op">=&gt;</span> <span class="string">&quot;invalid_uri&quot;</span>,
@@ -231,7 +247,7 @@
                 <span class="string">&quot;An unknown error happened encrypting the message&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span> <span class="op">=&gt;</span>
                 <span class="string">&quot;Please provide valid credentials to send the notification&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span> <span class="op">=&gt;</span>
+            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(_) <span class="op">=&gt;</span>
                 <span class="string">&quot;Request was badly formed&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(_) <span class="op">=&gt;</span>
                 <span class="string">&quot;Server was unable to process the request, please try again later&quot;</span>,
