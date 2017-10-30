@@ -19,7 +19,7 @@
 //! let p256dh = "key_from_browser_as_base64".from_base64().unwrap();
 //! let auth = "auth_from_browser_as_base64".from_base64().unwrap();
 //!
-//! let mut builder = WebPushMessageBuilder::new(endpoint, &auth, &p256dh);
+//! let mut builder = WebPushMessageBuilder::new(endpoint, &auth, &p256dh).unwrap();
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
 //! builder.set_payload(ContentEncoding::AesGcm, content);
 //!
@@ -59,6 +59,7 @@ mod client;
 mod error;
 mod http_ece;
 mod message;
+mod services;
 
 pub use error::WebPushError;
 pub use client::{WebPushResponse, WebPushClient};
