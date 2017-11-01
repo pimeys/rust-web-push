@@ -24,18 +24,18 @@ pub enum GcmError {
     InvalidApnsCredential,
 }
 
-impl Into<WebPushError> for GcmError {
-    fn into(self) -> WebPushError {
-        match self {
-            GcmError::MissingRegistration => WebPushError::EndpointNotFound,
-            GcmError::InvalidRegistration => WebPushError::EndpointNotValid,
-            GcmError::NotRegistered       => WebPushError::EndpointNotValid,
-            GcmError::InvalidPackageName  => WebPushError::InvalidPackageName,
-            GcmError::MessageTooBig       => WebPushError::PayloadTooLarge,
-            GcmError::InvalidTtl          => WebPushError::InvalidTtl,
-            GcmError::Unavailable         => WebPushError::ServerError(None),
-            GcmError::InternalServerError => WebPushError::ServerError(None),
-            e                             => WebPushError::Other(format!("{:?}", e)),
+impl<'a> From<&'a GcmError> for WebPushError {
+    fn from(e: &GcmError) -> WebPushError {
+        match e {
+            &GcmError::MissingRegistration => WebPushError::EndpointNotFound,
+            &GcmError::InvalidRegistration => WebPushError::EndpointNotValid,
+            &GcmError::NotRegistered       => WebPushError::EndpointNotValid,
+            &GcmError::InvalidPackageName  => WebPushError::InvalidPackageName,
+            &GcmError::MessageTooBig       => WebPushError::PayloadTooLarge,
+            &GcmError::InvalidTtl          => WebPushError::InvalidTtl,
+            &GcmError::Unavailable         => WebPushError::ServerError(None),
+            &GcmError::InternalServerError => WebPushError::ServerError(None),
+            e                              => WebPushError::Other(format!("{:?}", e)),
         }
     }
 }
@@ -55,7 +55,7 @@ pub struct GcmResponse {
 pub struct MessageResult {
     pub message_id: Option<String>,
     pub registration_id: Option<String>,
-    pub error: Option<String>,
+    pub error: Option<GcmError>,
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
@@ -109,9 +109,21 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
             let body_str     = String::from_utf8(body)?;
             let gcm_response = json::decode::<GcmResponse>(&body_str)?;
 
-            match gcm_response.error {
-                Some(e) => Err(e.into()),
-                _       => Ok(())
+            if let Some(0) = gcm_response.failure {
+                Ok(())
+            } else {
+                match gcm_response.results {
+                    Some(results) => match results.first() {
+                        Some(result) => {
+                            match result.error {
+                                Some(ref error) => Err(WebPushError::from(error)),
+                                _ => Err(WebPushError::Other(String::from("UnknownError")))
+                            }
+                        },
+                        _ => Err(WebPushError::Other(String::from("UnknownError")))
+                    },
+                    _ => Err(WebPushError::Other(String::from("UnknownError")))
+                }
             }
         },
         StatusCode::Unauthorized           => Err(WebPushError::Unauthorized),
@@ -120,7 +132,7 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
             let gcm_response = json::decode::<GcmResponse>(&body_str)?;
 
             match gcm_response.error {
-                Some(e) => Err(e.into()),
+                Some(e) => Err(WebPushError::from(&e)),
                 _       => Err(WebPushError::BadRequest(None))
             }
         },
@@ -137,7 +149,6 @@ mod tests {
     use error::WebPushError;
     use message::WebPushMessageBuilder;
     use hyper::Uri;
-    use hyper::header::Authorization;
     use rustc_serialize::base64::FromBase64;
 
     #[test]
@@ -215,7 +226,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "MissingRegistration"
+            "results": [{"error":"MissingRegistration"}]
         }
         "#;
         assert_eq!(Err(WebPushError::EndpointNotFound),
@@ -230,7 +241,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "InvalidRegistration"
+            "results": [{"error":"InvalidRegistration"}]
         }
         "#;
         assert_eq!(Err(WebPushError::EndpointNotValid),
@@ -245,7 +256,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "NotRegistered"
+            "results": [{"error":"NotRegistered"}]
         }
         "#;
         assert_eq!(Err(WebPushError::EndpointNotValid),
@@ -260,7 +271,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "InvalidPackageName"
+            "results": [{"error":"InvalidPackageName"}]
         }
         "#;
         assert_eq!(Err(WebPushError::InvalidPackageName),
@@ -275,7 +286,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "MessageTooBig"
+            "results": [{"error":"MessageTooBig"}]
         }
         "#;
         assert_eq!(Err(WebPushError::PayloadTooLarge),
@@ -290,7 +301,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "InvalidDataKey"
+            "results": [{"error":"InvalidDataKey"}]
         }
         "#;
         assert_eq!(Err(WebPushError::Other(String::from("InvalidDataKey"))),
@@ -305,7 +316,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "InvalidTtl"
+            "results": [{"error":"InvalidTtl"}]
         }
         "#;
         assert_eq!(Err(WebPushError::InvalidTtl),
@@ -320,7 +331,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "Unavailable"
+            "results": [{"error":"Unavailable"}]
         }
         "#;
         assert_eq!(Err(WebPushError::ServerError(None)),
@@ -335,7 +346,7 @@ mod tests {
             "multicast_id": 33,
             "success": 0,
             "failure": 1,
-            "error": "InternalServerError"
+            "results": [{"error":"InternalServerError"}]
         }
         "#;
         assert_eq!(Err(WebPushError::ServerError(None)),
