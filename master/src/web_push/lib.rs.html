@@ -109,6 +109,7 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
+<span id="67">67</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! # Web Push</span>
 <span class="doccomment">//!</span>
@@ -131,7 +132,7 @@
 <span class="doccomment">//! let p256dh = &quot;key_from_browser_as_base64&quot;.from_base64().unwrap();</span>
 <span class="doccomment">//! let auth = &quot;auth_from_browser_as_base64&quot;.from_base64().unwrap();</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! let mut builder = WebPushMessageBuilder::new(endpoint, &amp;auth, &amp;p256dh);</span>
+<span class="doccomment">//! let mut builder = WebPushMessageBuilder::new(endpoint, &amp;auth, &amp;p256dh).unwrap();</span>
 <span class="doccomment">//! let content = &quot;Encrypted payload to be sent in the notification&quot;.as_bytes();</span>
 <span class="doccomment">//! builder.set_payload(ContentEncoding::AesGcm, content);</span>
 <span class="doccomment">//!</span>
@@ -171,6 +172,7 @@
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">http_ece</span>;
 <span class="kw">mod</span> <span class="ident">message</span>;
+<span class="kw">mod</span> <span class="ident">services</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client</span>::{<span class="ident">WebPushResponse</span>, <span class="ident">WebPushClient</span>};
