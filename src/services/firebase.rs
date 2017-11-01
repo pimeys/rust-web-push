@@ -65,7 +65,14 @@ struct GcmData {
 }
 
 pub fn build_request(message: WebPushMessage) -> Request {
-    let mut request = Request::new(Post, "https://android.googleapis.com/gcm/send".parse().unwrap());
+    let uri = match message.endpoint.host() {
+        Some("fcm.googleapis.com") =>
+            "https://fcm.googleapis.com/fcm/send".parse().unwrap(),
+        _ =>
+            "https://android.googleapis.com/gcm/send".parse().unwrap()
+    };
+
+    let mut request = Request::new(Post, uri);
 
     if let Some(ref gcm_key) = message.gcm_key {
         request.headers_mut().set(Authorization(format!("key={}", gcm_key)));
@@ -181,7 +188,7 @@ mod tests {
     fn builds_a_correct_request_with_a_payload() {
         let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
-        let uri = "https://android.googleapis.com/gcm/send/device_token_2";
+        let uri = "https://fcm.googleapis.com/fcm/send/device_token_2";
         let mut builder = WebPushMessageBuilder::new(&uri, &auth, &p256dh).unwrap();
 
         builder.set_gcm_key("test_key");
@@ -196,7 +203,7 @@ mod tests {
                                               .one()
                                               .unwrap()
                                               .to_vec()).unwrap();
-        let expected_uri: Uri = "https://android.googleapis.com/gcm/send".parse().unwrap();
+        let expected_uri: Uri = "https://fcm.googleapis.com/fcm/send".parse().unwrap();
         let length = request.headers().get::<ContentLength>().unwrap();
 
         assert_eq!("key=test_key", authorization);

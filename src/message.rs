@@ -80,6 +80,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let service = match self.endpoint.host() {
             Some("android.googleapis.com") => WebPushService::Firebase,
+            Some("fcm.googleapis.com")     => WebPushService::Firebase,
             _                              => WebPushService::Autopush,
         };
 
