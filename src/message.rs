@@ -1,5 +1,12 @@
+use hyper::Uri;
 use http_ece::{HttpEce, ContentEncoding};
 use error::WebPushError;
+
+#[derive(Debug, Clone)]
+pub enum WebPushService {
+    Firebase,
+    Autopush,
+}
 
 #[derive(Debug, PartialEq)]
 pub struct WebPushPayload {
@@ -11,9 +18,10 @@ pub struct WebPushPayload {
 #[derive(Debug)]
 pub struct WebPushMessage {
     pub gcm_key: Option<String>,
-    pub endpoint: String,
+    pub endpoint: Uri,
     pub ttl: Option<u32>,
     pub payload: Option<WebPushPayload>,
+    pub service: WebPushService,
 }
 
 struct WebPushPayloadBuilder<'a> {
@@ -23,7 +31,7 @@ struct WebPushPayloadBuilder<'a> {
 
 pub struct WebPushMessageBuilder<'a> {
     gcm_key: Option<&'a str>,
-    endpoint: &'a str,
+    endpoint: Uri,
     auth: &'a [u8],
     p256dh: &'a [u8],
     payload: Option<WebPushPayloadBuilder<'a>>,
@@ -35,15 +43,15 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> WebPushMessageBuilder<'a> {
-        WebPushMessageBuilder {
-            endpoint: endpoint,
+    pub fn new(endpoint: &'a str, auth: &'a [u8], p256dh: &'a [u8]) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
+        Ok(WebPushMessageBuilder {
+            endpoint: endpoint.parse()?,
             auth: auth,
             p256dh: p256dh,
             ttl: None,
             gcm_key: None,
             payload: None,
-        }
+        })
     }
 
     /// How long the server should keep the message if it cannot be delivered
@@ -70,21 +78,28 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
     /// something was wrong in the given public key or authentication.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
+        let service = match self.endpoint.host() {
+            Some("android.googleapis.com") => WebPushService::Firebase,
+            _                              => WebPushService::Autopush,
+        };
+
         if let Some(payload) = self.payload {
             let http_ece = HttpEce::new(payload.encoding, self.p256dh, self.auth);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
-                endpoint: self.endpoint.to_string(),
+                endpoint: self.endpoint,
                 ttl: self.ttl,
                 payload: Some(http_ece.encrypt(payload.content)?),
+                service: service,
             })
         } else {
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
-                endpoint: self.endpoint.to_string(),
+                endpoint: self.endpoint,
                 ttl: self.ttl,
                 payload: None,
+                service: service,
             })
         }
     }

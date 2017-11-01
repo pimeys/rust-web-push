@@ -1,30 +1,20 @@
 use hyper::client::{HttpConnector, Client};
 use hyper_tls::HttpsConnector;
 use hyper::client::{Request as HttpRequest, Response as HttpResponse};
-use hyper::header::{ContentLength, RetryAfter, Authorization, ContentType};
-use hyper::{Post, Uri};
+use hyper::header::RetryAfter;
 use futures::{Future, Poll};
 use futures::future::{ok, err};
 use futures::stream::Stream;
-use rustc_serialize::base64::{ToBase64, STANDARD};
-use rustc_serialize::json;
 use tokio_core::reactor::Handle;
 use tokio_service::Service;
 use tokio_timer::{Timer, Timeout};
-use hyper::StatusCode;
 use std::fmt;
 use std::time::{SystemTime, Duration};
-
+use services::{firebase, autopush};
 use error::WebPushError;
-use message::WebPushMessage;
+use message::{WebPushMessage, WebPushService};
 
-pub struct WebPushResponse(Box<Future<Item=(), Error=WebPushError> + 'static>);
-
-#[derive(RustcDecodable, RustcEncodable)]
-struct GcmData {
-    registration_ids: Vec<String>,
-    raw_data: Option<String>,
-}
+pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + 'static>);
 
 impl fmt::Debug for WebPushResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -65,58 +55,12 @@ impl WebPushClient {
     }
 
     /// Sends a notification with a timeout. Triggers `WebPushError::TimeoutError` if the request takes too long.
-    pub fn send_with_timeout(&self, message: WebPushMessage, timeout: Duration) -> Timeout<WebPushResponse> {
+    pub fn send_with_timeout(
+        &self,
+        message: WebPushMessage,
+        timeout: Duration,
+    ) -> Timeout<WebPushResponse> {
         self.timer.timeout(self.send(message), timeout)
-    }
-
-    fn build_gcm_request(message: &WebPushMessage) -> HttpRequest {
-        let mut request = HttpRequest::new(Post, "https://android.googleapis.com/gcm/send".parse().unwrap());
-
-        if let Some(ref gcm_key) = message.gcm_key {
-            request.headers_mut().set(Authorization(format!("key={}", gcm_key)));
-        }
-
-        let mut registration_ids = Vec::with_capacity(1);
-
-        if let Some(token) = message.endpoint.split("/").last() {
-            registration_ids.push(token.to_string());
-        }
-
-        let raw_data = match message.payload {
-            Some(ref payload) =>
-                Some(payload.content.to_base64(STANDARD)),
-            None =>
-                None,
-        };
-
-        let gcm_data = GcmData {
-            registration_ids: registration_ids,
-            raw_data: raw_data,
-        };
-
-        let json_payload = json::encode(&gcm_data).unwrap();
-
-        request.headers_mut().set(ContentType::json());
-        request.headers_mut().set(ContentLength(json_payload.len() as u64));
-
-        request.set_body(json_payload);
-        request
-    }
-
-    fn build_request(message: &WebPushMessage, uri: Uri) -> HttpRequest {
-        let mut request = HttpRequest::new(Post, uri);
-
-        if let Some(ttl) = message.ttl {
-            request.headers_mut().set_raw("TTL", format!("{}", ttl));
-        }
-
-        if let Some(ref payload) = message.payload {
-            request.headers_mut().set_raw("Content-Encoding", payload.content_encoding);
-            request.headers_mut().set(ContentLength(payload.content.len() as u64));
-            request.set_body(payload.content.clone());
-        }
-
-        request
     }
 }
 
@@ -127,72 +71,60 @@ impl Service for WebPushClient {
     type Future = WebPushResponse;
 
     fn call(&self, message: Self::Request) -> Self::Future {
-        match message.endpoint.parse() {
-            Ok(uri) => {
-                let mut request = if message.endpoint.starts_with("https://android.googleapis.com/gcm/send/") {
-                    Self::build_gcm_request(&message)
-                } else {
-                    Self::build_request(&message, uri)
-                };
+        let service = message.service.clone();
 
-                if let Some(payload) = message.payload {
-                    for (k, v) in payload.crypto_headers.into_iter() {
-                        request.headers_mut().set_raw(k, v);
-                    }
-                }
+        let request: HttpRequest = match service {
+            WebPushService::Firebase =>
+                firebase::build_request(message),
+            _ =>
+                autopush::build_request(message),
+        };
 
-                let request_f = self.client.request(request).map_err(|_| { WebPushError::Unspecified });
+        let request_f = self.client.request(request).map_err(
+            |_| WebPushError::Unspecified,
+        );
 
-                let push_f = request_f.and_then(move |response: HttpResponse| {
-                    let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
-                    let response_status = response.status().clone();
+        let push_f = request_f.and_then(move |response: HttpResponse| {
+            let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
+            let response_status = response.status().clone();
 
-                    response.body().map_err(|_| WebPushError::Unspecified).concat2().and_then(move |body| {
-                        match response_status {
-                            status if status.is_success() => ok(()),
-                            StatusCode::Unauthorized    => err(WebPushError::Unauthorized),
-                            StatusCode::BadRequest      => {
-                                match String::from_utf8(body.to_vec()) {
-                                    Ok(body_str) => match json::decode(&body_str) {
-                                        Ok(error_info) => err(WebPushError::BadRequest(Some(error_info))),
-                                        Err(_) => err(WebPushError::BadRequest(None))
-                                    },
-                                    Err(_) => err(WebPushError::BadRequest(None))
+            response
+                .body()
+                .map_err(|_| WebPushError::Unspecified)
+                .concat2()
+                .and_then(move |body| {
+                    let response = match service {
+                        WebPushService::Firebase =>
+                            firebase::parse_response(response_status, body.to_vec()),
+                        _ =>
+                            autopush::parse_response(response_status, body.to_vec()),
+                    };
+
+                    match response {
+                        Err(WebPushError::ServerError(None)) => {
+                            let retry_duration = match retry_after {
+                                Some(RetryAfter::Delay(duration)) => Some(duration),
+                                Some(RetryAfter::DateTime(retry_time)) => {
+                                    let retry_system_time: SystemTime = retry_time.into();
+
+                                    let duration = retry_system_time
+                                        .duration_since(SystemTime::now())
+                                        .unwrap_or(Duration::new(0, 0));
+
+                                    Some(duration)
                                 }
-                            }
-                            StatusCode::Gone            => err(WebPushError::EndpointNotValid),
-                            StatusCode::NotFound        => err(WebPushError::EndpointNotFound),
-                            StatusCode::PayloadTooLarge => err(WebPushError::PayloadTooLarge),
+                                None => None,
+                            };
 
-                            status if status.is_server_error() => {
-                                let retry_duration = match retry_after {
-                                    Some(RetryAfter::Delay(duration)) =>
-                                        Some(duration),
-                                    Some(RetryAfter::DateTime(retry_time)) => {
-                                        let retry_system_time: SystemTime = retry_time.into();
-
-                                        let duration = retry_system_time.
-                                            duration_since(SystemTime::now()).
-                                            unwrap_or(Duration::new(0, 0));
-
-                                        Some(duration)
-                                    },
-                                    None => None
-                                };
-
-                                err(WebPushError::ServerError(retry_duration))
-                            },
-                            _ =>
-                                err(WebPushError::Unspecified)
+                            err(WebPushError::ServerError(retry_duration))
                         }
-                    })
-                });
 
-                WebPushResponse(Box::new(push_f))
-            },
-            Err(_) => {
-                WebPushResponse(Box::new(err(WebPushError::InvalidUri)))
-            }
-        }
+                        Err(e) => err(e),
+                        Ok(()) => ok(()),
+                    }
+                })
+        });
+
+        WebPushResponse(Box::new(push_f))
     }
 }

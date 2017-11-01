@@ -58,7 +58,7 @@ fn main() {
     let auth = subscription_info.keys.auth.from_base64().unwrap();
     let p256dh = subscription_info.keys.p256dh.from_base64().unwrap();
 
-    let mut builder = WebPushMessageBuilder::new(&subscription_info.endpoint, &auth, &p256dh);
+    let mut builder = WebPushMessageBuilder::new(&subscription_info.endpoint, &auth, &p256dh).unwrap();
 
     if let Some(ref payload) = push_payload {
         builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
