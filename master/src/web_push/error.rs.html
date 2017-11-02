@@ -209,7 +209,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">error</span>::<span class="ident">UriError</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">FromUtf8Error</span>;
-<span class="kw">use</span> <span class="ident">rustc_serialize</span>::<span class="ident">json</span>::<span class="ident">DecoderError</span>;
+<span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WebPushError</span> {
@@ -249,14 +249,14 @@
     <span class="ident">Other</span>(<span class="ident">String</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">FromUtf8Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">FromUtf8Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">JsonError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">JsonError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span>
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">DecoderError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">DecoderError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">FromUtf8Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">FromUtf8Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span>
     }
 }
