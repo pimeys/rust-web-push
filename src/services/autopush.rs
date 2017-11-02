@@ -3,9 +3,9 @@ use hyper::client::Request;
 use hyper::{Post, StatusCode};
 use error::WebPushError;
 use hyper::header::ContentLength;
-use rustc_serialize::json;
+use serde_json;
 
-#[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 struct ErrorInfo {
     code: u16,
     errno: u16,
@@ -45,7 +45,7 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
         StatusCode::BadRequest => {
             match String::from_utf8(body) {
                 Err(_)       => Err(WebPushError::BadRequest(None)),
-                Ok(body_str) => match json::decode::<ErrorInfo>(&body_str) {
+                Ok(body_str) => match serde_json::from_str::<ErrorInfo>(&body_str) {
                     Ok(error_info) => Err(WebPushError::BadRequest(Some(error_info.error))),
                     Err(_)         => Err(WebPushError::BadRequest(None)),
                 },

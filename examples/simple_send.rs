@@ -1,23 +1,25 @@
+#[macro_use] extern crate serde_derive;
+extern crate serde_json;
+extern crate serde;
 extern crate web_push;
-extern crate rustc_serialize;
 extern crate tokio_core;
 extern crate argparse;
+extern crate rustc_serialize;
 
-use rustc_serialize::json;
-use rustc_serialize::base64::FromBase64;
 use web_push::{WebPushMessageBuilder, WebPushClient, ContentEncoding};
 use argparse::{ArgumentParser, Store, StoreOption};
 use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
+use rustc_serialize::base64::FromBase64;
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(Deserialize, Serialize)]
 struct SubscriptionKeys {
     p256dh: String,
     auth: String,
 }
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(Deserialize, Serialize)]
 struct SubscriptionInfo {
     endpoint: String,
     keys: SubscriptionKeys,
@@ -53,7 +55,7 @@ fn main() {
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
-    let subscription_info: SubscriptionInfo = json::decode(&contents).unwrap();
+    let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
     let auth = subscription_info.keys.auth.from_base64().unwrap();
     let p256dh = subscription_info.keys.p256dh.from_base64().unwrap();

@@ -3,10 +3,10 @@ use hyper::client::Request;
 use hyper::{Post, StatusCode};
 use error::WebPushError;
 use hyper::header::{ContentLength, Authorization, ContentType};
-use rustc_serialize::json;
+use serde_json;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 
-#[derive(RustcDecodable, RustcEncodable, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub enum GcmError {
     MissingRegistration,
     InvalidRegistration,
@@ -40,7 +40,7 @@ impl<'a> From<&'a GcmError> for WebPushError {
     }
 }
 
-#[derive(RustcDecodable, RustcEncodable, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct GcmResponse {
     pub message_id: Option<u64>,
     pub error: Option<GcmError>,
@@ -51,14 +51,14 @@ pub struct GcmResponse {
     pub results: Option<Vec<MessageResult>>,
 }
 
-#[derive(RustcDecodable, RustcEncodable, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct MessageResult {
     pub message_id: Option<String>,
     pub registration_id: Option<String>,
     pub error: Option<GcmError>,
 }
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(Deserialize, Serialize)]
 struct GcmData {
     registration_ids: Vec<String>,
     raw_data: Option<String>,
@@ -101,7 +101,7 @@ pub fn build_request(message: WebPushMessage) -> Request {
         raw_data: raw_data,
     };
 
-    let json_payload = json::encode(&gcm_data).unwrap();
+    let json_payload = serde_json::to_string(&gcm_data).unwrap();
 
     request.headers_mut().set(ContentType::json());
     request.headers_mut().set(ContentLength(json_payload.len() as u64));
@@ -113,8 +113,8 @@ pub fn build_request(message: WebPushMessage) -> Request {
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
     match response_status {
         StatusCode::Ok => {
-            let body_str     = String::from_utf8(body)?;
-            let gcm_response = json::decode::<GcmResponse>(&body_str)?;
+            let body_str                  = String::from_utf8(body)?;
+            let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
             if let Some(0) = gcm_response.failure {
                 Ok(())
@@ -124,7 +124,7 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
                         Some(result) => {
                             match result.error {
                                 Some(ref error) => Err(WebPushError::from(error)),
-                                _ => Err(WebPushError::Other(String::from("UnknownError")))
+                                _               => Err(WebPushError::Other(String::from("UnknownError")))
                             }
                         },
                         _ => Err(WebPushError::Other(String::from("UnknownError")))
@@ -135,8 +135,8 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
         },
         StatusCode::Unauthorized           => Err(WebPushError::Unauthorized),
         StatusCode::BadRequest             => {
-            let body_str     = String::from_utf8(body)?;
-            let gcm_response = json::decode::<GcmResponse>(&body_str)?;
+            let body_str                  = String::from_utf8(body)?;
+            let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
             match gcm_response.error {
                 Some(e) => Err(WebPushError::from(&e)),
@@ -162,6 +162,7 @@ mod tests {
     fn builds_a_correct_request_with_empty_payload() {
         let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
+
         let uri = "https://android.googleapis.com/gcm/send/device_token_2";
         let mut builder = WebPushMessageBuilder::new(&uri, &auth, &p256dh).unwrap();
 
@@ -188,6 +189,7 @@ mod tests {
     fn builds_a_correct_request_with_a_payload() {
         let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
         let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
+
         let uri = "https://fcm.googleapis.com/fcm/send/device_token_2";
         let mut builder = WebPushMessageBuilder::new(&uri, &auth, &p256dh).unwrap();
 

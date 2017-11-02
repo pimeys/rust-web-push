@@ -43,13 +43,16 @@
 //! # }
 //! ```
 
+#[macro_use] extern crate serde_derive;
+extern crate serde_json;
+extern crate serde;
+extern crate rustc_serialize;
 extern crate hyper;
 extern crate futures;
 extern crate tokio_core;
 extern crate tokio_timer;
 extern crate tokio_service;
 extern crate hyper_tls;
-extern crate rustc_serialize;
 extern crate ring;
 extern crate crypto;
 extern crate untrusted;

@@ -8,7 +8,7 @@ use native_tls;
 use std::time::Duration;
 use hyper::error::UriError;
 use std::string::FromUtf8Error;
-use rustc_serialize::json::DecoderError;
+use serde_json::error::Error as JsonError;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -48,14 +48,14 @@ pub enum WebPushError {
     Other(String),
 }
 
-impl From<FromUtf8Error> for WebPushError {
-    fn from(_: FromUtf8Error) -> WebPushError {
+impl From<JsonError> for WebPushError {
+    fn from(_: JsonError) -> WebPushError {
         WebPushError::InvalidResponse
     }
 }
 
-impl From<DecoderError> for WebPushError {
-    fn from(_: DecoderError) -> WebPushError {
+impl From<FromUtf8Error> for WebPushError {
+    fn from(_: FromUtf8Error) -> WebPushError {
         WebPushError::InvalidResponse
     }
 }
