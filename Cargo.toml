@@ -28,7 +28,7 @@ ring = "0.9"
 untrusted = "0.5"
 rust-crypto = "0.2"
 native-tls = "0.1"
-rustc-serialize = "0.3"
+base64 = "0.7"
 
 [dev-dependencies]
 argparse = "0.2"

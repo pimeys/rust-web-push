@@ -64,12 +64,13 @@ mod tests {
     use error::WebPushError;
     use message::WebPushMessageBuilder;
     use hyper::Uri;
-    use rustc_serialize::base64::FromBase64;
+    use base64::{self, URL_SAFE};
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-        let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
-        let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
         let mut builder = WebPushMessageBuilder::new("http://google.com", &auth, &p256dh).unwrap();
 
         builder.set_ttl(420);
@@ -90,8 +91,10 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_payload() {
-        let p256dh = "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8".from_base64().unwrap();
-        let auth = "xS03Fi5ErfTNH_l9WHE9Ig".from_base64().unwrap();
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig",
+                                         URL_SAFE).unwrap();
         let mut builder = WebPushMessageBuilder::new("http://google.com", &auth, &p256dh).unwrap();
 
         builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());

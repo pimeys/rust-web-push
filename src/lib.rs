@@ -9,15 +9,15 @@
 //! ```no_run
 //! extern crate tokio_core;
 //! extern crate web_push;
-//! extern crate rustc_serialize;
+//! extern crate base64;
 //!
 //! use web_push::*;
-//! use rustc_serialize::base64::FromBase64;
+//! use base64::URL_SAFE;
 //!
 //! # fn main() {
 //! let endpoint = "https://updates.push.services.mozilla.com/wpush/v1/...";
-//! let p256dh = "key_from_browser_as_base64".from_base64().unwrap();
-//! let auth = "auth_from_browser_as_base64".from_base64().unwrap();
+//! let p256dh = base64::decode_config("key_from_browser_as_base64", URL_SAFE).unwrap();
+//! let auth = base64::decode_config("auth_from_browser_as_base64", URL_SAFE).unwrap();
 //!
 //! let mut builder = WebPushMessageBuilder::new(endpoint, &auth, &p256dh).unwrap();
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
@@ -46,7 +46,7 @@
 #[macro_use] extern crate serde_derive;
 extern crate serde_json;
 extern crate serde;
-extern crate rustc_serialize;
+extern crate base64;
 extern crate hyper;
 extern crate futures;
 extern crate tokio_core;

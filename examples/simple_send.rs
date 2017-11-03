@@ -4,14 +4,13 @@ extern crate serde;
 extern crate web_push;
 extern crate tokio_core;
 extern crate argparse;
-extern crate rustc_serialize;
+extern crate base64;
 
 use web_push::{WebPushMessageBuilder, WebPushClient, ContentEncoding};
 use argparse::{ArgumentParser, Store, StoreOption};
 use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
-use rustc_serialize::base64::FromBase64;
 
 #[derive(Deserialize, Serialize)]
 struct SubscriptionKeys {
@@ -57,8 +56,8 @@ fn main() {
 
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
-    let auth = subscription_info.keys.auth.from_base64().unwrap();
-    let p256dh = subscription_info.keys.p256dh.from_base64().unwrap();
+    let auth = base64::decode_config(&subscription_info.keys.auth, base64::URL_SAFE).unwrap();
+    let p256dh = base64::decode_config(&subscription_info.keys.p256dh, base64::URL_SAFE).unwrap();
 
     let mut builder = WebPushMessageBuilder::new(&subscription_info.endpoint, &auth, &p256dh).unwrap();
 
