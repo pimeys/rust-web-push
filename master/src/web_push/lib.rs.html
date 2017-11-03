@@ -125,15 +125,15 @@
 <span class="doccomment">//! ```no_run</span>
 <span class="doccomment">//! extern crate tokio_core;</span>
 <span class="doccomment">//! extern crate web_push;</span>
-<span class="doccomment">//! extern crate rustc_serialize;</span>
+<span class="doccomment">//! extern crate base64;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! use web_push::*;</span>
-<span class="doccomment">//! use rustc_serialize::base64::FromBase64;</span>
+<span class="doccomment">//! use base64::URL_SAFE;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # fn main() {</span>
 <span class="doccomment">//! let endpoint = &quot;https://updates.push.services.mozilla.com/wpush/v1/...&quot;;</span>
-<span class="doccomment">//! let p256dh = &quot;key_from_browser_as_base64&quot;.from_base64().unwrap();</span>
-<span class="doccomment">//! let auth = &quot;auth_from_browser_as_base64&quot;.from_base64().unwrap();</span>
+<span class="doccomment">//! let p256dh = base64::decode_config(&quot;key_from_browser_as_base64&quot;, URL_SAFE).unwrap();</span>
+<span class="doccomment">//! let auth = base64::decode_config(&quot;auth_from_browser_as_base64&quot;, URL_SAFE).unwrap();</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! let mut builder = WebPushMessageBuilder::new(endpoint, &amp;auth, &amp;p256dh).unwrap();</span>
 <span class="doccomment">//! let content = &quot;Encrypted payload to be sent in the notification&quot;.as_bytes();</span>
@@ -162,7 +162,7 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_derive</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rustc_serialize</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">base64</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">hyper</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">futures</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">tokio_core</span>;
