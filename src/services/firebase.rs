@@ -213,7 +213,7 @@ mod tests {
         assert_eq!("key=test_key", authorization);
         assert_eq!(expected_uri.host(), request.uri().host());
         assert_eq!(expected_uri.path(), request.uri().path());
-        assert_eq!(&ContentLength(5145), length);
+        assert_eq!(&ContentLength(5141), length);
     }
 
     #[test]
