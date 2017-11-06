@@ -275,7 +275,7 @@
     <span class="doccomment">/// characters, which is the largest that works with Google&#39;s and Mozilla&#39;s</span>
     <span class="doccomment">/// push servers.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">content</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">WebPushPayload</span>, <span class="ident">WebPushError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3800</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>) }
+        <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3798</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>) }
 
         <span class="kw">let</span> <span class="ident">private_key</span>        <span class="op">=</span> <span class="ident">agreement</span>::<span class="ident">EphemeralPrivateKey</span>::<span class="ident">generate</span>(<span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">rng</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">public_key</span>     <span class="op">=</span> [<span class="number">0u8</span>; <span class="ident">agreement</span>::<span class="ident">PUBLIC_KEY_MAX_LEN</span>];
@@ -286,11 +286,11 @@
 
         <span class="self">self</span>.<span class="ident">rng</span>.<span class="ident">fill</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">salt_bytes</span>)<span class="question-mark">?</span>;
         <span class="ident">private_key</span>.<span class="ident">compute_public_key</span>(<span class="ident">public_key</span>)<span class="question-mark">?</span>;
-        
+
         <span class="ident">agreement</span>::<span class="ident">agree_ephemeral</span>(<span class="ident">private_key</span>, <span class="ident">agr</span>, <span class="ident">peer_input</span>, <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>, <span class="op">|</span><span class="ident">shared_secret</span><span class="op">|</span> {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">encoding</span> {
                 <span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span> <span class="op">=&gt;</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payload</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3818</span>];
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payload</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3816</span>];
                     <span class="ident">front_pad</span>(<span class="ident">content</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>);
 
                     <span class="self">self</span>.<span class="ident">aes_gcm</span>(<span class="ident">shared_secret</span>, <span class="ident">public_key</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)<span class="question-mark">?</span>;
