@@ -2,7 +2,7 @@ use message::WebPushMessage;
 use hyper::client::Request;
 use hyper::{Post, StatusCode};
 use error::WebPushError;
-use hyper::header::ContentLength;
+use hyper::header::{ContentLength, ContentType};
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
@@ -23,12 +23,15 @@ pub fn build_request(message: WebPushMessage) -> Request {
     if let Some(payload) = message.payload {
         request.headers_mut().set_raw("Content-Encoding", payload.content_encoding);
         request.headers_mut().set(ContentLength(payload.content.len() as u64));
+        request.headers_mut().set(ContentType::octet_stream());
         request.set_body(payload.content.clone());
 
         for (k, v) in payload.crypto_headers.into_iter() {
             request.headers_mut().set_raw(k, v);
         }
     }
+
+    println!("{:?}", request);
 
     request
 }
@@ -47,7 +50,8 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
                 Err(_)       => Err(WebPushError::BadRequest(None)),
                 Ok(body_str) => match serde_json::from_str::<ErrorInfo>(&body_str) {
                     Ok(error_info) => Err(WebPushError::BadRequest(Some(error_info.error))),
-                    Err(_)         => Err(WebPushError::BadRequest(None)),
+                    Err(_) if body_str != "" => Err(WebPushError::BadRequest(Some(body_str))),
+                    Err(_) => Err(WebPushError::BadRequest(None))
                 },
             }
         },
@@ -62,16 +66,18 @@ mod tests {
     use hyper::StatusCode;
     use http_ece::ContentEncoding;
     use error::WebPushError;
-    use message::WebPushMessageBuilder;
+    use message::{WebPushMessageBuilder, SubscriptionInfo};
     use hyper::Uri;
-    use base64::{self, URL_SAFE};
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-        let mut builder = WebPushMessageBuilder::new("http://google.com", &auth, &p256dh).unwrap();
+        let info = SubscriptionInfo::new(
+            "http://google.com",
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            "xS03Fi5ErfTNH_l9WHE9Ig"
+        );
+
+        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_ttl(420);
 
@@ -91,11 +97,13 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_payload() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig",
-                                         URL_SAFE).unwrap();
-        let mut builder = WebPushMessageBuilder::new("http://google.com", &auth, &p256dh).unwrap();
+        let info = SubscriptionInfo::new(
+            "http://google.com",
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            "xS03Fi5ErfTNH_l9WHE9Ig"
+        );
+
+        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
 
@@ -110,7 +118,7 @@ mod tests {
         let length = request.headers().get::<ContentLength>().unwrap();
         let expected_uri: Uri = "http://google.com".parse().unwrap();
 
-        assert_eq!(&ContentLength(3816), length);
+        assert_eq!(&ContentLength(3070), length);
         assert_eq!("aesgcm", encoding);
         assert_eq!(expected_uri.host(), request.uri().host());
     }

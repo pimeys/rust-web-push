@@ -36,6 +36,13 @@ using Google Chrome, you need to register yourself
 into [Firebase](https://firebase.google.com/) and provide a GCM API Key with
 parameter `-k GCM_API_KEY`.
 
+VAPID
+-----
+
+VAPID authentication prevents unknown sources sending notifications to the client and allows sending notifications to Chrome without signing in to Firebase and providing a GCM API key. Instructions how to create a keypair for VAPID and using them can be found from the [webpush-java](https://github.com/web-push-libs/webpush-java/blob/master/doc/VAPID.md) documentation.
+
+The signature is created with `VapidSignatureBuilder`. It automatically adds the required claims `aud` and `exp`. Creating these claims to the builder manually will override the default values.
+
 Overview
 --------
 

@@ -154,18 +154,18 @@ mod tests {
     use hyper::StatusCode;
     use http_ece::ContentEncoding;
     use error::WebPushError;
-    use message::WebPushMessageBuilder;
+    use message::{WebPushMessageBuilder, SubscriptionInfo};
     use hyper::Uri;
-    use base64::{self, URL_SAFE};
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+        let info = SubscriptionInfo::new(
+            "https://android.googleapis.com/gcm/send/device_token_2",
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            "xS03Fi5ErfTNH_l9WHE9Ig"
+        );
 
-        let uri = "https://android.googleapis.com/gcm/send/device_token_2";
-        let mut builder = WebPushMessageBuilder::new(&uri, &auth, &p256dh).unwrap();
+        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_gcm_key("test_key");
         builder.set_ttl(420);
@@ -188,12 +188,13 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_a_payload() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+        let info = SubscriptionInfo::new(
+            "https://fcm.googleapis.com/gcm/send/device_token_2",
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            "xS03Fi5ErfTNH_l9WHE9Ig"
+        );
 
-        let uri = "https://fcm.googleapis.com/fcm/send/device_token_2";
-        let mut builder = WebPushMessageBuilder::new(&uri, &auth, &p256dh).unwrap();
+        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_gcm_key("test_key");
         builder.set_ttl(420);
@@ -213,7 +214,7 @@ mod tests {
         assert_eq!("key=test_key", authorization);
         assert_eq!(expected_uri.host(), request.uri().host());
         assert_eq!(expected_uri.path(), request.uri().path());
-        assert_eq!(&ContentLength(5141), length);
+        assert_eq!(&ContentLength(4149), length);
     }
 
     #[test]

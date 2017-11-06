@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::convert::From;
 use std::fmt;
+use std::io::Error as IoError;
 use ring::error;
 use tokio_timer::TimeoutError;
 use client::WebPushResponse;
@@ -9,6 +10,8 @@ use std::time::Duration;
 use hyper::error::UriError;
 use std::string::FromUtf8Error;
 use serde_json::error::Error as JsonError;
+use openssl::error::ErrorStack;
+use base64::DecodeError;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -34,6 +37,10 @@ pub enum WebPushError {
     PayloadTooLarge,
     /// Could not initialize a TLS connection
     TlsError,
+    /// Error in SSL signing
+    SslError,
+    /// Error in reading a file
+    IoError,
     /// Make sure the message was addressed to a registration token whose
     /// package name matches the value passed in the request (Google).
     InvalidPackageName,
@@ -41,7 +48,7 @@ pub enum WebPushError {
     InvalidTtl,
     /// The request was missing required crypto keys
     MissingCryptoKeys,
-    /// One or more of the crytpo key elements are invalid.
+    /// One or more of the crypto key elements are invalid.
     InvalidCryptoKeys,
     /// Corrupted response data
     InvalidResponse,
@@ -84,6 +91,24 @@ impl From<native_tls::Error> for WebPushError {
     }
 }
 
+impl From<IoError> for WebPushError {
+    fn from(_: IoError) -> WebPushError {
+        WebPushError::IoError
+    }
+}
+
+impl From<ErrorStack> for WebPushError {
+    fn from(_: ErrorStack) -> WebPushError {
+        WebPushError::SslError
+    }
+}
+
+impl From<DecodeError> for WebPushError {
+    fn from(_: DecodeError) -> WebPushError {
+        WebPushError::InvalidCryptoKeys
+    }
+}
+
 impl WebPushError {
     pub fn short_description(&self) -> &'static str {
         match *self {
@@ -103,6 +128,8 @@ impl WebPushError {
             WebPushError::InvalidResponse    => "invalid_response",
             WebPushError::MissingCryptoKeys  => "missing_crypto_keys",
             WebPushError::InvalidCryptoKeys  => "invalid_crypto_keys",
+            WebPushError::SslError           => "ssl_error",
+            WebPushError::IoError            => "io_error",
             WebPushError::Other(_)           => "other",
         }
     }
@@ -120,7 +147,7 @@ impl Error for WebPushError {
             WebPushError::ServerError(_) =>
                 "Server was unable to process the request, please try again later",
             WebPushError::PayloadTooLarge =>
-                "Maximum allowed payload size is 3800 characters",
+                "Maximum allowed payload size is 3070 characters",
             WebPushError::InvalidUri =>
                 "The provided URI is invalid",
             WebPushError::NotImplemented =>
@@ -133,6 +160,10 @@ impl Error for WebPushError {
                 "The URL specified is invalid and should not be used again",
             WebPushError::TlsError =>
                 "Could not initialize a TLS connection",
+            WebPushError::SslError =>
+                "Error signing with SSL",
+            WebPushError::IoError =>
+                "Error opening a file",
             WebPushError::InvalidPackageName =>
                 "Make sure the message was addressed to a registration token whose package name matches the value passed in the request.",
             WebPushError::InvalidTtl => "The TTL value provided was not valid or was not provided",
