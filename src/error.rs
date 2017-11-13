@@ -120,7 +120,7 @@ impl Error for WebPushError {
             WebPushError::ServerError(_) =>
                 "Server was unable to process the request, please try again later",
             WebPushError::PayloadTooLarge =>
-                "Maximum allowed payload size is 3800 characters",
+                "Maximum allowed payload size is 3070 characters",
             WebPushError::InvalidUri =>
                 "The provided URI is invalid",
             WebPushError::NotImplemented =>
