@@ -99,7 +99,7 @@ impl Service for WebPushClient {
                         _ =>
                             autopush::parse_response(response_status, body.to_vec()),
                     };
-
+                    println!("{:?}", response);
                     match response {
                         Err(WebPushError::ServerError(None)) => {
                             let retry_duration = match retry_after {

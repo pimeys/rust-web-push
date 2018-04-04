@@ -19,7 +19,13 @@
 //! let p256dh = base64::decode_config("key_from_browser_as_base64", URL_SAFE).unwrap();
 //! let auth = base64::decode_config("auth_from_browser_as_base64", URL_SAFE).unwrap();
 //!
-//! let mut builder = WebPushMessageBuilder::new(endpoint, &auth, &p256dh).unwrap();
+//! let subscription_info = SubscriptionInfo::new(
+//!     endpoint,
+//!     "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+//!     "xS03Fi5ErfTNH_l9WHE9Ig"
+//! );
+//!
+//! let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
 //! builder.set_payload(ContentEncoding::AesGcm, content);
 //!
@@ -44,7 +50,9 @@
 //! ```
 
 #[macro_use] extern crate serde_derive;
-extern crate serde_json;
+#[macro_use] extern crate lazy_static;
+#[macro_use] extern crate serde_json;
+
 extern crate serde;
 extern crate base64;
 extern crate hyper;
@@ -57,14 +65,27 @@ extern crate ring;
 extern crate crypto;
 extern crate untrusted;
 extern crate native_tls;
+extern crate openssl;
+extern crate erased_serde;
+extern crate time;
 
 mod client;
 mod error;
 mod http_ece;
 mod message;
 mod services;
+mod vapid;
 
 pub use error::WebPushError;
 pub use client::{WebPushResponse, WebPushClient};
-pub use message::{WebPushMessage, WebPushMessageBuilder, WebPushPayload};
+
+pub use message::{
+    WebPushMessage,
+    WebPushMessageBuilder,
+    WebPushPayload,
+    SubscriptionInfo,
+    SubscriptionKeys
+};
+
 pub use http_ece::ContentEncoding;
+pub use vapid::{VapidSignature, VapidSignatureBuilder};
