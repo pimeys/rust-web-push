@@ -4,19 +4,28 @@ use error::WebPushError;
 use vapid::VapidSignature;
 use base64;
 
+/// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscriptionKeys {
+    /// The public key
     pub p256dh: String,
+    /// Authentication secret
     pub auth: String,
 }
 
+/// Client info for sending the notification. Maps the values from browser's
+/// subscription info JSON data.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscriptionInfo {
+    /// The endpoint URI for sending the notification.
     pub endpoint: String,
+    /// The encryption key and secret for payload encryption.
     pub keys: SubscriptionKeys,
 }
 
 impl SubscriptionInfo {
+    /// A constructor function to create a new `SubscriptionInfo`, if not using
+    /// Serde's serialization.
     pub fn new<S>(endpoint: S, p256dh: S, auth:S) -> SubscriptionInfo
     where S: Into<String>
     {
@@ -36,19 +45,32 @@ pub enum WebPushService {
     Autopush,
 }
 
+/// The push content payload, already in an encrypted form.
 #[derive(Debug, PartialEq)]
 pub struct WebPushPayload {
+    /// Encrypted content data.
     pub content: Vec<u8>,
+    /// Headers depending on the authorization scheme and encryption standard.
     pub crypto_headers: Vec<(&'static str, String)>,
+    /// The encryption standard.
     pub content_encoding: &'static str,
 }
 
+/// Everything needed to send a push notification to the user.
 #[derive(Debug)]
 pub struct WebPushMessage {
+    /// When not using VAPID, certain browsers need a Firebase account key for
+    /// sending a notification.
     pub gcm_key: Option<String>,
+    /// The endpoint URI where to send the payload.
     pub endpoint: Uri,
+    /// Time to live, how long the message should wait in the server if user is
+    /// not online. Some services require this value to be set.
     pub ttl: Option<u32>,
+    /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
+    /// The service type where to connect. Firebase when not using VAPID with
+    /// Chrome-based browsers. Data is in JSON format instead of binary.
     pub service: WebPushService,
 }
 
@@ -57,6 +79,7 @@ struct WebPushPayloadBuilder<'a> {
     pub encoding: ContentEncoding,
 }
 
+/// The main class for creating a notification payload.
 pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
     gcm_key: Option<&'a str>,

@@ -14,6 +14,8 @@ use services::{firebase, autopush};
 use error::WebPushError;
 use message::{WebPushMessage, WebPushService};
 
+/// The response future. When successful, returns an empty `Unit` for failures
+/// gives a [WebPushError](enum.WebPushError.html).
 pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + 'static>);
 
 impl fmt::Debug for WebPushResponse {
@@ -31,6 +33,7 @@ impl Future for WebPushResponse {
     }
 }
 
+/// An async client for sending the notification payload.
 pub struct WebPushClient {
     client: Client<HttpsConnector<HttpConnector>>,
     timer: Timer,

@@ -23,9 +23,13 @@ lazy_static! {
         );
 }
 
+/// A struct representing a VAPID signature. Should be generated using the
+/// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
 #[derive(Debug)]
 pub struct VapidSignature {
+    /// The signature
     pub auth_t: String,
+    /// The public key
     pub auth_k: String,
 }
 
@@ -38,6 +42,9 @@ impl<'a> Into<String> for &'a VapidSignature {
 pub struct VapidSigner {}
 
 impl VapidSigner {
+    /// Create a signature with a given key. Sets the default audience from the
+    /// endpoint host and sets the expiry in twelve hours. Values can be
+    /// overwritten by adding the `aud` and `exp` claims.
     pub fn sign(key: VapidKey, endpoint: &Uri, mut claims: BTreeMap<&str, Value>) -> Result<VapidSignature, WebPushError> {
         if !claims.contains_key("aud") {
             let audience = format!(
