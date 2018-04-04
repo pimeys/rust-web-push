@@ -99,7 +99,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         self.claims.insert(key, val.into());
     }
 
-    /// Builds a signature to be used in [WebPushMessageBuilder](struct.VapidSignatureBuilder.html).
+    /// Builds a signature to be used in [WebPushMessageBuilder](struct.WebPushMessageBuilder.html).
     pub fn build(self) -> Result<VapidSignature, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
         let signature = VapidSigner::sign(self.key, &endpoint, self.claims)?;
