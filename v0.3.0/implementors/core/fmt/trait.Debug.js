@@ -1,0 +1,10 @@
+(function() {var implementors = {};
+implementors["web_push"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.WebPushResponse.html\" title=\"struct web_push::WebPushResponse\">WebPushResponse</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"enum\" href=\"web_push/enum.WebPushError.html\" title=\"enum web_push::WebPushError\">WebPushError</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.SubscriptionKeys.html\" title=\"struct web_push::SubscriptionKeys\">SubscriptionKeys</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.SubscriptionInfo.html\" title=\"struct web_push::SubscriptionInfo\">SubscriptionInfo</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.WebPushPayload.html\" title=\"struct web_push::WebPushPayload\">WebPushPayload</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.WebPushMessage.html\" title=\"struct web_push::WebPushMessage\">WebPushMessage</a>","impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html\" title=\"trait core::fmt::Debug\">Debug</a> for <a class=\"struct\" href=\"web_push/struct.VapidSignature.html\" title=\"struct web_push::VapidSignature\">VapidSignature</a>",];
+
+            if (window.register_implementors) {
+                window.register_implementors(implementors);
+            } else {
+                window.pending_implementors = implementors;
+            }
+        
+})()
