@@ -10,8 +10,11 @@
     <title>lib.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <script src="../../storage.js"></script>
     
 
     
@@ -28,10 +31,18 @@
     
 
     <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
         
         
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -113,6 +124,27 @@
 <span id="68">68</span>
 <span id="69">69</span>
 <span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! # Web Push</span>
 <span class="doccomment">//!</span>
@@ -135,7 +167,13 @@
 <span class="doccomment">//! let p256dh = base64::decode_config(&quot;key_from_browser_as_base64&quot;, URL_SAFE).unwrap();</span>
 <span class="doccomment">//! let auth = base64::decode_config(&quot;auth_from_browser_as_base64&quot;, URL_SAFE).unwrap();</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! let mut builder = WebPushMessageBuilder::new(endpoint, &amp;auth, &amp;p256dh).unwrap();</span>
+<span class="doccomment">//! let subscription_info = SubscriptionInfo::new(</span>
+<span class="doccomment">//!     endpoint,</span>
+<span class="doccomment">//!     &quot;BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8&quot;,</span>
+<span class="doccomment">//!     &quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>
+<span class="doccomment">//! );</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let mut builder = WebPushMessageBuilder::new(&amp;subscription_info).unwrap();</span>
 <span class="doccomment">//! let content = &quot;Encrypted payload to be sent in the notification&quot;.as_bytes();</span>
 <span class="doccomment">//! builder.set_payload(ContentEncoding::AesGcm, content);</span>
 <span class="doccomment">//!</span>
@@ -160,7 +198,9 @@
 <span class="doccomment">//! ```</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_derive</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lazy_static</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span>;
+
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">base64</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">hyper</span>;
@@ -173,17 +213,30 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">untrusted</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">native_tls</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">openssl</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">erased_serde</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">time</span>;
 
 <span class="kw">mod</span> <span class="ident">client</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">http_ece</span>;
 <span class="kw">mod</span> <span class="ident">message</span>;
 <span class="kw">mod</span> <span class="ident">services</span>;
+<span class="kw">mod</span> <span class="ident">vapid</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client</span>::{<span class="ident">WebPushResponse</span>, <span class="ident">WebPushClient</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">message</span>::{<span class="ident">WebPushMessage</span>, <span class="ident">WebPushMessageBuilder</span>, <span class="ident">WebPushPayload</span>};
+
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">message</span>::{
+    <span class="ident">WebPushMessage</span>,
+    <span class="ident">WebPushMessageBuilder</span>,
+    <span class="ident">WebPushPayload</span>,
+    <span class="ident">SubscriptionInfo</span>,
+    <span class="ident">SubscriptionKeys</span>
+};
+
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">http_ece</span>::<span class="ident">ContentEncoding</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">vapid</span>::{<span class="ident">VapidSignature</span>, <span class="ident">VapidSignatureBuilder</span>};
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
@@ -198,18 +251,22 @@
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 

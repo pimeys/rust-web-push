@@ -4,23 +4,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `ContentEncoding` enum in crate `web_push`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, ContentEncoding">
+    <meta name="description" content="Source to the Rust file `src/vapid/mod.rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang">
 
-    <title>web_push::ContentEncoding - Rust</title>
+    <title>mod.rs.html -- source</title>
 
-    <link rel="stylesheet" type="text/css" href="../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle">
     
-    <link rel="stylesheet" type="text/css" href="../dark.css">
-    <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
-    <script src="../storage.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css" id="themeStyle">
+    <script src="../../../storage.js"></script>
     
 
     
     
 </head>
-<body class="rustdoc enum">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -33,16 +33,16 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <p class='location'>Enum ContentEncoding</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.AesGcm">AesGcm</a><a href="#variant.Aes128Gcm">Aes128Gcm</a></div></div><p class='location'><a href='index.html'>web_push</a></p><script>window.sidebarCurrent = {name: 'ContentEncoding', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        
     </nav>
 
     <div class="theme-picker">
         <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../brush.svg" width="18" alt="Pick another theme!">
+            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
         </button>
         <div id="theme-choices"></div>
     </div>
-    <script src="../theme.js"></script>
+    <script src="../../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -54,18 +54,25 @@
         </form>
     </nav>
 
-    <section id='main' class="content">
-<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>web_push</a>::<wbr><a class="enum" href=''>ContentEncoding</a></span><span class='out-of-band'><span id='render-detail'>
-                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                       [<span class='inner'>&#x2212;</span>]
-                   </a>
-               </span><a class='srclink' href='../src/web_push/http_ece.rs.html#9-12' title='goto source code'>[src]</a></span></h1>
-<pre class='rust enum'>pub enum ContentEncoding {
-    AesGcm,
-    Aes128Gcm,
-}</pre><h2 id='variants' class='variants small-section-header'>
-                   Variants<a href='#variants' class='anchor'></a></h2>
-<span id="variant.AesGcm" class="variant small-section-header"><a href="#variant.AesGcm" class="anchor field"></a><span id='AesGcm.v' class='invisible'><code>AesGcm</code></span></span><span id="variant.Aes128Gcm" class="variant small-section-header"><a href="#variant.Aes128Gcm" class="anchor field"></a><span id='Aes128Gcm.v' class='invisible'><code>Aes128Gcm</code></span></span></section>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+</pre><pre class="rust ">
+<span class="kw">mod</span> <span class="ident">key</span>;
+<span class="kw">mod</span> <span class="ident">signer</span>;
+<span class="kw">mod</span> <span class="ident">builder</span>;
+
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">signer</span>::<span class="ident">VapidSignature</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">builder</span>::<span class="ident">VapidSignatureBuilder</span>;
+<span class="kw">use</span> <span class="self">self</span>::<span class="ident">key</span>::<span class="ident">VapidKey</span>;
+<span class="kw">use</span> <span class="self">self</span>::<span class="ident">signer</span>::<span class="ident">VapidSigner</span>;
+</pre>
+</section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -123,10 +130,10 @@
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../../";
         window.currentCrate = "web_push";
     </script>
-    <script src="../main.js"></script>
-    <script defer src="../search-index.js"></script>
+    <script src="../../../main.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

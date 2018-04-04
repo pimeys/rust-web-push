@@ -10,8 +10,11 @@
     <title>http_ece.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <script src="../../storage.js"></script>
     
 
     
@@ -28,10 +31,18 @@
     
 
     <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
         
         
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -233,13 +244,118 @@
 <span id="188">188</span>
 <span id="189">189</span>
 <span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ring</span>::{<span class="ident">hmac</span>, <span class="ident">hkdf</span>, <span class="ident">agreement</span>, <span class="ident">rand</span>, <span class="ident">digest</span>, <span class="ident">aead</span>};
 <span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">rand</span>::<span class="ident">SecureRandom</span>;
 <span class="kw">use</span> <span class="ident">untrusted</span>::<span class="ident">Input</span>;
 <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">use</span> <span class="ident">message</span>::<span class="ident">WebPushPayload</span>;
-<span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE</span>};
+<span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE_NO_PAD</span>};
+<span class="kw">use</span> <span class="ident">vapid</span>::<span class="ident">VapidSignature</span>;
 
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ContentEncoding</span> {
     <span class="ident">AesGcm</span>,
@@ -251,6 +367,7 @@
     <span class="ident">peer_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
     <span class="ident">encoding</span>: <span class="ident">ContentEncoding</span>,
     <span class="ident">rng</span>: <span class="ident">rand</span>::<span class="ident">SystemRandom</span>,
+    <span class="ident">vapid_signature</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VapidSignature</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">HttpEce</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -261,12 +378,18 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// `peer_public_key` is the `p256dh` and `peer_secret` the `auth` from</span>
     <span class="doccomment">/// browser subscription info.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">encoding</span>: <span class="ident">ContentEncoding</span>, <span class="ident">peer_public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">peer_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">HttpEce</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">encoding</span>: <span class="ident">ContentEncoding</span>,
+        <span class="ident">peer_public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="ident">peer_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="ident">vapid_signature</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VapidSignature</span><span class="op">&gt;</span>
+    ) <span class="op">-&gt;</span> <span class="ident">HttpEce</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
         <span class="ident">HttpEce</span> {
             <span class="ident">rng</span>: <span class="ident">rand</span>::<span class="ident">SystemRandom</span>::<span class="ident">new</span>(),
             <span class="ident">peer_public_key</span>: <span class="ident">peer_public_key</span>,
             <span class="ident">peer_secret</span>: <span class="ident">peer_secret</span>,
             <span class="ident">encoding</span>: <span class="ident">encoding</span>,
+            <span class="ident">vapid_signature</span>: <span class="ident">vapid_signature</span>,
         }
 
     }
@@ -295,19 +418,43 @@
 
                     <span class="self">self</span>.<span class="ident">aes_gcm</span>(<span class="ident">shared_secret</span>, <span class="ident">public_key</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)<span class="question-mark">?</span>;
 
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_headers</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-                    <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Crypto-Key&quot;</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;keyid=p256dh;dh={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="ident">public_key</span>, <span class="ident">URL_SAFE</span>))));
-                    <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Encryption&quot;</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;keyid=p256dh;salt={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="ident">URL_SAFE</span>))));
-
                     <span class="prelude-val">Ok</span>(<span class="ident">WebPushPayload</span> {
                         <span class="ident">content</span>: <span class="ident">payload</span>.<span class="ident">to_vec</span>(),
-                        <span class="ident">crypto_headers</span>: <span class="ident">crypto_headers</span>,
+                        <span class="ident">crypto_headers</span>: <span class="self">self</span>.<span class="ident">generate_headers</span>(<span class="ident">public_key</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>),
                         <span class="ident">content_encoding</span>: <span class="string">&quot;aesgcm&quot;</span>
                     })
                 },
                 <span class="ident">ContentEncoding</span>::<span class="ident">Aes128Gcm</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>),
             }
         })
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">salt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">String</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_headers</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+            <span class="string">&quot;dh={}&quot;</span>,
+            <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="ident">public_key</span>, <span class="ident">URL_SAFE_NO_PAD</span>)
+        );
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">signature</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">vapid_signature</span> {
+            <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot;{}; p256ecdsa={}&quot;</span>,
+                <span class="ident">crypto_key</span>,
+                <span class="ident">signature</span>.<span class="ident">auth_k</span>
+            );
+
+            <span class="kw">let</span> <span class="ident">sig_s</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">signature</span>.<span class="ident">into</span>();
+            <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Authorization&quot;</span>, <span class="ident">sig_s</span>));
+        };
+
+        <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Crypto-Key&quot;</span>, <span class="ident">crypto_key</span>));
+        <span class="ident">crypto_headers</span>.<span class="ident">push</span>((
+            <span class="string">&quot;Encryption&quot;</span>,
+            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;salt={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">salt</span>, <span class="ident">URL_SAFE_NO_PAD</span>))
+        ));
+
+        <span class="ident">crypto_headers</span>
     }
 
     <span class="doccomment">/// The aesgcm encrypted content-encoding, draft 3.</span>
@@ -367,13 +514,14 @@
     <span class="kw">use</span> <span class="ident">http_ece</span>::{<span class="ident">HttpEce</span>, <span class="ident">ContentEncoding</span>, <span class="ident">front_pad</span>};
     <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
     <span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE</span>, <span class="ident">URL_SAFE_NO_PAD</span>};
+    <span class="kw">use</span> <span class="ident">vapid</span>::<span class="ident">VapidSignature</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_payload_too_big</span>() {
         <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;BLMaF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8&quot;</span>,
                                            <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fj5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>);
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3801</span>];
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>), <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>));
@@ -385,7 +533,7 @@
                                            <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">Aes128Gcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>);
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">Aes128Gcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">10</span>];
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>), <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>));
@@ -396,7 +544,7 @@
         <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8&quot;</span>,
                                            <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>);
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> <span class="string">&quot;This is test data. XXX&quot;</span>.<span class="ident">as_bytes</span>();
         <span class="kw">let</span> <span class="ident">shared_secret</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">as_pubkey</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=&quot;</span>,
@@ -411,6 +559,77 @@
 
         <span class="ident">http_ece</span>.<span class="ident">aes_gcm</span>(<span class="kw-2">&amp;</span><span class="ident">shared_secret</span>, <span class="kw-2">&amp;</span><span class="ident">as_pubkey</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;tmE7-emq6iasohjXNMue0i0vn5o7EIOyP-bKyDoM1teHLcLtg44&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">payload</span>.<span class="ident">to_vec</span>(), <span class="ident">URL_SAFE_NO_PAD</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_headers_with_vapid</span>() {
+        <span class="kw">let</span> <span class="ident">as_pubkey</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+            <span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>,
+            <span class="ident">URL_SAFE</span>
+        ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">vapid_signature</span> <span class="op">=</span> <span class="ident">VapidSignature</span> {
+            <span class="ident">auth_t</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;foo&quot;</span>),
+            <span class="ident">auth_k</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;bar&quot;</span>),
+        };
+
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">Some</span>(<span class="ident">vapid_signature</span>));
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="macro">vec</span><span class="macro">!</span>[
+                (<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;WebPush foo&quot;</span>.<span class="ident">to_string</span>()),
+                (<span class="string">&quot;Crypto-Key&quot;</span>, <span class="string">&quot;dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs; p256ecdsa=bar&quot;</span>.<span class="ident">to_string</span>()),
+                (<span class="string">&quot;Encryption&quot;</span>, <span class="string">&quot;salt=YMcMuxqRkchXwy7vMwNl1Q&quot;</span>.<span class="ident">to_string</span>())],
+            <span class="ident">http_ece</span>.<span class="ident">generate_headers</span>(<span class="kw-2">&amp;</span><span class="ident">as_pubkey</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>))
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_headers_without_vapid</span>() {
+        <span class="kw">let</span> <span class="ident">as_pubkey</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
+                <span class="string">&quot;BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8&quot;</span>,
+                <span class="ident">URL_SAFE</span>
+            ).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="macro">vec</span><span class="macro">!</span>[
+                (<span class="string">&quot;Crypto-Key&quot;</span>, <span class="string">&quot;dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs&quot;</span>.<span class="ident">to_string</span>()),
+                (<span class="string">&quot;Encryption&quot;</span>, <span class="string">&quot;salt=YMcMuxqRkchXwy7vMwNl1Q&quot;</span>.<span class="ident">to_string</span>())],
+            <span class="ident">http_ece</span>.<span class="ident">generate_headers</span>(<span class="kw-2">&amp;</span><span class="ident">as_pubkey</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>))
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -438,18 +657,22 @@
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 
