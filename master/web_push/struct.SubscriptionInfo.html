@@ -59,31 +59,37 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/web_push/message.rs.html#14-17' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/web_push/message.rs.html#19-24' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct SubscriptionInfo {
     pub endpoint: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
     pub keys: <a class="struct" href="../web_push/struct.SubscriptionKeys.html" title="struct web_push::SubscriptionKeys">SubscriptionKeys</a>,
-}</pre><h2 id='fields' class='fields small-section-header'>
+}</pre><div class='docblock'><p>Client info for sending the notification. Maps the values from browser's
+subscription info JSON data.</p>
+</div><h2 id='fields' class='fields small-section-header'>
                        Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.endpoint" class="structfield small-section-header">
                            <a href="#structfield.endpoint" class="anchor field"></a>
                            <span id="endpoint.v" class='invisible'>
                            <code>endpoint: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code>
-                           </span></span><span id="structfield.keys" class="structfield small-section-header">
+                           </span></span><div class='docblock'><p>The endpoint URI for sending the notification.</p>
+</div><span id="structfield.keys" class="structfield small-section-header">
                            <a href="#structfield.keys" class="anchor field"></a>
                            <span id="keys.v" class='invisible'>
                            <code>keys: <a class="struct" href="../web_push/struct.SubscriptionKeys.html" title="struct web_push::SubscriptionKeys">SubscriptionKeys</a></code>
-                           </span></span>
+                           </span></span><div class='docblock'><p>The encryption key and secret for payload encryption.</p>
+</div>
                     <h2 id='methods' class='small-section-header'>
                       Methods<a href='#methods' class='anchor'></a>
                     </h2>
-                <h3 id='impl' class='impl'><span class='in-band'><code>impl <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a></code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#19-31' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>pub fn <a href='#method.new' class='fnname'>new</a>&lt;S&gt;(endpoint: S, p256dh: S, auth: S) -&gt; <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a> <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;S: <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#20-30' title='goto source code'>[src]</a></span></h4>
-</div>
+                <h3 id='impl' class='impl'><span class='in-band'><code>impl <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a></code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#26-40' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>pub fn <a href='#method.new' class='fnname'>new</a>&lt;S&gt;(endpoint: S, p256dh: S, auth: S) -&gt; <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a> <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;S: <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#29-39' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>A constructor function to create a new <code>SubscriptionInfo</code>, if not using
+Serde's serialization.</p>
+</div></div>
             <h2 id='implementations' class='small-section-header'>
               Trait Implementations<a href='#implementations' class='anchor'></a>
             </h2>
-        <h3 id='impl-Debug' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a></code><a href='#impl-Debug' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#13' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#13' title='goto source code'>[src]</a></span></h4>
+        <h3 id='impl-Debug' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../web_push/struct.SubscriptionInfo.html" title="struct web_push::SubscriptionInfo">SubscriptionInfo</a></code><a href='#impl-Debug' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#18' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/web_push/message.rs.html#18' title='goto source code'>[src]</a></span></h4>
 <div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
 </div></div></section>
     <section id='search' class="content hidden"></section>

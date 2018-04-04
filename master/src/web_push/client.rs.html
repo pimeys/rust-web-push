@@ -184,6 +184,9 @@
 <span id="128">128</span>
 <span id="129">129</span>
 <span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">client</span>::{<span class="ident">HttpConnector</span>, <span class="ident">Client</span>};
 <span class="kw">use</span> <span class="ident">hyper_tls</span>::<span class="ident">HttpsConnector</span>;
@@ -201,6 +204,8 @@
 <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">use</span> <span class="ident">message</span>::{<span class="ident">WebPushMessage</span>, <span class="ident">WebPushService</span>};
 
+<span class="doccomment">/// The response future. When successful, returns an empty `Unit` for failures</span>
+<span class="doccomment">/// gives a [WebPushError](enum.WebPushError.html).</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushResponse</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (), <span class="ident">Error</span> <span class="op">=</span> <span class="ident">WebPushError</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">WebPushResponse</span> {
@@ -218,6 +223,7 @@
     }
 }
 
+<span class="doccomment">/// An async client for sending the notification payload.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushClient</span> {
     <span class="ident">client</span>: <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">HttpsConnector</span><span class="op">&lt;</span><span class="ident">HttpConnector</span><span class="op">&gt;&gt;</span>,
     <span class="ident">timer</span>: <span class="ident">Timer</span>,

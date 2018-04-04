@@ -206,6 +206,29 @@
 <span id="150">150</span>
 <span id="151">151</span>
 <span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">hyper</span>::<span class="ident">Uri</span>;
 <span class="kw">use</span> <span class="ident">http_ece</span>::{<span class="ident">HttpEce</span>, <span class="ident">ContentEncoding</span>};
@@ -213,19 +236,28 @@
 <span class="kw">use</span> <span class="ident">vapid</span>::<span class="ident">VapidSignature</span>;
 <span class="kw">use</span> <span class="ident">base64</span>;
 
+<span class="doccomment">/// Encryption keys from the client.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SubscriptionKeys</span> {
+    <span class="doccomment">/// The public key</span>
     <span class="kw">pub</span> <span class="ident">p256dh</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Authentication secret</span>
     <span class="kw">pub</span> <span class="ident">auth</span>: <span class="ident">String</span>,
 }
 
+<span class="doccomment">/// Client info for sending the notification. Maps the values from browser&#39;s</span>
+<span class="doccomment">/// subscription info JSON data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SubscriptionInfo</span> {
+    <span class="doccomment">/// The endpoint URI for sending the notification.</span>
     <span class="kw">pub</span> <span class="ident">endpoint</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The encryption key and secret for payload encryption.</span>
     <span class="kw">pub</span> <span class="ident">keys</span>: <span class="ident">SubscriptionKeys</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">SubscriptionInfo</span> {
+    <span class="doccomment">/// A constructor function to create a new `SubscriptionInfo`, if not using</span>
+    <span class="doccomment">/// Serde&#39;s serialization.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">endpoint</span>: <span class="ident">S</span>, <span class="ident">p256dh</span>: <span class="ident">S</span>, <span class="ident">auth</span>:<span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">SubscriptionInfo</span>
     <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>
     {
@@ -245,19 +277,32 @@
     <span class="ident">Autopush</span>,
 }
 
+<span class="doccomment">/// The push content payload, already in an encrypted form.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushPayload</span> {
+    <span class="doccomment">/// Encrypted content data.</span>
     <span class="kw">pub</span> <span class="ident">content</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Headers depending on the authorization scheme and encryption standard.</span>
     <span class="kw">pub</span> <span class="ident">crypto_headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
+    <span class="doccomment">/// The encryption standard.</span>
     <span class="kw">pub</span> <span class="ident">content_encoding</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
 }
 
+<span class="doccomment">/// Everything needed to send a push notification to the user.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushMessage</span> {
+    <span class="doccomment">/// When not using VAPID, certain browsers need a Firebase account key for</span>
+    <span class="doccomment">/// sending a notification.</span>
     <span class="kw">pub</span> <span class="ident">gcm_key</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The endpoint URI where to send the payload.</span>
     <span class="kw">pub</span> <span class="ident">endpoint</span>: <span class="ident">Uri</span>,
+    <span class="doccomment">/// Time to live, how long the message should wait in the server if user is</span>
+    <span class="doccomment">/// not online. Some services require this value to be set.</span>
     <span class="kw">pub</span> <span class="ident">ttl</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The encrypted request payload, if sending any data.</span>
     <span class="kw">pub</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">WebPushPayload</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The service type where to connect. Firebase when not using VAPID with</span>
+    <span class="doccomment">/// Chrome-based browsers. Data is in JSON format instead of binary.</span>
     <span class="kw">pub</span> <span class="ident">service</span>: <span class="ident">WebPushService</span>,
 }
 
@@ -266,6 +311,7 @@
     <span class="kw">pub</span> <span class="ident">encoding</span>: <span class="ident">ContentEncoding</span>,
 }
 
+<span class="doccomment">/// The main class for creating a notification payload.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushMessageBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">subscription_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">SubscriptionInfo</span>,
     <span class="ident">gcm_key</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,

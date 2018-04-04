@@ -110,21 +110,26 @@ The client is asynchronious and uses <a href="https://tokio.rs">Tokio</a> with f
                            <td><a class="struct" href="struct.SubscriptionInfo.html"
                                   title='struct web_push::SubscriptionInfo'>SubscriptionInfo</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Client info for sending the notification. Maps the values from browser's
+subscription info JSON data.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.SubscriptionKeys.html"
                                   title='struct web_push::SubscriptionKeys'>SubscriptionKeys</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Encryption keys from the client.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.VapidSignature.html"
                                   title='struct web_push::VapidSignature'>VapidSignature</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>A struct representing a VAPID signature. Should be generated using the
+<a href="struct.VapidSignatureBuilder.html">VapidSignatureBuilder</a>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -141,35 +146,41 @@ FCM service. And prevent unauthorized notifications to be sent to the client.</p
                            <td><a class="struct" href="struct.WebPushClient.html"
                                   title='struct web_push::WebPushClient'>WebPushClient</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>An async client for sending the notification payload.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.WebPushMessage.html"
                                   title='struct web_push::WebPushMessage'>WebPushMessage</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>Everything needed to send a push notification to the user.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.WebPushMessageBuilder.html"
                                   title='struct web_push::WebPushMessageBuilder'>WebPushMessageBuilder</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>The main class for creating a notification payload.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.WebPushPayload.html"
                                   title='struct web_push::WebPushPayload'>WebPushPayload</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>The push content payload, already in an encrypted form.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.WebPushResponse.html"
                                   title='struct web_push::WebPushResponse'>WebPushResponse</a></td>
                            <td class='docblock-short'>
-                                
+                                <p>The response future. When successful, returns an empty <code>Unit</code> for failures
+gives a <a href="enum.WebPushError.html">WebPushError</a>.</p>
+
                            </td>
                        </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>

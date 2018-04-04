@@ -327,7 +327,7 @@
         <span class="self">self</span>.<span class="ident">claims</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">val</span>.<span class="ident">into</span>());
     }
 
-    <span class="doccomment">/// Builds a signature to be used in [WebPushMessageBuilder](struct.VapidSignatureBuilder.html).</span>
+    <span class="doccomment">/// Builds a signature to be used in [WebPushMessageBuilder](struct.WebPushMessageBuilder.html).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VapidSignature</span>, <span class="ident">WebPushError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">endpoint</span>: <span class="ident">Uri</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">subscription_info</span>.<span class="ident">endpoint</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">VapidSigner</span>::<span class="ident">sign</span>(<span class="self">self</span>.<span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">endpoint</span>, <span class="self">self</span>.<span class="ident">claims</span>)<span class="question-mark">?</span>;
