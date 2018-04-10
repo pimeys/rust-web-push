@@ -34,6 +34,13 @@ use message::SubscriptionInfo;
 /// openssl ec -in private.pem -text -noout -conv_form uncompressed
 /// ```
 ///
+/// ... or a base64 encoded string, which the client should convert into
+/// byte form before using:
+///
+/// ```bash,ignore
+/// openssl ec -in private.pem -pubout -outform DER|tail -c 65|base64|tr '/+' '_-'|tr -d '\n'
+/// ```
+///
 /// To create a VAPID signature:
 ///
 /// ```no_run
