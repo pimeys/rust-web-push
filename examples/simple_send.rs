@@ -52,7 +52,7 @@ fn main() {
     let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
 
     if let Some(ref payload) = push_payload {
-        builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, payload.as_bytes());
     }
 
     if let Some(ref gcm_key) = gcm_api_key {

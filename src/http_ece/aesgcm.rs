@@ -47,25 +47,40 @@ impl<'a> Encryptor<'a> for AesGcm<'a> {
         context.push((self.public_key.len() & 0xff) as u8);
         context.extend_from_slice(self.public_key);
 
-        let mut prk = [0u8; 32];
-        hkdf::extract_and_expand(&client_auth_secret, self.shared_secret, "Content-Encoding: auth\0".as_bytes(), &mut prk);
+        let mut ikm = [0u8; 32];
+        hkdf::extract_and_expand(
+            &client_auth_secret,
+            self.shared_secret,
+            b"Content-Encoding: auth\0",
+            &mut ikm
+        );
 
         let mut cek_info = Vec::with_capacity(165);
         cek_info.extend_from_slice("Content-Encoding: aesgcm\0".as_bytes());
         cek_info.extend_from_slice(&context);
 
         let mut content_encryption_key = [0u8; 16];
-        hkdf::extract_and_expand(&salt, &prk, &cek_info, &mut content_encryption_key);
+        hkdf::extract_and_expand(
+            &salt,
+            &ikm,
+            &cek_info,
+            &mut content_encryption_key
+        );
 
         let mut nonce_info = Vec::with_capacity(164);
         nonce_info.extend_from_slice("Content-Encoding: nonce\0".as_bytes());
         nonce_info.extend_from_slice(&context);
 
         let mut nonce = [0u8; 12];
-        hkdf::extract_and_expand(&salt, &prk, &nonce_info, &mut nonce);
+        hkdf::extract_and_expand(
+            &salt,
+            &ikm,
+            &nonce_info,
+            &mut nonce
+        );
 
         let sealing_key = aead::SealingKey::new(&aead::AES_128_GCM, &content_encryption_key)?;
-        aead::seal_in_place(&sealing_key, &nonce, "".as_bytes(), &mut payload, 16)?;
+        aead::seal_in_place(&sealing_key, &nonce, &[], &mut payload, 16)?;
 
         Ok(())
     }
@@ -85,7 +100,7 @@ impl<'a> Encryptor<'a> for AesGcm<'a> {
                 signature.auth_k
             );
 
-            let sig_s: String = signature.into();
+            let sig_s = format!("WebPush {}", signature.auth_t);
             crypto_headers.push(("Authorization", sig_s));
         };
 
@@ -98,15 +113,14 @@ impl<'a> Encryptor<'a> for AesGcm<'a> {
         crypto_headers
     }
 
-    fn pad(payload: &'a [u8], padded_output: &'a mut [u8]) {
-        let payload_len = payload.len();
+    fn pad(&self, payload: &'a [u8], padded_output: &'a mut [u8]) {
         let max_payload = padded_output.len() - 2 - 16;
         let padding_size = max_payload - payload.len();
 
         padded_output[0] = (padding_size >> 8) as u8;
         padded_output[1] = (padding_size & 0xff) as u8;
 
-        for i in 0..payload_len {
+        for i in 0..payload.len() {
             padded_output[padding_size + i + 2] = payload[i];
         }
     }

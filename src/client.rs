@@ -96,13 +96,13 @@ impl Service for WebPushClient {
                 .map_err(|_| WebPushError::Unspecified)
                 .concat2()
                 .and_then(move |body| {
+                    println!("{:?}", String::from_utf8(body.to_vec()).unwrap());
                     let response = match service {
                         WebPushService::Firebase =>
                             firebase::parse_response(response_status, body.to_vec()),
                         _ =>
                             autopush::parse_response(response_status, body.to_vec()),
                     };
-                    println!("{:?}", response);
                     match response {
                         Err(WebPushError::ServerError(None)) => {
                             let retry_duration = match retry_after {

@@ -1,7 +1,9 @@
 mod aesgcm;
+mod aes128gcm;
 mod encryptor;
 
 pub use self::aesgcm::AesGcm;
+pub use self::aes128gcm::Aes128Gcm;
 pub use self::encryptor::Encryptor;
 
 use ring::{agreement, rand};
@@ -70,9 +72,6 @@ impl<'a> HttpEce<'a> {
         agreement::agree_ephemeral(private_key, agr, peer_input, WebPushError::Unspecified, |shared_secret| {
             match self.encoding {
                 ContentEncoding::AesGcm => {
-                    let mut payload = [0u8; 3070];
-                    AesGcm::pad(content, &mut payload);
-
                     let aes_gcm = AesGcm::new(
                         self.peer_public_key,
                         self.peer_secret,
@@ -82,6 +81,8 @@ impl<'a> HttpEce<'a> {
                         self.vapid_signature
                     );
 
+                    let mut payload = [0u8; 3070];
+                    aes_gcm.pad(content, &mut payload);
                     aes_gcm.encrypt(&mut payload)?;
 
                     Ok(WebPushPayload {
@@ -90,7 +91,26 @@ impl<'a> HttpEce<'a> {
                         content_encoding: "aesgcm"
                     })
                 },
-                ContentEncoding::Aes128Gcm => Err(WebPushError::NotImplemented),
+                ContentEncoding::Aes128Gcm => {
+                    let aes_128_gcm = Aes128Gcm::new(
+                        self.peer_public_key,
+                        self.peer_secret,
+                        shared_secret,
+                        public_key,
+                        &salt_bytes,
+                        self.vapid_signature
+                    );
+
+                    let mut payload = [0u8; 88];
+                    aes_128_gcm.pad(content, &mut payload);
+                    aes_128_gcm.encrypt(&mut payload)?;
+
+                    Ok(WebPushPayload {
+                        content: payload.to_vec(),
+                        crypto_headers: aes_128_gcm.headers(),
+                        content_encoding: "aes128gcm"
+                    })
+                },
             }
         })
     }

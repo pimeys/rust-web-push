@@ -68,6 +68,8 @@ extern crate native_tls;
 extern crate openssl;
 extern crate erased_serde;
 extern crate time;
+extern crate pretty_env_logger;
+#[macro_use] extern crate log;
 
 mod client;
 mod error;

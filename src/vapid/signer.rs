@@ -1,6 +1,9 @@
-use openssl::pkey::PKey;
-use openssl::hash::MessageDigest;
-use openssl::sign::{Signer as SslSigner};
+use openssl::{
+    pkey::PKey,
+    hash::MessageDigest,
+    sign::{Signer as SslSigner},
+};
+
 use hyper::Uri;
 use serde_json;
 use error::WebPushError;
@@ -31,12 +34,6 @@ pub struct VapidSignature {
     pub auth_t: String,
     /// The public key
     pub auth_k: String,
-}
-
-impl<'a> Into<String> for &'a VapidSignature {
-    fn into(self) -> String {
-        format!("WebPush {}", self.auth_t)
-    }
 }
 
 pub struct VapidSigner {}
@@ -95,27 +92,8 @@ impl VapidSigner {
         sigval.extend(r_val);
         sigval.extend(s_val);
 
-        println!("{}", auth_k);
-
         let auth_t = format!("{}.{}", signing_input, base64::encode_config(&sigval, URL_SAFE_NO_PAD));
 
         Ok(VapidSignature { auth_t, auth_k })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use vapid::VapidSignature;
-
-    #[test]
-    fn test_vapid_signature_aesgcm_format() {
-        let vapid_signature = &VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let header_value: String = vapid_signature.into();
-
-        assert_eq!("WebPush foo", &header_value);
     }
 }
