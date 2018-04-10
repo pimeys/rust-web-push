@@ -225,6 +225,13 @@
 <span id="169">169</span>
 <span id="170">170</span>
 <span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">openssl</span>::<span class="ident">ec</span>::<span class="ident">EcKey</span>;
 <span class="kw">use</span> <span class="ident">openssl</span>::<span class="ident">pkey</span>::<span class="ident">Private</span>;
@@ -260,6 +267,13 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```bash,ignore</span>
 <span class="doccomment">/// openssl ec -in private.pem -text -noout -conv_form uncompressed</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ... or a base64 encoded string, which the client should convert into</span>
+<span class="doccomment">/// byte form before using:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```bash,ignore</span>
+<span class="doccomment">/// openssl ec -in private.pem -pubout -outform DER|tail -c 65|base64|tr &#39;/+&#39; &#39;_-&#39;|tr -d &#39;\n&#39;</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// To create a VAPID signature:</span>
