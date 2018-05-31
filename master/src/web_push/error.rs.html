@@ -10,10 +10,11 @@
     <title>error.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
     <script src="../../storage.js"></script>
     
 
@@ -299,55 +300,55 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">JsonError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">JsonError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">JsonError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">FromUtf8Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">FromUtf8Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">FromUtf8Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">UriError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">UriError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">UriError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidUri</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">TimeoutError</span><span class="op">&lt;</span><span class="ident">WebPushResponse</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">TimeoutError</span><span class="op">&lt;</span><span class="ident">WebPushResponse</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">TimeoutError</span><span class="op">&lt;</span><span class="ident">WebPushResponse</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">TimeoutError</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">error</span>::<span class="ident">Unspecified</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">error</span>::<span class="ident">Unspecified</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">error</span>::<span class="ident">Unspecified</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">native_tls</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">native_tls</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">native_tls</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">TlsError</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">IoError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">IoError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">IoError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">IoError</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ErrorStack</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">ErrorStack</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">ErrorStack</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">SslError</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">DecodeError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WebPushError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(_: <span class="ident">DecodeError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">DecodeError</span>) <span class="op">-&gt;</span> <span class="ident">WebPushError</span> {
         <span class="ident">WebPushError</span>::<span class="ident">InvalidCryptoKeys</span>
     }
 }
@@ -357,8 +358,8 @@
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>        <span class="op">=&gt;</span> <span class="string">&quot;unspecified&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span>       <span class="op">=&gt;</span> <span class="string">&quot;unauthorized&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(_)      <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(_)     <span class="op">=&gt;</span> <span class="string">&quot;server_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(<span class="kw">_</span>)      <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="kw">_</span>)     <span class="op">=&gt;</span> <span class="string">&quot;server_error&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>     <span class="op">=&gt;</span> <span class="string">&quot;not_implemented&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">InvalidUri</span>         <span class="op">=&gt;</span> <span class="string">&quot;invalid_uri&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">TimeoutError</span>       <span class="op">=&gt;</span> <span class="string">&quot;timeout_error&quot;</span>,
@@ -373,7 +374,7 @@
             <span class="ident">WebPushError</span>::<span class="ident">InvalidCryptoKeys</span>  <span class="op">=&gt;</span> <span class="string">&quot;invalid_crypto_keys&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">SslError</span>           <span class="op">=&gt;</span> <span class="string">&quot;ssl_error&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">IoError</span>            <span class="op">=&gt;</span> <span class="string">&quot;io_error&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(_)           <span class="op">=&gt;</span> <span class="string">&quot;other&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(<span class="kw">_</span>)           <span class="op">=&gt;</span> <span class="string">&quot;other&quot;</span>,
         }
     }
 }
@@ -385,9 +386,9 @@
                 <span class="string">&quot;An unknown error happened encrypting the message&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span> <span class="op">=&gt;</span>
                 <span class="string">&quot;Please provide valid credentials to send the notification&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(_) <span class="op">=&gt;</span>
+            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
                 <span class="string">&quot;Request was badly formed&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(_) <span class="op">=&gt;</span>
+            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
                 <span class="string">&quot;Server was unable to process the request, please try again later&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span> <span class="op">=&gt;</span>
                 <span class="string">&quot;Maximum allowed payload size is 3070 characters&quot;</span>,
@@ -413,7 +414,7 @@
             <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span> <span class="op">=&gt;</span> <span class="string">&quot;The response data couldn&#39;t be parses&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">MissingCryptoKeys</span>  <span class="op">=&gt;</span> <span class="string">&quot;The request is missing cryptographic keys&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">InvalidCryptoKeys</span>  <span class="op">=&gt;</span> <span class="string">&quot;The request is having invalid cryptographic keys&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(_) <span class="op">=&gt;</span> <span class="string">&quot;An unknown error when connecting the notification service&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;An unknown error when connecting the notification service&quot;</span>,
         }
     }
 

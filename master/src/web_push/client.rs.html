@@ -10,10 +10,11 @@
     <title>client.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
     <script src="../../storage.js"></script>
     
 
@@ -269,12 +270,12 @@
         <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">HttpRequest</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
             <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span>
                 <span class="ident">firebase</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
-            _ <span class="op">=&gt;</span>
+            <span class="kw">_</span> <span class="op">=&gt;</span>
                 <span class="ident">autopush</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
         };
 
         <span class="kw">let</span> <span class="ident">request_f</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">request</span>).<span class="ident">map_err</span>(
-            <span class="op">|</span>_<span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>,
+            <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>,
         );
 
         <span class="kw">let</span> <span class="ident">push_f</span> <span class="op">=</span> <span class="ident">request_f</span>.<span class="ident">and_then</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">response</span>: <span class="ident">HttpResponse</span><span class="op">|</span> {
@@ -283,13 +284,13 @@
 
             <span class="ident">response</span>
                 .<span class="ident">body</span>()
-                .<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>)
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>)
                 .<span class="ident">concat2</span>()
                 .<span class="ident">and_then</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">body</span><span class="op">|</span> {
                     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
                         <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span>
                             <span class="ident">firebase</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
-                        _ <span class="op">=&gt;</span>
+                        <span class="kw">_</span> <span class="op">=&gt;</span>
                             <span class="ident">autopush</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
                     };
                     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">response</span>);

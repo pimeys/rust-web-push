@@ -10,10 +10,11 @@
     <title>message.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
     <script src="../../storage.js"></script>
     
 
@@ -368,11 +369,11 @@
         <span class="kw">let</span> <span class="ident">endpoint</span>: <span class="ident">Uri</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">subscription_info</span>.<span class="ident">endpoint</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">vapid_signature</span> {
-            <span class="prelude-val">Some</span>(_) <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Autopush</span>,
-            _ <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">endpoint</span>.<span class="ident">host</span>() {
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Autopush</span>,
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">endpoint</span>.<span class="ident">host</span>() {
                 <span class="prelude-val">Some</span>(<span class="string">&quot;android.googleapis.com&quot;</span>) <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Firebase</span>,
                 <span class="prelude-val">Some</span>(<span class="string">&quot;fcm.googleapis.com&quot;</span>)     <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Firebase</span>,
-                _                              <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Autopush</span>,
+                <span class="kw">_</span>                              <span class="op">=&gt;</span> <span class="ident">WebPushService</span>::<span class="ident">Autopush</span>,
             }
         };
 
