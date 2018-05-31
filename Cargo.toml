@@ -1,7 +1,7 @@
 [package]
 name = "web-push"
 description = "Web push notification client with support for http-ece encryption and VAPID authentication."
-version = "0.3.2"
+version = "0.4.0-pre"
 authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
 license = "Apache-2.0"
 homepage = "https://github.com/pimeys/rust-web-push"
@@ -16,11 +16,11 @@ travis-ci = { repository = "pimeys/rust-web-push" }
 
 [dependencies]
 futures = "0.1"
-tokio-core = "0.1"
 tokio-service = "0.1"
 tokio-timer = "0.1"
-hyper = "0.11"
-hyper-tls = "0.1"
+hyper = { git = "https://github.com/hyperium/hyper.git" }
+hyper-tls = { git = "https://github.com/hyperium/hyper-tls.git" }
+http = "0.1"
 serde = "1.0"
 serde_json = "1.0"
 serde_derive = "1.0"
@@ -33,6 +33,8 @@ base64 = "0.7"
 openssl = "0.10"
 time = "0.1"
 lazy_static = "1.0"
+chrono = "0.4"
 
 [dev-dependencies]
 argparse = "0.2"
+tokio = "0.1"

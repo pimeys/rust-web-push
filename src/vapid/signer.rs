@@ -49,7 +49,7 @@ impl VapidSigner {
         if !claims.contains_key("aud") {
             let audience = format!(
                 "{}://{}",
-                endpoint.scheme().unwrap(),
+                endpoint.scheme_part().unwrap(),
                 endpoint.host().unwrap()
             );
             claims.insert("aud", Value::String(audience));

@@ -1,22 +1,42 @@
-use hyper::client::{HttpConnector, Client};
+use hyper::{
+    client::{
+        HttpConnector,
+        Client,
+    },
+    Body,
+    Request as HttpRequest,
+};
+
+use futures::{
+    Future,
+    Poll,
+    future::{
+        ok,
+        err,
+    },
+    Stream,
+};
+
+use std::{
+    fmt,
+    time::Duration,
+};
+
+use error::{
+    WebPushError,
+    RetryAfter,
+};
+
+use http::header::RETRY_AFTER;
 use hyper_tls::HttpsConnector;
-use hyper::client::{Request as HttpRequest, Response as HttpResponse};
-use hyper::header::RetryAfter;
-use futures::{Future, Poll};
-use futures::future::{ok, err};
-use futures::stream::Stream;
-use tokio_core::reactor::Handle;
 use tokio_service::Service;
 use tokio_timer::{Timer, Timeout};
-use std::fmt;
-use std::time::{SystemTime, Duration};
 use services::{firebase, autopush};
-use error::WebPushError;
 use message::{WebPushMessage, WebPushService};
 
 /// The response future. When successful, returns an empty `Unit` for failures
 /// gives a [WebPushError](enum.WebPushError.html).
-pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + 'static>);
+pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + Send + 'static>);
 
 impl fmt::Debug for WebPushResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -40,14 +60,12 @@ pub struct WebPushClient {
 }
 
 impl WebPushClient {
-    pub fn new(handle: &Handle) -> Result<WebPushClient, WebPushError> {
-        let client = Client::configure()
-            .connector(HttpsConnector::new(4, handle)?)
-            .keep_alive(true)
-            .build(handle);
+    pub fn new() -> Result<WebPushClient, WebPushError> {
+        let mut builder = Client::builder();
+        builder.keep_alive(true);
 
         Ok(WebPushClient {
-            client: client,
+            client: builder.build(HttpsConnector::new(4)?),
             timer: Timer::default(),
         })
     }
@@ -76,7 +94,7 @@ impl Service for WebPushClient {
     fn call(&self, message: Self::Request) -> Self::Future {
         let service = message.service.clone();
 
-        let request: HttpRequest = match service {
+        let request: HttpRequest<Body> = match service {
             WebPushService::Firebase =>
                 firebase::build_request(message),
             _ =>
@@ -87,12 +105,15 @@ impl Service for WebPushClient {
             |_| WebPushError::Unspecified,
         );
 
-        let push_f = request_f.and_then(move |response: HttpResponse| {
-            let retry_after = response.headers().get::<RetryAfter>().map(|ra| *ra);
+        let push_f = request_f.and_then(move |response| {
+            let retry_after = response.headers()
+                .get(RETRY_AFTER)
+                .and_then(|ra| ra.to_str().ok())
+                .and_then(|ra| RetryAfter::from_str(ra));
             let response_status = response.status().clone();
 
             response
-                .body()
+                .into_body()
                 .map_err(|_| WebPushError::Unspecified)
                 .concat2()
                 .and_then(move |body| {
@@ -102,24 +123,9 @@ impl Service for WebPushClient {
                         _ =>
                             autopush::parse_response(response_status, body.to_vec()),
                     };
-                    println!("{:?}", response);
                     match response {
                         Err(WebPushError::ServerError(None)) => {
-                            let retry_duration = match retry_after {
-                                Some(RetryAfter::Delay(duration)) => Some(duration),
-                                Some(RetryAfter::DateTime(retry_time)) => {
-                                    let retry_system_time: SystemTime = retry_time.into();
-
-                                    let duration = retry_system_time
-                                        .duration_since(SystemTime::now())
-                                        .unwrap_or(Duration::new(0, 0));
-
-                                    Some(duration)
-                                }
-                                None => None,
-                            };
-
-                            err(WebPushError::ServerError(retry_duration))
+                            err(WebPushError::ServerError(retry_after))
                         }
 
                         Err(e) => err(e),

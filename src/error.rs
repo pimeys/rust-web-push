@@ -1,17 +1,25 @@
-use std::error::Error;
-use std::convert::From;
-use std::fmt;
-use std::io::Error as IoError;
+use std::{
+    error::Error,
+    convert::From,
+    fmt,
+    io::Error as IoError,
+};
+
+use std::time::{
+    SystemTime,
+    Duration
+};
+
 use ring::error;
 use tokio_timer::TimeoutError;
 use client::WebPushResponse;
+use http::uri::InvalidUri;
 use native_tls;
-use std::time::Duration;
-use hyper::error::UriError;
 use std::string::FromUtf8Error;
 use serde_json::error::Error as JsonError;
 use openssl::error::ErrorStack;
 use base64::DecodeError;
+use chrono;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -67,8 +75,8 @@ impl From<FromUtf8Error> for WebPushError {
     }
 }
 
-impl From<UriError> for WebPushError {
-    fn from(_: UriError) -> WebPushError {
+impl From<InvalidUri> for WebPushError {
+    fn from(_: InvalidUri) -> WebPushError {
         WebPushError::InvalidUri
     }
 }
@@ -182,5 +190,23 @@ impl Error for WebPushError {
 impl fmt::Display for WebPushError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.description())
+    }
+}
+
+pub struct RetryAfter;
+impl RetryAfter {
+    pub fn from_str(header_value: &str) -> Option<Duration> {
+        if let Ok(seconds) = header_value.parse::<u64>() {
+            Some(Duration::from_secs(seconds))
+        } else {
+            chrono::DateTime::parse_from_rfc2822(header_value)
+                .map(|date_time| {
+                    let systime: SystemTime = date_time.into();
+
+                    systime
+                        .duration_since(SystemTime::now())
+                        .unwrap_or_else(|_| Duration::new(0, 0))
+                }).ok()
+        }
     }
 }

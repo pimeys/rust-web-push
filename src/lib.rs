@@ -7,12 +7,14 @@
 //! # Example
 //!
 //! ```no_run
-//! extern crate tokio_core;
+//! extern crate tokio;
 //! extern crate web_push;
 //! extern crate base64;
+//! extern crate futures;
 //!
 //! use web_push::*;
 //! use base64::URL_SAFE;
+//! use futures::{Future, future::lazy};
 //!
 //! # fn main() {
 //! let endpoint = "https://updates.push.services.mozilla.com/wpush/v1/...";
@@ -31,16 +33,17 @@
 //!
 //! match builder.build() {
 //!    Ok(message) => {
-//!        let mut core = tokio_core::reactor::Core::new().unwrap();
-//!        let handle = core.handle();
-//!        let client = WebPushClient::new(&handle).unwrap();
+//!        let client = WebPushClient::new().unwrap();
 //!
-//!        let work = client.send(message);
-//!
-//!        match core.run(work) {
-//!            Err(error) => println!("ERROR: {:?}", error),
-//!            _ => println!("OK")
-//!        }
+//!        tokio::run(lazy(move || {
+//!            client
+//!                .send(message)
+//!                .map(|_| {
+//!                    println!("OK");
+//!                }).map_err(|error| {
+//!                    println!("ERROR: {:?}", error)
+//!                })
+//!            }));
 //!    },
 //!    Err(error) => {
 //!        println!("ERROR in building message: {:?}", error)
@@ -53,11 +56,12 @@
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde_json;
 
+extern crate chrono;
 extern crate serde;
 extern crate base64;
 extern crate hyper;
+extern crate http;
 extern crate futures;
-extern crate tokio_core;
 extern crate tokio_timer;
 extern crate tokio_service;
 extern crate hyper_tls;

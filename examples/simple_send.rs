@@ -1,16 +1,32 @@
 extern crate serde_json;
 extern crate serde;
 extern crate web_push;
-extern crate tokio_core;
+extern crate tokio;
 extern crate argparse;
 extern crate base64;
 extern crate time;
+extern crate futures;
 
 use web_push::*;
-use argparse::{ArgumentParser, Store, StoreOption};
-use std::fs::File;
-use std::io::Read;
-use std::time::Duration;
+
+use argparse::{
+    ArgumentParser,
+    Store,
+    StoreOption
+};
+
+use std::{
+    fs::File,
+    io::Read,
+    time::Duration,
+};
+
+use futures::{
+    future::{
+        lazy,
+    },
+    Future,
+};
 
 fn main() {
     let mut subscription_info_file = String::new();
@@ -79,17 +95,17 @@ fn main() {
 
     match builder.build() {
         Ok(message) => {
-            let mut core = tokio_core::reactor::Core::new().unwrap();
-            let handle = core.handle();
+            let client = WebPushClient::new().unwrap();
 
-            let client = WebPushClient::new(&handle).unwrap();
-
-            let work = client.send_with_timeout(message, Duration::from_millis(4000));
-
-            match core.run(work) {
-                Err(error) => println!("ERROR: {:?}", error),
-                _ => println!("OK")
-            }
+            tokio::run(lazy(move || {
+                client
+                    .send_with_timeout(message, Duration::from_secs(4))
+                    .map(|response| {
+                        println!("Sent: {:?}", response);
+                    }).map_err(|error| {
+                        println!("Error: {:?}", error)
+                    })
+            }));
         },
         Err(error) => {
             println!("ERROR in building message: {:?}", error)
