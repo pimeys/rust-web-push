@@ -9,7 +9,7 @@ Web push notification sender.
 Documentation
 -------------
 
-* [Released](https://docs.rs/web-push/)
+* [Released](https://pimeys.github.io/rust-web-push/)
 * [Master](https://pimeys.github.io/rust-web-push/master/index.html)
 
 To send a web push from command line, first subscribe to receive push
