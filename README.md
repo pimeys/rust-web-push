@@ -36,6 +36,13 @@ using Google Chrome, you need to register yourself
 into [Firebase](https://firebase.google.com/) and provide a GCM API Key with
 parameter `-k GCM_API_KEY`.
 
+Examples
+--------
+
+To see it used in a real project, take a look to the [XORC
+Notifications](https://github.com/xray-tech/xorc-notifications), which is a
+full-fledged consumer for sending push notifications.
+
 VAPID
 -----
 
