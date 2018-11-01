@@ -3,9 +3,9 @@ use openssl::hash::MessageDigest;
 use openssl::sign::{Signer as SslSigner};
 use hyper::Uri;
 use serde_json;
-use error::WebPushError;
+use crate::error::WebPushError;
 use base64::{self, URL_SAFE_NO_PAD};
-use vapid::VapidKey;
+use crate::vapid::VapidKey;
 use std::collections::BTreeMap;
 use time;
 use serde_json::{Value, Number};
@@ -105,7 +105,7 @@ impl VapidSigner {
 
 #[cfg(test)]
 mod tests {
-    use vapid::VapidSignature;
+    use crate::vapid::VapidSignature;
 
     #[test]
     fn test_vapid_signature_aesgcm_format() {

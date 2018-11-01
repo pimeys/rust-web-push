@@ -7,11 +7,6 @@
 //! # Example
 //!
 //! ```no_run
-//! extern crate tokio;
-//! extern crate web_push;
-//! extern crate base64;
-//! extern crate futures;
-//!
 //! use web_push::*;
 //! use base64::URL_SAFE;
 //! use futures::{Future, future::lazy};
@@ -56,23 +51,6 @@
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde_json;
 
-extern crate chrono;
-extern crate serde;
-extern crate base64;
-extern crate hyper;
-extern crate http;
-extern crate futures;
-extern crate tokio_timer;
-extern crate tokio_service;
-extern crate hyper_tls;
-extern crate ring;
-extern crate crypto;
-extern crate untrusted;
-extern crate native_tls;
-extern crate openssl;
-extern crate erased_serde;
-extern crate time;
-
 mod client;
 mod error;
 mod http_ece;
@@ -80,10 +58,10 @@ mod message;
 mod services;
 mod vapid;
 
-pub use error::WebPushError;
-pub use client::{WebPushResponse, WebPushClient};
+pub use crate::error::WebPushError;
+pub use crate::client::{WebPushResponse, WebPushClient};
 
-pub use message::{
+pub use crate::message::{
     WebPushMessage,
     WebPushMessageBuilder,
     WebPushPayload,
@@ -91,5 +69,5 @@ pub use message::{
     SubscriptionKeys
 };
 
-pub use http_ece::ContentEncoding;
-pub use vapid::{VapidSignature, VapidSignatureBuilder};
+pub use crate::http_ece::ContentEncoding;
+pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};

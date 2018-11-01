@@ -10,6 +10,7 @@ documentation = "https://pimeys.github.io/rust-web-push/index.html"
 readme = "README.md"
 keywords = ["web-push", "http-ece", "vapid"]
 categories = ["web-programming", "asynchronous"]
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "pimeys/rust-web-push" }

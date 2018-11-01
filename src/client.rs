@@ -10,10 +10,7 @@ use hyper::{
 use futures::{
     Future,
     Poll,
-    future::{
-        ok,
-        err,
-    },
+    future::{ok, err},
     Stream,
 };
 
@@ -22,7 +19,7 @@ use std::{
     time::Duration,
 };
 
-use error::{
+use crate::error::{
     WebPushError,
     RetryAfter,
 };
@@ -31,15 +28,15 @@ use http::header::RETRY_AFTER;
 use hyper_tls::HttpsConnector;
 use tokio_service::Service;
 use tokio_timer::{Timer, Timeout};
-use services::{firebase, autopush};
-use message::{WebPushMessage, WebPushService};
+use crate::services::{firebase, autopush};
+use crate::message::{WebPushMessage, WebPushService};
 
 /// The response future. When successful, returns an empty `Unit` for failures
 /// gives a [WebPushError](enum.WebPushError.html).
-pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + Send + 'static>);
+pub struct WebPushResponse(Box<dyn Future<Item = (), Error = WebPushError> + Send + 'static>);
 
 impl fmt::Debug for WebPushResponse {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Future<Response>")
     }
 }

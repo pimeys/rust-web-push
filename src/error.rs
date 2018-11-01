@@ -12,7 +12,7 @@ use std::time::{
 
 use ring::error;
 use tokio_timer::TimeoutError;
-use client::WebPushResponse;
+use crate::client::WebPushResponse;
 use http::uri::InvalidUri;
 use native_tls;
 use std::string::FromUtf8Error;
@@ -182,13 +182,13 @@ impl Error for WebPushError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         None
     }
 }
 
 impl fmt::Display for WebPushError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }

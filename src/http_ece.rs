@@ -1,10 +1,10 @@
 use ring::{hmac, hkdf, agreement, rand, digest, aead};
 use ring::rand::SecureRandom;
 use untrusted::Input;
-use error::WebPushError;
-use message::WebPushPayload;
+use crate::error::WebPushError;
+use crate::message::WebPushPayload;
 use base64::{self, URL_SAFE_NO_PAD};
-use vapid::VapidSignature;
+use crate::vapid::VapidSignature;
 
 pub enum ContentEncoding {
     AesGcm,
@@ -160,10 +160,10 @@ fn front_pad(payload: &[u8], output: &mut [u8]) {
 
 #[cfg(test)]
 mod tests {
-    use http_ece::{HttpEce, ContentEncoding, front_pad};
-    use error::WebPushError;
+    use crate::http_ece::{HttpEce, ContentEncoding, front_pad};
+    use crate::error::WebPushError;
     use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
-    use vapid::VapidSignature;
+    use crate::vapid::VapidSignature;
 
     #[test]
     fn test_payload_too_big() {

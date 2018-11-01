@@ -1,13 +1,7 @@
-extern crate serde_json;
-extern crate serde;
-extern crate web_push;
-extern crate tokio;
-extern crate argparse;
-extern crate base64;
-extern crate time;
-extern crate futures;
-
+use serde_json;
+use tokio;
 use web_push::*;
+use futures::{future::lazy, Future};
 
 use argparse::{
     ArgumentParser,
@@ -19,13 +13,6 @@ use std::{
     fs::File,
     io::Read,
     time::Duration,
-};
-
-use futures::{
-    future::{
-        lazy,
-    },
-    Future,
 };
 
 fn main() {

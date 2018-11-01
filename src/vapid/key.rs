@@ -25,7 +25,7 @@ impl VapidKey {
 
 #[cfg(test)]
 mod tests {
-    use vapid::key::VapidKey;
+    use crate::vapid::key::VapidKey;
     use std::fs::File;
     use openssl::ec::EcKey;
     use std::io::Read;

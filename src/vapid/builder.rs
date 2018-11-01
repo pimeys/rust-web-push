@@ -1,12 +1,12 @@
 use openssl::ec::EcKey;
 use openssl::pkey::Private;
 use std::io::Read;
-use error::WebPushError;
+use crate::error::WebPushError;
 use std::collections::BTreeMap;
-use vapid::{VapidKey, VapidSigner, VapidSignature};
+use crate::vapid::{VapidKey, VapidSigner, VapidSignature};
 use serde_json::Value;
 use hyper::Uri;
-use message::SubscriptionInfo;
+use crate::message::SubscriptionInfo;
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. With a given signature, one can pass the registration to Google's
@@ -44,7 +44,6 @@ use message::SubscriptionInfo;
 /// To create a VAPID signature:
 ///
 /// ```no_run
-/// # extern crate web_push;
 /// # use web_push::*;
 /// # use std::fs::File;
 /// # fn main () {
@@ -127,8 +126,8 @@ impl<'a> VapidSignatureBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use vapid::VapidSignatureBuilder;
-    use message::SubscriptionInfo;
+    use crate::vapid::VapidSignatureBuilder;
+    use crate::message::SubscriptionInfo;
     use serde_json;
     use std::fs::File;
 

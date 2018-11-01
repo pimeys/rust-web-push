@@ -1,4 +1,4 @@
-use message::WebPushMessage;
+use crate::message::WebPushMessage;
 
 use hyper::{
     Request,
@@ -14,7 +14,7 @@ use http::{
     },
 };
 
-use error::WebPushError;
+use crate::error::WebPushError;
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
@@ -89,11 +89,11 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 
 #[cfg(test)]
 mod tests {
-    use services::autopush::*;
+    use crate::services::autopush::*;
     use hyper::StatusCode;
-    use http_ece::ContentEncoding;
-    use error::WebPushError;
-    use message::{WebPushMessageBuilder, SubscriptionInfo};
+    use crate::http_ece::ContentEncoding;
+    use crate::error::WebPushError;
+    use crate::message::{WebPushMessageBuilder, SubscriptionInfo};
     use hyper::Uri;
 
     #[test]
