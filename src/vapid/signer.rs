@@ -1,26 +1,24 @@
-use openssl::pkey::PKey;
-use openssl::hash::MessageDigest;
-use openssl::sign::{Signer as SslSigner};
-use hyper::Uri;
-use serde_json;
-use error::WebPushError;
 use base64::{self, URL_SAFE_NO_PAD};
-use vapid::VapidKey;
+use error::WebPushError;
+use hyper::Uri;
+use openssl::hash::MessageDigest;
+use openssl::pkey::PKey;
+use openssl::sign::Signer as SslSigner;
+use serde_json;
+use serde_json::{Number, Value};
 use std::collections::BTreeMap;
 use time;
-use serde_json::{Value, Number};
+use vapid::VapidKey;
 
 lazy_static! {
-    static ref JWT_HEADERS: String =
-        base64::encode_config(
-            &serde_json::to_string(
-                &json!({
-                    "typ": "JWT",
-                    "alg": "ES256"
-                })
-            ).unwrap(),
-            URL_SAFE_NO_PAD
-        );
+    static ref JWT_HEADERS: String = base64::encode_config(
+        &serde_json::to_string(&json!({
+            "typ": "JWT",
+            "alg": "ES256"
+        }))
+        .unwrap(),
+        URL_SAFE_NO_PAD
+    );
 }
 
 /// A struct representing a VAPID signature. Should be generated using the
@@ -45,7 +43,11 @@ impl VapidSigner {
     /// Create a signature with a given key. Sets the default audience from the
     /// endpoint host and sets the expiry in twelve hours. Values can be
     /// overwritten by adding the `aud` and `exp` claims.
-    pub fn sign(key: VapidKey, endpoint: &Uri, mut claims: BTreeMap<&str, Value>) -> Result<VapidSignature, WebPushError> {
+    pub fn sign(
+        key: VapidKey,
+        endpoint: &Uri,
+        mut claims: BTreeMap<&str, Value>,
+    ) -> Result<VapidSignature, WebPushError> {
         if !claims.contains_key("aud") {
             let audience = format!(
                 "{}://{}",
@@ -64,7 +66,8 @@ impl VapidSigner {
         let signing_input = format!(
             "{}.{}",
             *JWT_HEADERS,
-            base64::encode_config(&serde_json::to_string(&claims)?, URL_SAFE_NO_PAD));
+            base64::encode_config(&serde_json::to_string(&claims)?, URL_SAFE_NO_PAD)
+        );
 
         let public_key = key.public_key();
         let auth_k = base64::encode_config(&public_key, URL_SAFE_NO_PAD);
@@ -95,9 +98,13 @@ impl VapidSigner {
         sigval.extend(r_val);
         sigval.extend(s_val);
 
-        println!("{}", auth_k);
+        trace!("Public key: {}", auth_k);
 
-        let auth_t = format!("{}.{}", signing_input, base64::encode_config(&sigval, URL_SAFE_NO_PAD));
+        let auth_t = format!(
+            "{}.{}",
+            signing_input,
+            base64::encode_config(&sigval, URL_SAFE_NO_PAD)
+        );
 
         Ok(VapidSignature { auth_t, auth_k })
     }
