@@ -67,7 +67,7 @@ pub struct WebPushMessage {
     pub endpoint: Uri,
     /// Time to live, how long the message should wait in the server if user is
     /// not online. Some services require this value to be set.
-    pub ttl: Option<u32>,
+    pub ttl: u32,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
     /// The service type where to connect. Firebase when not using VAPID with
@@ -85,7 +85,7 @@ pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
     gcm_key: Option<&'a str>,
     payload: Option<WebPushPayloadBuilder<'a>>,
-    ttl: Option<u32>,
+    ttl: u32,
     vapid_signature: Option<VapidSignature>,
 }
 
@@ -99,7 +99,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     ) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
         Ok(WebPushMessageBuilder {
             subscription_info: subscription_info,
-            ttl: Some(2_419_200),
+            ttl: 2_419_200,
             gcm_key: None,
             payload: None,
             vapid_signature: None,
@@ -110,7 +110,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// currently. If not set, the message is deleted immediately on failed
     /// delivery.
     pub fn set_ttl(&mut self, ttl: u32) {
-        self.ttl = Some(ttl);
+        self.ttl = ttl;
     }
 
     /// For Google's push service, one must provide an API key from Firebase console.
