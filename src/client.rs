@@ -1,38 +1,23 @@
 use hyper::{
-    client::{
-        HttpConnector,
-        Client,
-    },
-    Body,
-    Request as HttpRequest,
+    client::{Client, HttpConnector},
+    Body, Request as HttpRequest,
 };
 
 use futures::{
-    Future,
-    Poll,
-    future::{
-        ok,
-        err,
-    },
-    Stream,
+    future::{err, ok},
+    Future, Poll, Stream,
 };
 
-use std::{
-    fmt,
-    time::Duration,
-};
+use std::{fmt, time::Duration};
 
-use error::{
-    WebPushError,
-    RetryAfter,
-};
+use error::{RetryAfter, WebPushError};
 
 use http::header::RETRY_AFTER;
 use hyper_tls::HttpsConnector;
-use tokio_service::Service;
-use tokio_timer::{Timer, Timeout};
-use services::{firebase, autopush};
 use message::{WebPushMessage, WebPushService};
+use services::{autopush, firebase};
+use tokio_service::Service;
+use tokio_timer::{Timeout, Timer};
 
 /// The response future. When successful, returns an empty `Unit` for failures
 /// gives a [WebPushError](enum.WebPushError.html).
@@ -95,34 +80,43 @@ impl Service for WebPushClient {
         let service = message.service.clone();
 
         let request: HttpRequest<Body> = match service {
-            WebPushService::Firebase =>
-                firebase::build_request(message),
-            _ =>
-                autopush::build_request(message),
+            WebPushService::Firebase => firebase::build_request(message),
+            _ => autopush::build_request(message),
         };
 
-        let request_f = self.client.request(request).map_err(
-            |_| WebPushError::Unspecified,
-        );
+        trace!("Request: {:?}", request);
+
+        let request_f = self
+            .client
+            .request(request)
+            .map_err(|_| WebPushError::Unspecified);
 
         let push_f = request_f.and_then(move |response| {
-            let retry_after = response.headers()
+            let retry_after = response
+                .headers()
                 .get(RETRY_AFTER)
                 .and_then(|ra| ra.to_str().ok())
                 .and_then(|ra| RetryAfter::from_str(ra));
             let response_status = response.status().clone();
+
+            trace!("Response status: {}", response_status);
 
             response
                 .into_body()
                 .map_err(|_| WebPushError::Unspecified)
                 .concat2()
                 .and_then(move |body| {
+                    trace!("Body: {:?}", body);
+
                     let response = match service {
-                        WebPushService::Firebase =>
-                            firebase::parse_response(response_status, body.to_vec()),
-                        _ =>
-                            autopush::parse_response(response_status, body.to_vec()),
+                        WebPushService::Firebase => {
+                            firebase::parse_response(response_status, body.to_vec())
+                        }
+                        _ => autopush::parse_response(response_status, body.to_vec()),
                     };
+
+                    debug!("Response: {:?}", response);
+
                     match response {
                         Err(WebPushError::ServerError(None)) => {
                             err(WebPushError::ServerError(retry_after))

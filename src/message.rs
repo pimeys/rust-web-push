@@ -1,8 +1,8 @@
-use hyper::Uri;
-use http_ece::{HttpEce, ContentEncoding};
-use error::WebPushError;
-use vapid::VapidSignature;
 use base64;
+use error::WebPushError;
+use http_ece::{ContentEncoding, HttpEce};
+use hyper::Uri;
+use vapid::VapidSignature;
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
@@ -26,15 +26,16 @@ pub struct SubscriptionInfo {
 impl SubscriptionInfo {
     /// A constructor function to create a new `SubscriptionInfo`, if not using
     /// Serde's serialization.
-    pub fn new<S>(endpoint: S, p256dh: S, auth:S) -> SubscriptionInfo
-    where S: Into<String>
+    pub fn new<S>(endpoint: S, p256dh: S, auth: S) -> SubscriptionInfo
+    where
+        S: Into<String>,
     {
         SubscriptionInfo {
             endpoint: endpoint.into(),
             keys: SubscriptionKeys {
                 p256dh: p256dh.into(),
                 auth: auth.into(),
-            }
+            },
         }
     }
 }
@@ -66,7 +67,7 @@ pub struct WebPushMessage {
     pub endpoint: Uri,
     /// Time to live, how long the message should wait in the server if user is
     /// not online. Some services require this value to be set.
-    pub ttl: Option<u32>,
+    pub ttl: u32,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
     /// The service type where to connect. Firebase when not using VAPID with
@@ -84,8 +85,8 @@ pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
     gcm_key: Option<&'a str>,
     payload: Option<WebPushPayloadBuilder<'a>>,
-    ttl: Option<u32>,
-    vapid_signature: Option<VapidSignature>
+    ttl: u32,
+    vapid_signature: Option<VapidSignature>,
 }
 
 impl<'a> WebPushMessageBuilder<'a> {
@@ -93,10 +94,12 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(subscription_info: &'a SubscriptionInfo) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
+    pub fn new(
+        subscription_info: &'a SubscriptionInfo,
+    ) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
         Ok(WebPushMessageBuilder {
             subscription_info: subscription_info,
-            ttl: None,
+            ttl: 2_419_200,
             gcm_key: None,
             payload: None,
             vapid_signature: None,
@@ -107,7 +110,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// currently. If not set, the message is deleted immediately on failed
     /// delivery.
     pub fn set_ttl(&mut self, ttl: u32) {
-        self.ttl = Some(ttl);
+        self.ttl = ttl;
     }
 
     /// For Google's push service, one must provide an API key from Firebase console.
@@ -139,21 +142,17 @@ impl<'a> WebPushMessageBuilder<'a> {
             Some(_) => WebPushService::Autopush,
             _ => match endpoint.host() {
                 Some("android.googleapis.com") => WebPushService::Firebase,
-                Some("fcm.googleapis.com")     => WebPushService::Firebase,
-                _                              => WebPushService::Autopush,
-            }
+                Some("fcm.googleapis.com") => WebPushService::Firebase,
+                _ => WebPushService::Autopush,
+            },
         };
 
         if let Some(payload) = self.payload {
-            let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
+            let p256dh =
+                base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
             let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
 
-            let http_ece = HttpEce::new(
-                payload.encoding,
-                &p256dh,
-                &auth,
-                self.vapid_signature,
-            );
+            let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),

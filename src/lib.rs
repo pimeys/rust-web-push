@@ -52,26 +52,31 @@
 //! # }
 //! ```
 
-#[macro_use] extern crate serde_derive;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate log;
 
-extern crate chrono;
-extern crate serde;
 extern crate base64;
-extern crate hyper;
-extern crate http;
-extern crate futures;
-extern crate tokio_timer;
-extern crate tokio_service;
-extern crate hyper_tls;
-extern crate ring;
+extern crate chrono;
 extern crate crypto;
-extern crate untrusted;
+extern crate erased_serde;
+extern crate futures;
+extern crate http;
+extern crate hyper;
+extern crate hyper_tls;
 extern crate native_tls;
 extern crate openssl;
-extern crate erased_serde;
+extern crate ring;
+extern crate serde;
 extern crate time;
+extern crate tokio_service;
+extern crate tokio_timer;
+extern crate untrusted;
 
 mod client;
 mod error;
@@ -80,15 +85,11 @@ mod message;
 mod services;
 mod vapid;
 
+pub use client::{WebPushClient, WebPushResponse};
 pub use error::WebPushError;
-pub use client::{WebPushResponse, WebPushClient};
 
 pub use message::{
-    WebPushMessage,
-    WebPushMessageBuilder,
-    WebPushPayload,
-    SubscriptionInfo,
-    SubscriptionKeys
+    SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload,
 };
 
 pub use http_ece::ContentEncoding;
