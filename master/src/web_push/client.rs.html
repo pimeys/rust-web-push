@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/client.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>client.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/client.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>client.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../web_push/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -131,48 +131,27 @@
 <span id="131">131</span>
 <span id="132">132</span>
 <span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-</pre><pre class="rust ">
+</pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">hyper</span>::{
-    <span class="ident">client</span>::{
-        <span class="ident">HttpConnector</span>,
-        <span class="ident">Client</span>,
-    },
-    <span class="ident">Body</span>,
-    <span class="ident">Request</span> <span class="kw">as</span> <span class="ident">HttpRequest</span>,
+    <span class="ident">client</span>::{<span class="ident">Client</span>, <span class="ident">HttpConnector</span>},
+    <span class="ident">Body</span>, <span class="ident">Request</span> <span class="kw">as</span> <span class="ident">HttpRequest</span>,
 };
 
 <span class="kw">use</span> <span class="ident">futures</span>::{
-    <span class="ident">Future</span>,
-    <span class="ident">Poll</span>,
-    <span class="ident">future</span>::{
-        <span class="ident">ok</span>,
-        <span class="ident">err</span>,
-    },
-    <span class="ident">Stream</span>,
+    <span class="ident">future</span>::{<span class="ident">err</span>, <span class="ident">ok</span>},
+    <span class="ident">Future</span>, <span class="ident">Poll</span>, <span class="ident">Stream</span>,
 };
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">fmt</span>,
-    <span class="ident">time</span>::<span class="ident">Duration</span>,
-};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">time</span>::<span class="ident">Duration</span>};
 
-<span class="kw">use</span> <span class="ident">error</span>::{
-    <span class="ident">WebPushError</span>,
-    <span class="ident">RetryAfter</span>,
-};
+<span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">RetryAfter</span>, <span class="ident">WebPushError</span>};
 
 <span class="kw">use</span> <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">RETRY_AFTER</span>;
 <span class="kw">use</span> <span class="ident">hyper_tls</span>::<span class="ident">HttpsConnector</span>;
-<span class="kw">use</span> <span class="ident">tokio_service</span>::<span class="ident">Service</span>;
-<span class="kw">use</span> <span class="ident">tokio_timer</span>::{<span class="ident">Timer</span>, <span class="ident">Timeout</span>};
-<span class="kw">use</span> <span class="ident">services</span>::{<span class="ident">firebase</span>, <span class="ident">autopush</span>};
 <span class="kw">use</span> <span class="ident">message</span>::{<span class="ident">WebPushMessage</span>, <span class="ident">WebPushService</span>};
+<span class="kw">use</span> <span class="ident">services</span>::{<span class="ident">autopush</span>, <span class="ident">firebase</span>};
+<span class="kw">use</span> <span class="ident">tokio_service</span>::<span class="ident">Service</span>;
+<span class="kw">use</span> <span class="ident">tokio_timer</span>::{<span class="ident">Timeout</span>, <span class="ident">Timer</span>};
 
 <span class="doccomment">/// The response future. When successful, returns an empty `Unit` for failures</span>
 <span class="doccomment">/// gives a [WebPushError](enum.WebPushError.html).</span>
@@ -235,34 +214,43 @@
         <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">message</span>.<span class="ident">service</span>.<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">HttpRequest</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
-            <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span>
-                <span class="ident">firebase</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span>
-                <span class="ident">autopush</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
+            <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span> <span class="ident">firebase</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">autopush</span>::<span class="ident">build_request</span>(<span class="ident">message</span>),
         };
 
-        <span class="kw">let</span> <span class="ident">request_f</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">request</span>).<span class="ident">map_err</span>(
-            <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>,
-        );
+        <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Request: {:?}&quot;</span>, <span class="ident">request</span>);
+
+        <span class="kw">let</span> <span class="ident">request_f</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">client</span>
+            .<span class="ident">request</span>(<span class="ident">request</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>);
 
         <span class="kw">let</span> <span class="ident">push_f</span> <span class="op">=</span> <span class="ident">request_f</span>.<span class="ident">and_then</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">response</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">retry_after</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">headers</span>()
+            <span class="kw">let</span> <span class="ident">retry_after</span> <span class="op">=</span> <span class="ident">response</span>
+                .<span class="ident">headers</span>()
                 .<span class="ident">get</span>(<span class="ident">RETRY_AFTER</span>)
                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">ra</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">RetryAfter</span>::<span class="ident">from_str</span>(<span class="ident">ra</span>));
             <span class="kw">let</span> <span class="ident">response_status</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">status</span>().<span class="ident">clone</span>();
+
+            <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Response status: {}&quot;</span>, <span class="ident">response_status</span>);
 
             <span class="ident">response</span>
                 .<span class="ident">into_body</span>()
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>)
                 .<span class="ident">concat2</span>()
                 .<span class="ident">and_then</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">body</span><span class="op">|</span> {
+                    <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Body: {:?}&quot;</span>, <span class="ident">body</span>);
+
                     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
-                        <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span>
-                            <span class="ident">firebase</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
-                        <span class="kw">_</span> <span class="op">=&gt;</span>
-                            <span class="ident">autopush</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
+                        <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=&gt;</span> {
+                            <span class="ident">firebase</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>())
+                        }
+                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">autopush</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
                     };
+
+                    <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Response: {:?}&quot;</span>, <span class="ident">response</span>);
+
                     <span class="kw">match</span> <span class="ident">response</span> {
                         <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="prelude-val">None</span>)) <span class="op">=&gt;</span> {
                             <span class="ident">err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="ident">retry_after</span>))
@@ -277,5 +265,5 @@
         <span class="ident">WebPushResponse</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">push_f</span>))
     }
 }
-</pre>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "web_push";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "web_push";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

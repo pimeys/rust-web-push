@@ -1,2 +1,2 @@
 var ALIASES = {};
-ALIASES['web_push'] = {};
+ALIASES["web_push"] = {};
