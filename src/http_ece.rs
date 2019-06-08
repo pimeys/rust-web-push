@@ -50,14 +50,12 @@ impl<'a> HttpEce<'a> {
         if content.len() > 3052 { return Err(WebPushError::PayloadTooLarge) }
 
         let private_key        = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
-        let mut public_key     = [0u8; agreement::PUBLIC_KEY_MAX_LEN];
-        let public_key         = &mut public_key[..private_key.public_key_len()];
+        let public_key         = private_key.compute_public_key()?;
         let agr                = &agreement::ECDH_P256;
         let mut salt_bytes     = [0u8; 16];
         let peer_input         = Input::from(self.peer_public_key);
 
         self.rng.fill(&mut salt_bytes)?;
-        private_key.compute_public_key(public_key)?;
 
         agreement::agree_ephemeral(private_key, agr, peer_input, WebPushError::Unspecified, |shared_secret| {
             match self.encoding {
@@ -65,11 +63,11 @@ impl<'a> HttpEce<'a> {
                     let mut payload = [0u8; 3070];
                     front_pad(content, &mut payload);
 
-                    self.aes_gcm(shared_secret, public_key, &salt_bytes, &mut payload)?;
+                    self.aes_gcm(shared_secret, public_key.as_ref(), &salt_bytes, &mut payload)?;
 
                     Ok(WebPushPayload {
                         content: payload.to_vec(),
-                        crypto_headers: self.generate_headers(public_key, &salt_bytes),
+                        crypto_headers: self.generate_headers(public_key.as_ref(), &salt_bytes),
                         content_encoding: "aesgcm"
                     })
                 },
@@ -139,7 +137,7 @@ impl<'a> HttpEce<'a> {
         hkdf::extract_and_expand(&salt, &prk, &nonce_info, &mut nonce);
 
         let sealing_key = aead::SealingKey::new(&aead::AES_128_GCM, &content_encryption_key)?;
-        aead::seal_in_place(&sealing_key, &nonce, "".as_bytes(), &mut payload, 16)?;
+        aead::seal_in_place(&sealing_key, aead::Nonce::assume_unique_for_key(nonce), aead::Aad::empty(), &mut payload, 16)?;
 
         Ok(())
     }
