@@ -290,8 +290,6 @@
 <span id="290">290</span>
 <span id="291">291</span>
 <span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ring</span>::{<span class="ident">hmac</span>, <span class="ident">hkdf</span>, <span class="ident">agreement</span>, <span class="ident">rand</span>, <span class="ident">digest</span>, <span class="ident">aead</span>};
 <span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">rand</span>::<span class="ident">SecureRandom</span>;
@@ -345,14 +343,12 @@
         <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3052</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>) }
 
         <span class="kw">let</span> <span class="ident">private_key</span>        <span class="op">=</span> <span class="ident">agreement</span>::<span class="ident">EphemeralPrivateKey</span>::<span class="ident">generate</span>(<span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">rng</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">public_key</span>     <span class="op">=</span> [<span class="number">0u8</span>; <span class="ident">agreement</span>::<span class="ident">PUBLIC_KEY_MAX_LEN</span>];
-        <span class="kw">let</span> <span class="ident">public_key</span>         <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">public_key</span>[..<span class="ident">private_key</span>.<span class="ident">public_key_len</span>()];
+        <span class="kw">let</span> <span class="ident">public_key</span>         <span class="op">=</span> <span class="ident">private_key</span>.<span class="ident">compute_public_key</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">agr</span>                <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">salt_bytes</span>     <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">16</span>];
         <span class="kw">let</span> <span class="ident">peer_input</span>         <span class="op">=</span> <span class="ident">Input</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">peer_public_key</span>);
 
         <span class="self">self</span>.<span class="ident">rng</span>.<span class="ident">fill</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">salt_bytes</span>)<span class="question-mark">?</span>;
-        <span class="ident">private_key</span>.<span class="ident">compute_public_key</span>(<span class="ident">public_key</span>)<span class="question-mark">?</span>;
 
         <span class="ident">agreement</span>::<span class="ident">agree_ephemeral</span>(<span class="ident">private_key</span>, <span class="ident">agr</span>, <span class="ident">peer_input</span>, <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>, <span class="op">|</span><span class="ident">shared_secret</span><span class="op">|</span> {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">encoding</span> {
@@ -360,11 +356,11 @@
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payload</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3070</span>];
                     <span class="ident">front_pad</span>(<span class="ident">content</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>);
 
-                    <span class="self">self</span>.<span class="ident">aes_gcm</span>(<span class="ident">shared_secret</span>, <span class="ident">public_key</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.<span class="ident">aes_gcm</span>(<span class="ident">shared_secret</span>, <span class="ident">public_key</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)<span class="question-mark">?</span>;
 
                     <span class="prelude-val">Ok</span>(<span class="ident">WebPushPayload</span> {
                         <span class="ident">content</span>: <span class="ident">payload</span>.<span class="ident">to_vec</span>(),
-                        <span class="ident">crypto_headers</span>: <span class="self">self</span>.<span class="ident">generate_headers</span>(<span class="ident">public_key</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>),
+                        <span class="ident">crypto_headers</span>: <span class="self">self</span>.<span class="ident">generate_headers</span>(<span class="ident">public_key</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>),
                         <span class="ident">content_encoding</span>: <span class="string">&quot;aesgcm&quot;</span>
                     })
                 },
@@ -434,7 +430,7 @@
         <span class="ident">hkdf</span>::<span class="ident">extract_and_expand</span>(<span class="kw-2">&amp;</span><span class="ident">salt</span>, <span class="kw-2">&amp;</span><span class="ident">prk</span>, <span class="kw-2">&amp;</span><span class="ident">nonce_info</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">nonce</span>);
 
         <span class="kw">let</span> <span class="ident">sealing_key</span> <span class="op">=</span> <span class="ident">aead</span>::<span class="ident">SealingKey</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">aead</span>::<span class="ident">AES_128_GCM</span>, <span class="kw-2">&amp;</span><span class="ident">content_encryption_key</span>)<span class="question-mark">?</span>;
-        <span class="ident">aead</span>::<span class="ident">seal_in_place</span>(<span class="kw-2">&amp;</span><span class="ident">sealing_key</span>, <span class="kw-2">&amp;</span><span class="ident">nonce</span>, <span class="string">&quot;&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>, <span class="number">16</span>)<span class="question-mark">?</span>;
+        <span class="ident">aead</span>::<span class="ident">seal_in_place</span>(<span class="kw-2">&amp;</span><span class="ident">sealing_key</span>, <span class="ident">aead</span>::<span class="ident">Nonce</span>::<span class="ident">assume_unique_for_key</span>(<span class="ident">nonce</span>), <span class="ident">aead</span>::<span class="ident">Aad</span>::<span class="ident">empty</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>, <span class="number">16</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
