@@ -201,38 +201,19 @@
 <span id="201">201</span>
 <span id="202">202</span>
 <span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">error</span>::<span class="ident">Error</span>,
-    <span class="ident">convert</span>::<span class="ident">From</span>,
-    <span class="ident">fmt</span>,
-    <span class="ident">io</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IoError</span>,
-};
-
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::{
-    <span class="ident">SystemTime</span>,
-    <span class="ident">Duration</span>
-};
-
-<span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">error</span>;
-<span class="kw">use</span> <span class="ident">tokio_timer</span>::<span class="ident">TimeoutError</span>;
+<span class="kw">use</span> <span class="ident">base64</span>::<span class="ident">DecodeError</span>;
+<span class="kw">use</span> <span class="ident">chrono</span>;
 <span class="kw">use</span> <span class="ident">client</span>::<span class="ident">WebPushResponse</span>;
 <span class="kw">use</span> <span class="ident">http</span>::<span class="ident">uri</span>::<span class="ident">InvalidUri</span>;
 <span class="kw">use</span> <span class="ident">native_tls</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">FromUtf8Error</span>;
-<span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
 <span class="kw">use</span> <span class="ident">openssl</span>::<span class="ident">error</span>::<span class="ident">ErrorStack</span>;
-<span class="kw">use</span> <span class="ident">base64</span>::<span class="ident">DecodeError</span>;
-<span class="kw">use</span> <span class="ident">chrono</span>;
+<span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">error</span>;
+<span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">FromUtf8Error</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::{<span class="ident">Duration</span>, <span class="ident">SystemTime</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert</span>::<span class="ident">From</span>, <span class="ident">error</span>::<span class="ident">Error</span>, <span class="ident">fmt</span>, <span class="ident">io</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IoError</span>};
+<span class="kw">use</span> <span class="ident">tokio_timer</span>::<span class="ident">TimeoutError</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WebPushError</span> {
@@ -333,25 +314,25 @@
 <span class="kw">impl</span> <span class="ident">WebPushError</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">short_description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>        <span class="op">=&gt;</span> <span class="string">&quot;unspecified&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span>       <span class="op">=&gt;</span> <span class="string">&quot;unauthorized&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(<span class="kw">_</span>)      <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="kw">_</span>)     <span class="op">=&gt;</span> <span class="string">&quot;server_error&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>     <span class="op">=&gt;</span> <span class="string">&quot;not_implemented&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">InvalidUri</span>         <span class="op">=&gt;</span> <span class="string">&quot;invalid_uri&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">TimeoutError</span>       <span class="op">=&gt;</span> <span class="string">&quot;timeout_error&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">EndpointNotValid</span>   <span class="op">=&gt;</span> <span class="string">&quot;endpoint_not_valid&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">EndpointNotFound</span>   <span class="op">=&gt;</span> <span class="string">&quot;endpoint_not_found&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>    <span class="op">=&gt;</span> <span class="string">&quot;payload_too_large&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">TlsError</span>           <span class="op">=&gt;</span> <span class="string">&quot;tls_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span> <span class="op">=&gt;</span> <span class="string">&quot;unspecified&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Unauthorized</span> <span class="op">=&gt;</span> <span class="string">&quot;unauthorized&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">BadRequest</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;bad_request&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;server_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span> <span class="op">=&gt;</span> <span class="string">&quot;not_implemented&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">InvalidUri</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid_uri&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">TimeoutError</span> <span class="op">=&gt;</span> <span class="string">&quot;timeout_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">EndpointNotValid</span> <span class="op">=&gt;</span> <span class="string">&quot;endpoint_not_valid&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">EndpointNotFound</span> <span class="op">=&gt;</span> <span class="string">&quot;endpoint_not_found&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span> <span class="op">=&gt;</span> <span class="string">&quot;payload_too_large&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">TlsError</span> <span class="op">=&gt;</span> <span class="string">&quot;tls_error&quot;</span>,
             <span class="ident">WebPushError</span>::<span class="ident">InvalidPackageName</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid_package_name&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">InvalidTtl</span>         <span class="op">=&gt;</span> <span class="string">&quot;invalid_ttl&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span>    <span class="op">=&gt;</span> <span class="string">&quot;invalid_response&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">MissingCryptoKeys</span>  <span class="op">=&gt;</span> <span class="string">&quot;missing_crypto_keys&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">InvalidCryptoKeys</span>  <span class="op">=&gt;</span> <span class="string">&quot;invalid_crypto_keys&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">SslError</span>           <span class="op">=&gt;</span> <span class="string">&quot;ssl_error&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">IoError</span>            <span class="op">=&gt;</span> <span class="string">&quot;io_error&quot;</span>,
-            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(<span class="kw">_</span>)           <span class="op">=&gt;</span> <span class="string">&quot;other&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">InvalidTtl</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid_ttl&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">InvalidResponse</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid_response&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">MissingCryptoKeys</span> <span class="op">=&gt;</span> <span class="string">&quot;missing_crypto_keys&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">InvalidCryptoKeys</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid_crypto_keys&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">SslError</span> <span class="op">=&gt;</span> <span class="string">&quot;ssl_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">IoError</span> <span class="op">=&gt;</span> <span class="string">&quot;io_error&quot;</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Other</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;other&quot;</span>,
         }
     }
 }
@@ -419,7 +400,8 @@
                     <span class="ident">systime</span>
                         .<span class="ident">duration_since</span>(<span class="ident">SystemTime</span>::<span class="ident">now</span>())
                         .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Duration</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="number">0</span>))
-                }).<span class="ident">ok</span>()
+                })
+                .<span class="ident">ok</span>()
         }
     }
 }

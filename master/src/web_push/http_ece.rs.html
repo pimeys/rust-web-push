@@ -290,13 +290,52 @@
 <span id="290">290</span>
 <span id="291">291</span>
 <span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">ring</span>::{<span class="ident">hmac</span>, <span class="ident">hkdf</span>, <span class="ident">agreement</span>, <span class="ident">rand</span>, <span class="ident">digest</span>, <span class="ident">aead</span>};
-<span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">rand</span>::<span class="ident">SecureRandom</span>;
-<span class="kw">use</span> <span class="ident">untrusted</span>::<span class="ident">Input</span>;
+<span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE_NO_PAD</span>};
 <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
 <span class="kw">use</span> <span class="ident">message</span>::<span class="ident">WebPushPayload</span>;
-<span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE_NO_PAD</span>};
+<span class="kw">use</span> <span class="ident">ring</span>::<span class="ident">rand</span>::<span class="ident">SecureRandom</span>;
+<span class="kw">use</span> <span class="ident">ring</span>::{<span class="ident">aead</span>, <span class="ident">agreement</span>, <span class="ident">digest</span>, <span class="ident">hkdf</span>, <span class="ident">hmac</span>, <span class="ident">rand</span>};
+<span class="kw">use</span> <span class="ident">untrusted</span>::<span class="ident">Input</span>;
 <span class="kw">use</span> <span class="ident">vapid</span>::<span class="ident">VapidSignature</span>;
 
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ContentEncoding</span> {
@@ -324,7 +363,7 @@
         <span class="ident">encoding</span>: <span class="ident">ContentEncoding</span>,
         <span class="ident">peer_public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
         <span class="ident">peer_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
-        <span class="ident">vapid_signature</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VapidSignature</span><span class="op">&gt;</span>
+        <span class="ident">vapid_signature</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VapidSignature</span><span class="op">&gt;</span>,
     ) <span class="op">-&gt;</span> <span class="ident">HttpEce</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
         <span class="ident">HttpEce</span> {
             <span class="ident">rng</span>: <span class="ident">rand</span>::<span class="ident">SystemRandom</span>::<span class="ident">new</span>(),
@@ -333,56 +372,64 @@
             <span class="ident">encoding</span>: <span class="ident">encoding</span>,
             <span class="ident">vapid_signature</span>: <span class="ident">vapid_signature</span>,
         }
-
     }
 
     <span class="doccomment">/// Encrypts a payload. The maximum length for the payload is 3800</span>
     <span class="doccomment">/// characters, which is the largest that works with Google&#39;s and Mozilla&#39;s</span>
     <span class="doccomment">/// push servers.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">content</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">WebPushPayload</span>, <span class="ident">WebPushError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3052</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>) }
+        <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3052</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>);
+        }
 
-        <span class="kw">let</span> <span class="ident">private_key</span>        <span class="op">=</span> <span class="ident">agreement</span>::<span class="ident">EphemeralPrivateKey</span>::<span class="ident">generate</span>(<span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">rng</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">public_key</span>         <span class="op">=</span> <span class="ident">private_key</span>.<span class="ident">compute_public_key</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">agr</span>                <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">salt_bytes</span>     <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">16</span>];
-        <span class="kw">let</span> <span class="ident">peer_input</span>         <span class="op">=</span> <span class="ident">Input</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">peer_public_key</span>);
+        <span class="kw">let</span> <span class="ident">private_key</span> <span class="op">=</span>
+            <span class="ident">agreement</span>::<span class="ident">EphemeralPrivateKey</span>::<span class="ident">generate</span>(<span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">rng</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">public_key</span> <span class="op">=</span> <span class="ident">private_key</span>.<span class="ident">compute_public_key</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">agr</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">agreement</span>::<span class="ident">ECDH_P256</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">salt_bytes</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">16</span>];
+        <span class="kw">let</span> <span class="ident">peer_input</span> <span class="op">=</span> <span class="ident">Input</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">peer_public_key</span>);
 
         <span class="self">self</span>.<span class="ident">rng</span>.<span class="ident">fill</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">salt_bytes</span>)<span class="question-mark">?</span>;
 
-        <span class="ident">agreement</span>::<span class="ident">agree_ephemeral</span>(<span class="ident">private_key</span>, <span class="ident">agr</span>, <span class="ident">peer_input</span>, <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>, <span class="op">|</span><span class="ident">shared_secret</span><span class="op">|</span> {
-            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">encoding</span> {
+        <span class="ident">agreement</span>::<span class="ident">agree_ephemeral</span>(
+            <span class="ident">private_key</span>,
+            <span class="ident">agr</span>,
+            <span class="ident">peer_input</span>,
+            <span class="ident">WebPushError</span>::<span class="ident">Unspecified</span>,
+            <span class="op">|</span><span class="ident">shared_secret</span><span class="op">|</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">encoding</span> {
                 <span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span> <span class="op">=&gt;</span> {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payload</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3070</span>];
                     <span class="ident">front_pad</span>(<span class="ident">content</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>);
 
-                    <span class="self">self</span>.<span class="ident">aes_gcm</span>(<span class="ident">shared_secret</span>, <span class="ident">public_key</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.<span class="ident">aes_gcm</span>(
+                        <span class="ident">shared_secret</span>,
+                        <span class="ident">public_key</span>.<span class="ident">as_ref</span>(),
+                        <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>,
+                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>,
+                    )<span class="question-mark">?</span>;
 
                     <span class="prelude-val">Ok</span>(<span class="ident">WebPushPayload</span> {
                         <span class="ident">content</span>: <span class="ident">payload</span>.<span class="ident">to_vec</span>(),
                         <span class="ident">crypto_headers</span>: <span class="self">self</span>.<span class="ident">generate_headers</span>(<span class="ident">public_key</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>),
-                        <span class="ident">content_encoding</span>: <span class="string">&quot;aesgcm&quot;</span>
+                        <span class="ident">content_encoding</span>: <span class="string">&quot;aesgcm&quot;</span>,
                     })
-                },
+                }
                 <span class="ident">ContentEncoding</span>::<span class="ident">Aes128Gcm</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>),
-            }
-        })
+            },
+        )
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">salt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">String</span>)<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_headers</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="ident">salt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+    ) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">String</span>)<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_headers</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
-            <span class="string">&quot;dh={}&quot;</span>,
-            <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="ident">public_key</span>, <span class="ident">URL_SAFE_NO_PAD</span>)
-        );
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;dh={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="ident">public_key</span>, <span class="ident">URL_SAFE_NO_PAD</span>));
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">signature</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">vapid_signature</span> {
-            <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;{}; p256ecdsa={}&quot;</span>,
-                <span class="ident">crypto_key</span>,
-                <span class="ident">signature</span>.<span class="ident">auth_k</span>
-            );
+            <span class="ident">crypto_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}; p256ecdsa={}&quot;</span>, <span class="ident">crypto_key</span>, <span class="ident">signature</span>.<span class="ident">auth_k</span>);
 
             <span class="kw">let</span> <span class="ident">sig_s</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">signature</span>.<span class="ident">into</span>();
             <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Authorization&quot;</span>, <span class="ident">sig_s</span>));
@@ -391,19 +438,24 @@
         <span class="ident">crypto_headers</span>.<span class="ident">push</span>((<span class="string">&quot;Crypto-Key&quot;</span>, <span class="ident">crypto_key</span>));
         <span class="ident">crypto_headers</span>.<span class="ident">push</span>((
             <span class="string">&quot;Encryption&quot;</span>,
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;salt={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">salt</span>, <span class="ident">URL_SAFE_NO_PAD</span>))
+            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;salt={}&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">salt</span>, <span class="ident">URL_SAFE_NO_PAD</span>)),
         ));
 
         <span class="ident">crypto_headers</span>
     }
 
     <span class="doccomment">/// The aesgcm encrypted content-encoding, draft 3.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">aes_gcm</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">shared_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">as_public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">salt_bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="kw-2">mut</span> <span class="ident">payload</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">u8</span>])
-               <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">WebPushError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">salt</span>               <span class="op">=</span> <span class="ident">hmac</span>::<span class="ident">SigningKey</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">digest</span>::<span class="ident">SHA256</span>, <span class="ident">salt_bytes</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">aes_gcm</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">shared_secret</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="ident">as_public_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="ident">salt_bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+        <span class="kw-2">mut</span> <span class="ident">payload</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">u8</span>],
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">WebPushError</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">salt</span> <span class="op">=</span> <span class="ident">hmac</span>::<span class="ident">SigningKey</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">digest</span>::<span class="ident">SHA256</span>, <span class="ident">salt_bytes</span>);
         <span class="kw">let</span> <span class="ident">client_auth_secret</span> <span class="op">=</span> <span class="ident">hmac</span>::<span class="ident">SigningKey</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">digest</span>::<span class="ident">SHA256</span>, <span class="self">self</span>.<span class="ident">peer_secret</span>);
-
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">140</span>);
+
         <span class="ident">context</span>.<span class="ident">extend_from_slice</span>(<span class="string">&quot;P-256\0&quot;</span>.<span class="ident">as_bytes</span>());
         <span class="ident">context</span>.<span class="ident">push</span>((<span class="self">self</span>.<span class="ident">peer_public_key</span>.<span class="ident">len</span>() <span class="op">&gt;&gt;</span> <span class="number">8</span>) <span class="kw">as</span> <span class="ident">u8</span>);
         <span class="ident">context</span>.<span class="ident">push</span>((<span class="self">self</span>.<span class="ident">peer_public_key</span>.<span class="ident">len</span>() <span class="op">&amp;</span> <span class="number">0xff</span>) <span class="kw">as</span> <span class="ident">u8</span>);
@@ -413,7 +465,13 @@
         <span class="ident">context</span>.<span class="ident">extend_from_slice</span>(<span class="ident">as_public_key</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prk</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">32</span>];
-        <span class="ident">hkdf</span>::<span class="ident">extract_and_expand</span>(<span class="kw-2">&amp;</span><span class="ident">client_auth_secret</span>, <span class="kw-2">&amp;</span><span class="ident">shared_secret</span>, <span class="string">&quot;Content-Encoding: auth\0&quot;</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">prk</span>);
+
+        <span class="ident">hkdf</span>::<span class="ident">extract_and_expand</span>(
+            <span class="kw-2">&amp;</span><span class="ident">client_auth_secret</span>,
+            <span class="kw-2">&amp;</span><span class="ident">shared_secret</span>,
+            <span class="string">&quot;Content-Encoding: auth\0&quot;</span>.<span class="ident">as_bytes</span>(),
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">prk</span>,
+        );
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cek_info</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">165</span>);
         <span class="ident">cek_info</span>.<span class="ident">extend_from_slice</span>(<span class="string">&quot;Content-Encoding: aesgcm\0&quot;</span>.<span class="ident">as_bytes</span>());
@@ -430,7 +488,14 @@
         <span class="ident">hkdf</span>::<span class="ident">extract_and_expand</span>(<span class="kw-2">&amp;</span><span class="ident">salt</span>, <span class="kw-2">&amp;</span><span class="ident">prk</span>, <span class="kw-2">&amp;</span><span class="ident">nonce_info</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">nonce</span>);
 
         <span class="kw">let</span> <span class="ident">sealing_key</span> <span class="op">=</span> <span class="ident">aead</span>::<span class="ident">SealingKey</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">aead</span>::<span class="ident">AES_128_GCM</span>, <span class="kw-2">&amp;</span><span class="ident">content_encryption_key</span>)<span class="question-mark">?</span>;
-        <span class="ident">aead</span>::<span class="ident">seal_in_place</span>(<span class="kw-2">&amp;</span><span class="ident">sealing_key</span>, <span class="ident">aead</span>::<span class="ident">Nonce</span>::<span class="ident">assume_unique_for_key</span>(<span class="ident">nonce</span>), <span class="ident">aead</span>::<span class="ident">Aad</span>::<span class="ident">empty</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>, <span class="number">16</span>)<span class="question-mark">?</span>;
+
+        <span class="ident">aead</span>::<span class="ident">seal_in_place</span>(
+            <span class="kw-2">&amp;</span><span class="ident">sealing_key</span>,
+            <span class="ident">aead</span>::<span class="ident">Nonce</span>::<span class="ident">assume_unique_for_key</span>(<span class="ident">nonce</span>),
+            <span class="ident">aead</span>::<span class="ident">Aad</span>::<span class="ident">empty</span>(),
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>,
+            <span class="number">16</span>,
+        )<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -451,9 +516,9 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">http_ece</span>::{<span class="ident">HttpEce</span>, <span class="ident">ContentEncoding</span>, <span class="ident">front_pad</span>};
-    <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
     <span class="kw">use</span> <span class="ident">base64</span>::{<span class="self">self</span>, <span class="ident">URL_SAFE</span>, <span class="ident">URL_SAFE_NO_PAD</span>};
+    <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">WebPushError</span>;
+    <span class="kw">use</span> <span class="ident">http_ece</span>::{<span class="ident">front_pad</span>, <span class="ident">ContentEncoding</span>, <span class="ident">HttpEce</span>};
     <span class="kw">use</span> <span class="ident">vapid</span>::<span class="ident">VapidSignature</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -464,7 +529,10 @@
         <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">3801</span>];
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>), <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">PayloadTooLarge</span>),
+            <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>)
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -476,7 +544,10 @@
         <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">Aes128Gcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">10</span>];
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>), <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">NotImplemented</span>),
+            <span class="ident">http_ece</span>.<span class="ident">encrypt</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>)
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -486,7 +557,9 @@
         <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">None</span>);
         <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> <span class="string">&quot;This is test data. XXX&quot;</span>.<span class="ident">as_bytes</span>();
-        <span class="kw">let</span> <span class="ident">shared_secret</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">shared_secret</span> <span class="op">=</span>
+            <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=&quot;</span>, <span class="ident">URL_SAFE</span>)
+                .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">as_pubkey</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=&quot;</span>,
                                               <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
@@ -497,8 +570,13 @@
             <span class="ident">payload</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">content</span>[<span class="ident">i</span>];
         }
 
-        <span class="ident">http_ece</span>.<span class="ident">aes_gcm</span>(<span class="kw-2">&amp;</span><span class="ident">shared_secret</span>, <span class="kw-2">&amp;</span><span class="ident">as_pubkey</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;tmE7-emq6iasohjXNMue0i0vn5o7EIOyP-bKyDoM1teHLcLtg44&quot;</span>, <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">payload</span>.<span class="ident">to_vec</span>(), <span class="ident">URL_SAFE_NO_PAD</span>));
+        <span class="ident">http_ece</span>
+            .<span class="ident">aes_gcm</span>(<span class="kw-2">&amp;</span><span class="ident">shared_secret</span>, <span class="kw-2">&amp;</span><span class="ident">as_pubkey</span>, <span class="kw-2">&amp;</span><span class="ident">salt_bytes</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">payload</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;tmE7-emq6iasohjXNMue0i0vn5o7EIOyP-bKyDoM1teHLcLtg44&quot;</span>,
+            <span class="ident">base64</span>::<span class="ident">encode_config</span>(<span class="kw-2">&amp;</span><span class="ident">payload</span>.<span class="ident">to_vec</span>(), <span class="ident">URL_SAFE_NO_PAD</span>)
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -509,11 +587,7 @@
                 <span class="ident">URL_SAFE</span>
             ).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span>
-            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
-                <span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>,
-                <span class="ident">URL_SAFE</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span>
             <span class="ident">base64</span>::<span class="ident">decode_config</span>(
@@ -521,17 +595,19 @@
                 <span class="ident">URL_SAFE</span>
             ).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(
-            <span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>,
-            <span class="ident">URL_SAFE</span>
-        ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">auth</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;xS03Fi5ErfTNH_l9WHE9Ig&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">vapid_signature</span> <span class="op">=</span> <span class="ident">VapidSignature</span> {
             <span class="ident">auth_t</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;foo&quot;</span>),
             <span class="ident">auth_k</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;bar&quot;</span>),
         };
 
-        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(<span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>, <span class="kw-2">&amp;</span><span class="ident">p256dh</span>, <span class="kw-2">&amp;</span><span class="ident">auth</span>, <span class="prelude-val">Some</span>(<span class="ident">vapid_signature</span>));
+        <span class="kw">let</span> <span class="ident">http_ece</span> <span class="op">=</span> <span class="ident">HttpEce</span>::<span class="ident">new</span>(
+            <span class="ident">ContentEncoding</span>::<span class="ident">AesGcm</span>,
+            <span class="kw-2">&amp;</span><span class="ident">p256dh</span>,
+            <span class="kw-2">&amp;</span><span class="ident">auth</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">vapid_signature</span>),
+        );
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="macro">vec</span><span class="macro">!</span>[
@@ -549,11 +625,7 @@
                 <span class="ident">URL_SAFE</span>
             ).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span>
-            <span class="ident">base64</span>::<span class="ident">decode_config</span>(
-                <span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>,
-                <span class="ident">URL_SAFE</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">salt_bytes</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="string">&quot;YMcMuxqRkchXwy7vMwNl1Q==&quot;</span>, <span class="ident">URL_SAFE</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">p256dh</span> <span class="op">=</span>
             <span class="ident">base64</span>::<span class="ident">decode_config</span>(
@@ -580,7 +652,13 @@
 
         <span class="ident">front_pad</span>(<span class="ident">content</span>.<span class="ident">as_bytes</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">6</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">110</span>, <span class="number">97</span>, <span class="number">117</span>, <span class="number">107</span>, <span class="number">105</span>, <span class="number">111</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>], <span class="ident">output</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="macro">vec</span><span class="macro">!</span>[
+                <span class="number">0</span>, <span class="number">6</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">110</span>, <span class="number">97</span>, <span class="number">117</span>, <span class="number">107</span>, <span class="number">105</span>, <span class="number">111</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
+                <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>
+            ],
+            <span class="ident">output</span>
+        );
     }
 }
 </pre></div>
