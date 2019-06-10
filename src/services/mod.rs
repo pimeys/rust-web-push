@@ -1,2 +1,2 @@
-pub mod firebase;
 pub mod autopush;
+pub mod firebase;

@@ -1,7 +1,7 @@
-use openssl::ec::{EcKey, EcGroup, PointConversionForm};
-use openssl::pkey::Private;
-use openssl::nid::Nid;
 use openssl::bn::BigNumContext;
+use openssl::ec::{EcGroup, EcKey, PointConversionForm};
+use openssl::nid::Nid;
+use openssl::pkey::Private;
 
 pub struct VapidKey(pub EcKey<Private>);
 
@@ -19,16 +19,17 @@ impl VapidKey {
         let mut ctx = BigNumContext::new().unwrap();
         let key = self.0.public_key();
 
-        key.to_bytes(&*GROUP, PointConversionForm::UNCOMPRESSED, &mut ctx).unwrap()
+        key.to_bytes(&*GROUP, PointConversionForm::UNCOMPRESSED, &mut ctx)
+            .unwrap()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use vapid::key::VapidKey;
-    use std::fs::File;
     use openssl::ec::EcKey;
+    use std::fs::File;
     use std::io::Read;
+    use vapid::key::VapidKey;
 
     #[test]
     fn test_public_key_derivation() {
@@ -40,11 +41,12 @@ mod tests {
         let key = VapidKey::new(ec);
 
         assert_eq!(
-            vec![4, 202, 53, 30, 162, 133, 234, 201, 12, 101, 140, 164, 174, 215,
-                 189, 118, 234, 152, 192, 16, 244, 242, 96, 208, 41, 59, 167, 70,
-                 66, 93, 15, 123, 19, 39, 209, 62, 203, 35, 122, 176, 153, 79, 89,
-                 58, 74, 54, 26, 126, 203, 98, 158, 75, 170, 0, 52, 113, 126, 171,
-                 124, 55, 237, 176, 165, 111, 181],
+            vec![
+                4, 202, 53, 30, 162, 133, 234, 201, 12, 101, 140, 164, 174, 215, 189, 118, 234,
+                152, 192, 16, 244, 242, 96, 208, 41, 59, 167, 70, 66, 93, 15, 123, 19, 39, 209, 62,
+                203, 35, 122, 176, 153, 79, 89, 58, 74, 54, 26, 126, 203, 98, 158, 75, 170, 0, 52,
+                113, 126, 171, 124, 55, 237, 176, 165, 111, 181
+            ],
             key.public_key()
         );
     }

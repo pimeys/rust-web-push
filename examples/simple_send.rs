@@ -1,32 +1,16 @@
-extern crate serde_json;
-extern crate serde;
-extern crate web_push;
-extern crate tokio;
 extern crate argparse;
 extern crate base64;
-extern crate time;
 extern crate futures;
+extern crate serde;
+extern crate serde_json;
+extern crate time;
+extern crate tokio;
+extern crate web_push;
 
+use argparse::{ArgumentParser, Store, StoreOption};
+use futures::{future::lazy, Future};
+use std::{fs::File, io::Read, time::Duration};
 use web_push::*;
-
-use argparse::{
-    ArgumentParser,
-    Store,
-    StoreOption
-};
-
-use std::{
-    fs::File,
-    io::Read,
-    time::Duration,
-};
-
-use futures::{
-    future::{
-        lazy,
-    },
-    Future,
-};
 
 fn main() {
     let mut subscription_info_file = String::new();
@@ -39,22 +23,33 @@ fn main() {
         let mut ap = ArgumentParser::new();
         ap.set_description("A web push sender");
 
-        ap.refer(&mut gcm_api_key)
-            .add_option(&["-k", "--gcm_api_key"], StoreOption, "Google GCM API Key");
+        ap.refer(&mut gcm_api_key).add_option(
+            &["-k", "--gcm_api_key"],
+            StoreOption,
+            "Google GCM API Key",
+        );
 
-        ap.refer(&mut vapid_private_key)
-            .add_option(&["-v", "--vapid_key"], StoreOption,
-                        "A NIST P256 EC private key to create a VAPID signature");
+        ap.refer(&mut vapid_private_key).add_option(
+            &["-v", "--vapid_key"],
+            StoreOption,
+            "A NIST P256 EC private key to create a VAPID signature",
+        );
 
         ap.refer(&mut subscription_info_file)
             .add_option(&["-f", "--subscription_info_file"], Store,
                         "Subscription info JSON file, https://developers.google.com/web/updates/2016/03/web-push-encryption");
 
-        ap.refer(&mut push_payload)
-            .add_option(&["-p", "--push_payload"], StoreOption, "Push notification content");
+        ap.refer(&mut push_payload).add_option(
+            &["-p", "--push_payload"],
+            StoreOption,
+            "Push notification content",
+        );
 
-        ap.refer(&mut ttl)
-            .add_option(&["-t", "--time_to_live"], StoreOption, "TTL of the notification");
+        ap.refer(&mut ttl).add_option(
+            &["-t", "--time_to_live"],
+            StoreOption,
+            "TTL of the notification",
+        );
 
         ap.parse_args_or_exit();
     }
@@ -102,13 +97,10 @@ fn main() {
                     .send_with_timeout(message, Duration::from_secs(4))
                     .map(|response| {
                         println!("Sent: {:?}", response);
-                    }).map_err(|error| {
-                        println!("Error: {:?}", error)
                     })
+                    .map_err(|error| println!("Error: {:?}", error))
             }));
-        },
-        Err(error) => {
-            println!("ERROR in building message: {:?}", error)
         }
+        Err(error) => println!("ERROR in building message: {:?}", error),
     }
 }

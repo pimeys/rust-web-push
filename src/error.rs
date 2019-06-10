@@ -1,25 +1,15 @@
-use std::{
-    error::Error,
-    convert::From,
-    fmt,
-    io::Error as IoError,
-};
-
-use std::time::{
-    SystemTime,
-    Duration
-};
-
-use ring::error;
-use tokio_timer::TimeoutError;
+use base64::DecodeError;
+use chrono;
 use client::WebPushResponse;
 use http::uri::InvalidUri;
 use native_tls;
-use std::string::FromUtf8Error;
-use serde_json::error::Error as JsonError;
 use openssl::error::ErrorStack;
-use base64::DecodeError;
-use chrono;
+use ring::error;
+use serde_json::error::Error as JsonError;
+use std::string::FromUtf8Error;
+use std::time::{Duration, SystemTime};
+use std::{convert::From, error::Error, fmt, io::Error as IoError};
+use tokio_timer::TimeoutError;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -120,25 +110,25 @@ impl From<DecodeError> for WebPushError {
 impl WebPushError {
     pub fn short_description(&self) -> &'static str {
         match *self {
-            WebPushError::Unspecified        => "unspecified",
-            WebPushError::Unauthorized       => "unauthorized",
-            WebPushError::BadRequest(_)      => "bad_request",
-            WebPushError::ServerError(_)     => "server_error",
-            WebPushError::NotImplemented     => "not_implemented",
-            WebPushError::InvalidUri         => "invalid_uri",
-            WebPushError::TimeoutError       => "timeout_error",
-            WebPushError::EndpointNotValid   => "endpoint_not_valid",
-            WebPushError::EndpointNotFound   => "endpoint_not_found",
-            WebPushError::PayloadTooLarge    => "payload_too_large",
-            WebPushError::TlsError           => "tls_error",
+            WebPushError::Unspecified => "unspecified",
+            WebPushError::Unauthorized => "unauthorized",
+            WebPushError::BadRequest(_) => "bad_request",
+            WebPushError::ServerError(_) => "server_error",
+            WebPushError::NotImplemented => "not_implemented",
+            WebPushError::InvalidUri => "invalid_uri",
+            WebPushError::TimeoutError => "timeout_error",
+            WebPushError::EndpointNotValid => "endpoint_not_valid",
+            WebPushError::EndpointNotFound => "endpoint_not_found",
+            WebPushError::PayloadTooLarge => "payload_too_large",
+            WebPushError::TlsError => "tls_error",
             WebPushError::InvalidPackageName => "invalid_package_name",
-            WebPushError::InvalidTtl         => "invalid_ttl",
-            WebPushError::InvalidResponse    => "invalid_response",
-            WebPushError::MissingCryptoKeys  => "missing_crypto_keys",
-            WebPushError::InvalidCryptoKeys  => "invalid_crypto_keys",
-            WebPushError::SslError           => "ssl_error",
-            WebPushError::IoError            => "io_error",
-            WebPushError::Other(_)           => "other",
+            WebPushError::InvalidTtl => "invalid_ttl",
+            WebPushError::InvalidResponse => "invalid_response",
+            WebPushError::MissingCryptoKeys => "missing_crypto_keys",
+            WebPushError::InvalidCryptoKeys => "invalid_crypto_keys",
+            WebPushError::SslError => "ssl_error",
+            WebPushError::IoError => "io_error",
+            WebPushError::Other(_) => "other",
         }
     }
 }
@@ -206,7 +196,8 @@ impl RetryAfter {
                     systime
                         .duration_since(SystemTime::now())
                         .unwrap_or_else(|_| Duration::new(0, 0))
-                }).ok()
+                })
+                .ok()
         }
     }
 }

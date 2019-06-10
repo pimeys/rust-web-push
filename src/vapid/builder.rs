@@ -1,12 +1,12 @@
-use openssl::ec::EcKey;
-use openssl::pkey::Private;
-use std::io::Read;
 use error::WebPushError;
-use std::collections::BTreeMap;
-use vapid::{VapidKey, VapidSigner, VapidSignature};
-use serde_json::Value;
 use hyper::Uri;
 use message::SubscriptionInfo;
+use openssl::ec::EcKey;
+use openssl::pkey::Private;
+use serde_json::Value;
+use std::collections::BTreeMap;
+use std::io::Read;
+use vapid::{VapidKey, VapidSignature, VapidSigner};
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. With a given signature, one can pass the registration to Google's
@@ -75,23 +75,31 @@ pub struct VapidSignatureBuilder<'a> {
 
 impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key.
-    pub fn from_pem<R: Read>(mut pk_pem: R, subscription_info: &'a SubscriptionInfo)
-                             -> Result<VapidSignatureBuilder<'a>, WebPushError>
-    {
+    pub fn from_pem<R: Read>(
+        mut pk_pem: R,
+        subscription_info: &'a SubscriptionInfo,
+    ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
         let mut pem_key: Vec<u8> = Vec::new();
         pk_pem.read_to_end(&mut pem_key)?;
 
-        Ok(Self::from_ec(EcKey::private_key_from_pem(&pem_key)?, subscription_info))
+        Ok(Self::from_ec(
+            EcKey::private_key_from_pem(&pem_key)?,
+            subscription_info,
+        ))
     }
 
     /// Creates a new builder from a DER formatted private key.
-    pub fn from_der<R: Read>(mut pk_der: R, subscription_info: &'a SubscriptionInfo)
-                             -> Result<VapidSignatureBuilder<'a>, WebPushError>
-    {
+    pub fn from_der<R: Read>(
+        mut pk_der: R,
+        subscription_info: &'a SubscriptionInfo,
+    ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
         let mut der_key: Vec<u8> = Vec::new();
         pk_der.read_to_end(&mut der_key)?;
 
-        Ok(Self::from_ec(EcKey::private_key_from_der(&der_key)?, subscription_info))
+        Ok(Self::from_ec(
+            EcKey::private_key_from_der(&der_key)?,
+            subscription_info,
+        ))
     }
 
     /// Add a claim to the signature. Claims `aud` and `exp` are automatically
@@ -101,7 +109,8 @@ impl<'a> VapidSignatureBuilder<'a> {
     /// The function accepts any value that can be converted into a type JSON
     /// supports.
     pub fn add_claim<V>(&mut self, key: &'a str, val: V)
-    where V: Into<Value>
+    where
+        V: Into<Value>,
     {
         self.claims.insert(key, val.into());
     }
@@ -114,9 +123,10 @@ impl<'a> VapidSignatureBuilder<'a> {
         Ok(signature)
     }
 
-    fn from_ec(ec_key: EcKey<Private>, subscription_info: &'a SubscriptionInfo)
-               -> VapidSignatureBuilder<'a>
-    {
+    fn from_ec(
+        ec_key: EcKey<Private>,
+        subscription_info: &'a SubscriptionInfo,
+    ) -> VapidSignatureBuilder<'a> {
         VapidSignatureBuilder {
             claims: BTreeMap::new(),
             key: VapidKey::new(ec_key),
@@ -127,10 +137,10 @@ impl<'a> VapidSignatureBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use vapid::VapidSignatureBuilder;
     use message::SubscriptionInfo;
     use serde_json;
     use std::fs::File;
+    use vapid::VapidSignatureBuilder;
 
     lazy_static! {
         static ref PRIVATE_PEM: File = File::open("resources/vapid_test_key.pem").unwrap();

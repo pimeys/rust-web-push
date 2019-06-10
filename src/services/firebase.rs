@@ -1,22 +1,9 @@
-use message::WebPushMessage;
-
-use hyper::{
-    Request,
-    StatusCode,
-    Body,
-};
-
-use http::{
-    header::{
-        CONTENT_LENGTH,
-        CONTENT_TYPE,
-        AUTHORIZATION,
-    },
-};
-
-use error::WebPushError;
-use serde_json;
 use base64;
+use error::WebPushError;
+use http::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE};
+use hyper::{Body, Request, StatusCode};
+use message::WebPushMessage;
+use serde_json;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum GcmError {
@@ -41,13 +28,13 @@ impl<'a> From<&'a GcmError> for WebPushError {
         match e {
             &GcmError::MissingRegistration => WebPushError::EndpointNotFound,
             &GcmError::InvalidRegistration => WebPushError::EndpointNotValid,
-            &GcmError::NotRegistered       => WebPushError::EndpointNotValid,
-            &GcmError::InvalidPackageName  => WebPushError::InvalidPackageName,
-            &GcmError::MessageTooBig       => WebPushError::PayloadTooLarge,
-            &GcmError::InvalidTtl          => WebPushError::InvalidTtl,
-            &GcmError::Unavailable         => WebPushError::ServerError(None),
+            &GcmError::NotRegistered => WebPushError::EndpointNotValid,
+            &GcmError::InvalidPackageName => WebPushError::InvalidPackageName,
+            &GcmError::MessageTooBig => WebPushError::PayloadTooLarge,
+            &GcmError::InvalidTtl => WebPushError::InvalidTtl,
+            &GcmError::Unavailable => WebPushError::ServerError(None),
             &GcmError::InternalServerError => WebPushError::ServerError(None),
-            e                              => WebPushError::Other(format!("{:?}", e)),
+            e => WebPushError::Other(format!("{:?}", e)),
         }
     }
 }
@@ -78,10 +65,8 @@ struct GcmData {
 
 pub fn build_request(message: WebPushMessage) -> Request<Body> {
     let uri = match message.endpoint.host() {
-        Some("fcm.googleapis.com") =>
-            "https://fcm.googleapis.com/fcm/send",
-        _ =>
-            "https://android.googleapis.com/gcm/send",
+        Some("fcm.googleapis.com") => "https://fcm.googleapis.com/fcm/send",
+        _ => "https://android.googleapis.com/gcm/send",
     };
 
     let mut builder = Request::builder();
@@ -89,10 +74,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     builder.uri(uri);
 
     if let Some(ref gcm_key) = message.gcm_key {
-        builder.header(
-            AUTHORIZATION,
-            format!("key={}", gcm_key).as_bytes(),
-        );
+        builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
     }
 
     let mut registration_ids = Vec::with_capacity(1);
@@ -109,9 +91,8 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
             }
 
             Some(base64::encode(&payload.content))
-        },
-        None =>
-            None,
+        }
+        None => None,
     };
 
     let gcm_data = GcmData {
@@ -121,10 +102,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 
     let json_payload = serde_json::to_string(&gcm_data).unwrap();
 
-    builder.header(
-        CONTENT_TYPE,
-        "application/json",
-    );
+    builder.header(CONTENT_TYPE, "application/json");
 
     builder.header(
         CONTENT_LENGTH,
@@ -137,7 +115,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
     match response_status {
         StatusCode::OK => {
-            let body_str                  = String::from_utf8(body)?;
+            let body_str = String::from_utf8(body)?;
             let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
             if let Some(0) = gcm_response.failure {
@@ -145,41 +123,39 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
             } else {
                 match gcm_response.results {
                     Some(results) => match results.first() {
-                        Some(result) => {
-                            match result.error {
-                                Some(ref error) => Err(WebPushError::from(error)),
-                                _               => Err(WebPushError::Other(String::from("UnknownError")))
-                            }
+                        Some(result) => match result.error {
+                            Some(ref error) => Err(WebPushError::from(error)),
+                            _ => Err(WebPushError::Other(String::from("UnknownError"))),
                         },
-                        _ => Err(WebPushError::Other(String::from("UnknownError")))
+                        _ => Err(WebPushError::Other(String::from("UnknownError"))),
                     },
-                    _ => Err(WebPushError::Other(String::from("UnknownError")))
+                    _ => Err(WebPushError::Other(String::from("UnknownError"))),
                 }
             }
-        },
-        StatusCode::UNAUTHORIZED           => Err(WebPushError::Unauthorized),
-        StatusCode::BAD_REQUEST            => {
-            let body_str                  = String::from_utf8(body)?;
+        }
+        StatusCode::UNAUTHORIZED => Err(WebPushError::Unauthorized),
+        StatusCode::BAD_REQUEST => {
+            let body_str = String::from_utf8(body)?;
             let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
             match gcm_response.error {
                 Some(e) => Err(WebPushError::from(&e)),
-                _       => Err(WebPushError::BadRequest(None))
+                _ => Err(WebPushError::BadRequest(None)),
             }
-        },
+        }
         status if status.is_server_error() => Err(WebPushError::ServerError(None)),
-        e                                  => Err(WebPushError::Other(format!("{:?}", e))),
+        e => Err(WebPushError::Other(format!("{:?}", e))),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use services::firebase::*;
-    use hyper::StatusCode;
-    use http_ece::ContentEncoding;
     use error::WebPushError;
-    use message::{WebPushMessageBuilder, SubscriptionInfo};
+    use http_ece::ContentEncoding;
+    use hyper::StatusCode;
     use hyper::Uri;
+    use message::{SubscriptionInfo, WebPushMessageBuilder};
+    use services::firebase::*;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
@@ -253,7 +229,10 @@ mod tests {
             "failure": 0
         }
         "#;
-        assert_eq!(Ok(()), parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Ok(()),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -267,8 +246,10 @@ mod tests {
             "results": [{"error":"MissingRegistration"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::EndpointNotFound),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::EndpointNotFound),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -282,8 +263,10 @@ mod tests {
             "results": [{"error":"InvalidRegistration"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::EndpointNotValid),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::EndpointNotValid),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -297,8 +280,10 @@ mod tests {
             "results": [{"error":"NotRegistered"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::EndpointNotValid),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::EndpointNotValid),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -312,8 +297,10 @@ mod tests {
             "results": [{"error":"InvalidPackageName"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::InvalidPackageName),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::InvalidPackageName),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -327,8 +314,10 @@ mod tests {
             "results": [{"error":"MessageTooBig"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::PayloadTooLarge),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::PayloadTooLarge),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -342,8 +331,10 @@ mod tests {
             "results": [{"error":"InvalidDataKey"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::Other(String::from("InvalidDataKey"))),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::Other(String::from("InvalidDataKey"))),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -357,8 +348,10 @@ mod tests {
             "results": [{"error":"InvalidTtl"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::InvalidTtl),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::InvalidTtl),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -372,8 +365,10 @@ mod tests {
             "results": [{"error":"Unavailable"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::ServerError(None)),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::ServerError(None)),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 
     #[test]
@@ -387,7 +382,9 @@ mod tests {
             "results": [{"error":"InternalServerError"}]
         }
         "#;
-        assert_eq!(Err(WebPushError::ServerError(None)),
-                   parse_response(StatusCode::OK, response.as_bytes().to_vec()))
+        assert_eq!(
+            Err(WebPushError::ServerError(None)),
+            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+        )
     }
 }
