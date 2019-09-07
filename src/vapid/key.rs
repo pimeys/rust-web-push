@@ -29,7 +29,7 @@ mod tests {
     use openssl::ec::EcKey;
     use std::fs::File;
     use std::io::Read;
-    use vapid::key::VapidKey;
+    use crate::vapid::key::VapidKey;
 
     #[test]
     fn test_public_key_derivation() {

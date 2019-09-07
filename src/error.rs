@@ -1,6 +1,6 @@
 use base64::DecodeError;
 use chrono;
-use client::WebPushResponse;
+use crate::client::WebPushResponse;
 use http::uri::InvalidUri;
 use native_tls;
 use openssl::error::ErrorStack;
@@ -172,7 +172,7 @@ impl Error for WebPushError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         None
     }
 }

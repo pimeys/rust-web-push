@@ -10,18 +10,18 @@ use futures::{
 
 use std::{fmt, time::Duration};
 
-use error::{RetryAfter, WebPushError};
+use crate::error::{RetryAfter, WebPushError};
 
 use http::header::RETRY_AFTER;
 use hyper_tls::HttpsConnector;
-use message::{WebPushMessage, WebPushService};
-use services::{autopush, firebase};
+use crate::message::{WebPushMessage, WebPushService};
+use crate::services::{autopush, firebase};
 use tokio_service::Service;
 use tokio_timer::{Timeout, Timer};
 
 /// The response future. When successful, returns an empty `Unit` for failures
 /// gives a [WebPushError](enum.WebPushError.html).
-pub struct WebPushResponse(Box<Future<Item = (), Error = WebPushError> + Send + 'static>);
+pub struct WebPushResponse(Box<dyn Future<Item = (), Error = WebPushError> + Send + 'static>);
 
 impl fmt::Debug for WebPushResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

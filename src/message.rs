@@ -1,8 +1,8 @@
 use base64;
-use error::WebPushError;
-use http_ece::{ContentEncoding, HttpEce};
+use crate::error::WebPushError;
+use crate::http_ece::{ContentEncoding, HttpEce};
 use hyper::Uri;
-use vapid::VapidSignature;
+use crate::vapid::VapidSignature;
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]

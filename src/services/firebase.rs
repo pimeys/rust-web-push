@@ -1,8 +1,8 @@
 use base64;
-use error::WebPushError;
+use crate::error::WebPushError;
 use http::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::{Body, Request, StatusCode};
-use message::WebPushMessage;
+use crate::message::WebPushMessage;
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -150,12 +150,12 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 
 #[cfg(test)]
 mod tests {
-    use error::WebPushError;
-    use http_ece::ContentEncoding;
+    use crate::error::WebPushError;
+    use crate::http_ece::ContentEncoding;
     use hyper::StatusCode;
     use hyper::Uri;
-    use message::{SubscriptionInfo, WebPushMessageBuilder};
-    use services::firebase::*;
+    use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
+    use crate::services::firebase::*;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {

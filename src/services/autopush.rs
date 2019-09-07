@@ -1,10 +1,10 @@
-use message::WebPushMessage;
+use crate::message::WebPushMessage;
 
 use hyper::{Body, Request, StatusCode};
 
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
 
-use error::WebPushError;
+use crate::error::WebPushError;
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
@@ -69,12 +69,12 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 
 #[cfg(test)]
 mod tests {
-    use error::WebPushError;
-    use http_ece::ContentEncoding;
+    use crate::error::WebPushError;
+    use crate::http_ece::ContentEncoding;
     use hyper::StatusCode;
     use hyper::Uri;
-    use message::{SubscriptionInfo, WebPushMessageBuilder};
-    use services::autopush::*;
+    use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
+    use crate::services::autopush::*;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {

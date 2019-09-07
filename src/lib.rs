@@ -85,12 +85,12 @@ mod message;
 mod services;
 mod vapid;
 
-pub use client::{WebPushClient, WebPushResponse};
-pub use error::WebPushError;
+pub use crate::client::{WebPushClient, WebPushResponse};
+pub use crate::error::WebPushError;
 
-pub use message::{
+pub use crate::message::{
     SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload,
 };
 
-pub use http_ece::ContentEncoding;
-pub use vapid::{VapidSignature, VapidSignatureBuilder};
+pub use crate::http_ece::ContentEncoding;
+pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
