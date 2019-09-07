@@ -1,5 +1,5 @@
 use base64::{self, URL_SAFE_NO_PAD};
-use error::WebPushError;
+use crate::error::WebPushError;
 use hyper::Uri;
 use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
@@ -8,7 +8,7 @@ use serde_json;
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
 use time;
-use vapid::VapidKey;
+use crate::vapid::VapidKey;
 
 lazy_static! {
     static ref JWT_HEADERS: String = base64::encode_config(
@@ -112,7 +112,7 @@ impl VapidSigner {
 
 #[cfg(test)]
 mod tests {
-    use vapid::VapidSignature;
+    use crate::vapid::VapidSignature;
 
     #[test]
     fn test_vapid_signature_aesgcm_format() {

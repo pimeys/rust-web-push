@@ -1,12 +1,12 @@
-use error::WebPushError;
+use crate::error::WebPushError;
 use hyper::Uri;
-use message::SubscriptionInfo;
+use crate::message::SubscriptionInfo;
 use openssl::ec::EcKey;
 use openssl::pkey::Private;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::io::Read;
-use vapid::{VapidKey, VapidSignature, VapidSigner};
+use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. With a given signature, one can pass the registration to Google's
@@ -137,10 +137,10 @@ impl<'a> VapidSignatureBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use message::SubscriptionInfo;
+    use crate::message::SubscriptionInfo;
     use serde_json;
     use std::fs::File;
-    use vapid::VapidSignatureBuilder;
+    use crate::vapid::VapidSignatureBuilder;
 
     lazy_static! {
         static ref PRIVATE_PEM: File = File::open("resources/vapid_test_key.pem").unwrap();

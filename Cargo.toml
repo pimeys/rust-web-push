@@ -1,8 +1,8 @@
 [package]
 name = "web-push"
 description = "Web push notification client with support for http-ece encryption and VAPID authentication."
-version = "0.5.0"
-authors = ["Julius de Bruijn <julius.debruijn@360dialog.com>"]
+version = "0.6.0-alpha.1"
+authors = ["Julius de Bruijn <julius+github@nauk.io>"]
 license = "Apache-2.0"
 homepage = "https://github.com/pimeys/rust-web-push"
 repository = "https://github.com/pimeys/rust-web-push"
@@ -10,16 +10,16 @@ documentation = "https://pimeys.github.io/rust-web-push/index.html"
 readme = "README.md"
 keywords = ["web-push", "http-ece", "vapid"]
 categories = ["web-programming", "asynchronous"]
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "pimeys/rust-web-push" }
 
 [dependencies]
-futures = "^0.1"
-tokio-service = "^0.1"
-tokio-timer = "^0.1"
-hyper = "^0.12"
-hyper-tls = "^0.3"
+futures-preview = "0.3.0-alpha.18"
+tokio-timer = "0.3.0-alpha.4"
+hyper = "0.13.0-alpha.1"
+hyper-tls = "0.4.0-alpha.1"
 http = "^0.1"
 serde = "^1.0"
 serde_json = "^1.0"
@@ -38,4 +38,4 @@ log = "^0.4"
 
 [dev-dependencies]
 argparse = "0.2"
-tokio = "0.1"
+tokio = "0.2.0-alpha.4"
