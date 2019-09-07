@@ -1,18 +1,9 @@
-extern crate argparse;
-extern crate base64;
-extern crate futures;
-extern crate serde;
-extern crate serde_json;
-extern crate time;
-extern crate tokio;
-extern crate web_push;
-
 use argparse::{ArgumentParser, Store, StoreOption};
-use futures::{future::lazy, Future};
-use std::{fs::File, io::Read, time::Duration};
+use std::{fs::File, io::Read};
 use web_push::*;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let mut subscription_info_file = String::new();
     let mut gcm_api_key: Option<String> = None;
     let mut vapid_private_key: Option<String> = None;
@@ -88,19 +79,10 @@ fn main() {
         builder.set_vapid_signature(signature);
     };
 
-    match builder.build() {
-        Ok(message) => {
-            let client = WebPushClient::new().unwrap();
+    let client = WebPushClient::new()?;
 
-            tokio::run(lazy(move || {
-                client
-                    .send_with_timeout(message, Duration::from_secs(4))
-                    .map(|response| {
-                        println!("Sent: {:?}", response);
-                    })
-                    .map_err(|error| println!("Error: {:?}", error))
-            }));
-        }
-        Err(error) => println!("ERROR in building message: {:?}", error),
-    }
+    let response = client.send(builder.build()?).await?;
+    println!("Sent: {:?}", response);
+
+    Ok(())
 }

@@ -6,6 +6,13 @@ Rust Web Push
 
 Web push notification sender.
 
+## Alpha status
+
+The current master and alpha versions use `std::future` with async/await syntax,
+and requires a nightly compiler. 0.5 works with stable and futures 0.1.
+
+Bugfixes for the stable release should go against the `v0.5` branch.
+
 Documentation
 -------------
 

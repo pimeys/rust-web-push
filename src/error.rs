@@ -1,6 +1,5 @@
 use base64::DecodeError;
 use chrono;
-use crate::client::WebPushResponse;
 use http::uri::InvalidUri;
 use native_tls;
 use openssl::error::ErrorStack;
@@ -9,7 +8,6 @@ use serde_json::error::Error as JsonError;
 use std::string::FromUtf8Error;
 use std::time::{Duration, SystemTime};
 use std::{convert::From, error::Error, fmt, io::Error as IoError};
-use tokio_timer::TimeoutError;
 
 #[derive(PartialEq, Debug)]
 pub enum WebPushError {
@@ -25,8 +23,6 @@ pub enum WebPushError {
     NotImplemented,
     /// The provided URI is invalid
     InvalidUri,
-    /// The request timed out
-    TimeoutError,
     /// The URL specified is no longer valid and should no longer be used
     EndpointNotValid,
     /// The URL specified is invalid and should not be used again
@@ -71,15 +67,15 @@ impl From<InvalidUri> for WebPushError {
     }
 }
 
-impl From<TimeoutError<WebPushResponse>> for WebPushError {
-    fn from(_: TimeoutError<WebPushResponse>) -> WebPushError {
-        WebPushError::TimeoutError
-    }
-}
-
 impl From<error::Unspecified> for WebPushError {
     fn from(_: error::Unspecified) -> WebPushError {
         WebPushError::Unspecified
+    }
+}
+
+impl From<hyper::error::Error> for WebPushError {
+    fn from(_: hyper::error::Error) -> Self {
+        Self::Unspecified
     }
 }
 
@@ -116,7 +112,6 @@ impl WebPushError {
             WebPushError::ServerError(_) => "server_error",
             WebPushError::NotImplemented => "not_implemented",
             WebPushError::InvalidUri => "invalid_uri",
-            WebPushError::TimeoutError => "timeout_error",
             WebPushError::EndpointNotValid => "endpoint_not_valid",
             WebPushError::EndpointNotFound => "endpoint_not_found",
             WebPushError::PayloadTooLarge => "payload_too_large",
@@ -150,8 +145,6 @@ impl Error for WebPushError {
                 "The provided URI is invalid",
             WebPushError::NotImplemented =>
                 "The feature is not implemented yet",
-            WebPushError::TimeoutError =>
-                "The request timed out",
             WebPushError::EndpointNotValid =>
                 "The URL specified is no longer valid and should no longer be used",
             WebPushError::EndpointNotFound =>
