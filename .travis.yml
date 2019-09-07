@@ -3,6 +3,7 @@ matrix:
   include:
     - rust: beta
     - rust: stable
+    - rust: nightly
 
 cache:
   apt: true
