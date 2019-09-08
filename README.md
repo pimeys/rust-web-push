@@ -16,7 +16,7 @@ Bugfixes for the stable release should go against the `v0.5` branch.
 Documentation
 -------------
 
-* [Released](https://pimeys.github.io/rust-web-push/)
+* [Released](https://docs.rs/web-push/)
 * [Master](https://pimeys.github.io/rust-web-push/master/index.html)
 
 To send a web push from command line, first subscribe to receive push

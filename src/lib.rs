@@ -12,8 +12,8 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
 //! let endpoint = "https://updates.push.services.mozilla.com/wpush/v1/...";
-//! let p256dh = base64::decode_config("key_from_browser_as_base64", URL_SAFE).unwrap();
-//! let auth = base64::decode_config("auth_from_browser_as_base64", URL_SAFE).unwrap();
+//! let p256dh = base64::decode_config("key_from_browser_as_base64", URL_SAFE)?;
+//! let auth = base64::decode_config("auth_from_browser_as_base64", URL_SAFE)?;
 //!
 //! let subscription_info = SubscriptionInfo::new(
 //!     endpoint,
@@ -21,7 +21,7 @@
 //!     "xS03Fi5ErfTNH_l9WHE9Ig"
 //! );
 //!
-//! let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
+//! let mut builder = WebPushMessageBuilder::new(&subscription_info)?;
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
 //! builder.set_payload(ContentEncoding::AesGcm, content);
 //!
