@@ -25,7 +25,7 @@
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
 //! builder.set_payload(ContentEncoding::AesGcm, content);
 //!
-//! let client = WebPushClient::new()?;
+//! let client = WebPushClient::new();
 //!
 //! let response = client.send(builder.build()?).await?;
 //! println!("Got response: {:?}", response);

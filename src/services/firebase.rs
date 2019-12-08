@@ -69,12 +69,12 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         _ => "https://android.googleapis.com/gcm/send",
     };
 
-    let mut builder = Request::builder();
-    builder.method("POST");
-    builder.uri(uri);
+    let mut builder = Request::builder()
+        .method("POST")
+        .uri(uri);
 
     if let Some(ref gcm_key) = message.gcm_key {
-        builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
+        builder = builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
     }
 
     let mut registration_ids = Vec::with_capacity(1);
@@ -87,7 +87,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         Some(payload) => {
             for (k, v) in payload.crypto_headers.into_iter() {
                 let v: &str = v.as_ref();
-                builder.header(k, v);
+                builder = builder.header(k, v);
             }
 
             Some(base64::encode(&payload.content))
@@ -102,14 +102,13 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 
     let json_payload = serde_json::to_string(&gcm_data).unwrap();
 
-    builder.header(CONTENT_TYPE, "application/json");
-
-    builder.header(
-        CONTENT_LENGTH,
-        format!("{}", json_payload.len() as u64).as_bytes(),
-    );
-
-    builder.body(json_payload.into()).unwrap()
+    builder
+        .header(CONTENT_TYPE, "application/json")
+        .header(
+            CONTENT_LENGTH,
+            format!("{}", json_payload.len() as u64).as_bytes(),
+        )
+        .body(json_payload.into()).unwrap()
 }
 
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {

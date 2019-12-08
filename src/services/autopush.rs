@@ -16,26 +16,23 @@ struct ErrorInfo {
 }
 
 pub fn build_request(message: WebPushMessage) -> Request<Body> {
-    let mut builder = Request::builder();
-
-    builder.method("POST");
-    builder.uri(message.endpoint);
-
-    builder.header("TTL", format!("{}", message.ttl).as_bytes());
+    let mut builder = Request::builder()
+        .method("POST")
+        .uri(message.endpoint)
+        .header("TTL", format!("{}", message.ttl).as_bytes());
 
     if let Some(payload) = message.payload {
-        builder.header(CONTENT_ENCODING, payload.content_encoding);
-
-        builder.header(
-            CONTENT_LENGTH,
-            format!("{}", payload.content.len() as u64).as_bytes(),
-        );
-
-        builder.header(CONTENT_TYPE, "application/octet-stream");
+        builder = builder
+            .header(CONTENT_ENCODING, payload.content_encoding)
+            .header(
+                CONTENT_LENGTH,
+                format!("{}", payload.content.len() as u64).as_bytes(),
+            )
+            .header(CONTENT_TYPE, "application/octet-stream");
 
         for (k, v) in payload.crypto_headers.into_iter() {
             let v: &str = v.as_ref();
-            builder.header(k, v);
+            builder = builder.header(k, v);
         }
 
         builder.body(payload.content.into()).unwrap()

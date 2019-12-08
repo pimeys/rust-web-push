@@ -2,9 +2,9 @@ use hyper::{
     client::{Client, HttpConnector},
     Body, Request as HttpRequest,
 };
-use futures::stream::TryStreamExt;
+use futures::stream::StreamExt;
 use crate::error::{RetryAfter, WebPushError};
-use http::header::RETRY_AFTER;
+use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
 use crate::message::{WebPushMessage, WebPushService};
 use crate::services::{autopush, firebase};
@@ -15,13 +15,13 @@ pub struct WebPushClient {
 }
 
 impl WebPushClient {
-    pub fn new() -> Result<WebPushClient, WebPushError> {
+    pub fn new() -> WebPushClient {
         let mut builder = Client::builder();
         builder.keep_alive(true);
 
-        Ok(WebPushClient {
-            client: builder.build(HttpsConnector::new()?),
-        })
+        WebPushClient {
+            client: builder.build(HttpsConnector::new()),
+        }
     }
 
     /// Sends a notification. Never times out.
@@ -46,7 +46,19 @@ impl WebPushClient {
         let response_status = response.status();
         trace!("Response status: {}", response_status);
 
-        let body = response.into_body().try_concat().await?;
+        let content_length: usize = response
+            .headers()
+            .get(CONTENT_LENGTH)
+            .and_then(|s| s.to_str().ok())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0);
+
+        let mut body: Vec<u8> = Vec::with_capacity(content_length);
+        let mut chunks = response.into_body();
+
+        while let Some(chunk) = chunks.next().await {
+            body.extend_from_slice(&chunk?);
+        }
         trace!("Body: {:?}", body);
 
         let response = match service {

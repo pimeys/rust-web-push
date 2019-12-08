@@ -79,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         builder.set_vapid_signature(signature);
     };
 
-    let client = WebPushClient::new()?;
+    let client = WebPushClient::new();
 
     let response = client.send(builder.build()?).await?;
     println!("Sent: {:?}", response);
