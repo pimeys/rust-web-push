@@ -6,5 +6,4 @@ implementors["web_push"] = [{text:"impl&lt;'a&gt; <a class=\"trait\" href=\"http
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()
