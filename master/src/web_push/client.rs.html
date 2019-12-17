@@ -77,6 +77,11 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">hyper</span>::{
     <span class="ident">client</span>::{<span class="ident">Client</span>, <span class="ident">HttpConnector</span>},
@@ -88,6 +93,7 @@
 <span class="kw">use</span> <span class="ident">hyper_tls</span>::<span class="ident">HttpsConnector</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">message</span>::{<span class="ident">WebPushMessage</span>, <span class="ident">WebPushService</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">services</span>::{<span class="ident">autopush</span>, <span class="ident">firebase</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">future</span>::<span class="ident">Future</span>;
 
 <span class="doccomment">/// An async client for sending the notification payload.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WebPushClient</span> {
@@ -105,7 +111,7 @@
     }
 
     <span class="doccomment">/// Sends a notification. Never times out.</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">message</span>: <span class="ident">WebPushMessage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">WebPushError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">message</span>: <span class="ident">WebPushMessage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">WebPushError</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> {
         <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">message</span>.<span class="ident">service</span>.<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">HttpRequest</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
@@ -115,45 +121,49 @@
 
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Request: {:?}&quot;</span>, <span class="ident">request</span>);
 
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">request</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">requesting</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">request</span>);
 
-        <span class="kw">let</span> <span class="ident">retry_after</span> <span class="op">=</span> <span class="ident">response</span>
-            .<span class="ident">headers</span>()
-            .<span class="ident">get</span>(<span class="ident">RETRY_AFTER</span>)
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">ra</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">RetryAfter</span>::<span class="ident">from_str</span>(<span class="ident">ra</span>));
+        <span class="kw">async</span> <span class="kw">move</span> {
+            <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">requesting</span>.<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">response_status</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">status</span>();
-        <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Response status: {}&quot;</span>, <span class="ident">response_status</span>);
+            <span class="kw">let</span> <span class="ident">retry_after</span> <span class="op">=</span> <span class="ident">response</span>
+                .<span class="ident">headers</span>()
+                .<span class="ident">get</span>(<span class="ident">RETRY_AFTER</span>)
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">ra</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">ra</span><span class="op">|</span> <span class="ident">RetryAfter</span>::<span class="ident">from_str</span>(<span class="ident">ra</span>));
 
-        <span class="kw">let</span> <span class="ident">content_length</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">response</span>
-            .<span class="ident">headers</span>()
-            .<span class="ident">get</span>(<span class="ident">CONTENT_LENGTH</span>)
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">parse</span>().<span class="ident">ok</span>())
-            .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+            <span class="kw">let</span> <span class="ident">response_status</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">status</span>();
+            <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Response status: {}&quot;</span>, <span class="ident">response_status</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">body</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">content_length</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chunks</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_body</span>();
+            <span class="kw">let</span> <span class="ident">content_length</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">response</span>
+                .<span class="ident">headers</span>()
+                .<span class="ident">get</span>(<span class="ident">CONTENT_LENGTH</span>)
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">parse</span>().<span class="ident">ok</span>())
+                .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">chunk</span>) <span class="op">=</span> <span class="ident">chunks</span>.<span class="ident">next</span>().<span class="kw">await</span> {
-            <span class="ident">body</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">chunk</span><span class="question-mark">?</span>);
-        }
-        <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Body: {:?}&quot;</span>, <span class="ident">body</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">body</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">content_length</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chunks</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_body</span>();
 
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
-            <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">firebase</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>())
+            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">chunk</span>) <span class="op">=</span> <span class="ident">chunks</span>.<span class="ident">next</span>().<span class="kw">await</span> {
+                <span class="ident">body</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">chunk</span><span class="question-mark">?</span>);
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">autopush</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
-        };
+            <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Body: {:?}&quot;</span>, <span class="ident">body</span>);
 
-        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Response: {:?}&quot;</span>, <span class="ident">response</span>);
+            <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
+                <span class="ident">WebPushService</span>::<span class="ident">Firebase</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">firebase</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>())
+                }
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">autopush</span>::<span class="ident">parse_response</span>(<span class="ident">response_status</span>, <span class="ident">body</span>.<span class="ident">to_vec</span>()),
+            };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="prelude-val">None</span>)) <span class="op">=</span> <span class="ident">response</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="ident">retry_after</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">response</span><span class="question-mark">?</span>)
+            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Response: {:?}&quot;</span>, <span class="ident">response</span>);
+
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="prelude-val">None</span>)) <span class="op">=</span> <span class="ident">response</span> {
+                <span class="prelude-val">Err</span>(<span class="ident">WebPushError</span>::<span class="ident">ServerError</span>(<span class="ident">retry_after</span>))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">response</span><span class="question-mark">?</span>)
+            }
         }
     }
 }
