@@ -312,7 +312,7 @@
         <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="string">&quot;Content-Length&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">expected_uri</span>: <span class="ident">Uri</span> <span class="op">=</span> <span class="string">&quot;http://google.com&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;3086&quot;</span>, <span class="ident">length</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;3070&quot;</span>, <span class="ident">length</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;aesgcm&quot;</span>, <span class="ident">encoding</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_uri</span>.<span class="ident">host</span>(), <span class="ident">request</span>.<span class="ident">uri</span>().<span class="ident">host</span>());
     }
