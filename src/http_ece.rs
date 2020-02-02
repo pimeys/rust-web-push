@@ -115,7 +115,7 @@ impl<'a> HttpEce<'a> {
             WebPushError::Unspecified,
             |shared_secret| match self.encoding {
                 ContentEncoding::AesGcm => {
-                    let mut payload = vec![0; 3070];
+                    let mut payload = vec![0; 3054];
                     front_pad(content, &mut payload);
 
                     self.aes_gcm(
@@ -222,7 +222,7 @@ impl<'a> HttpEce<'a> {
 
 fn front_pad(payload: &[u8], output: &mut [u8]) {
     let payload_len = payload.len();
-    let max_payload = output.len() - 2 - 16;
+    let max_payload = output.len() - 2;
     let padding_size = max_payload - payload.len();
 
     output[0] = (padding_size >> 8) as u8;
@@ -367,10 +367,7 @@ mod tests {
         front_pad(content.as_bytes(), &mut output);
 
         assert_eq!(
-            vec![
-                0, 6, 0, 0, 0, 0, 0, 0, 110, 97, 117, 107, 105, 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0
-            ],
+            vec![0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 97, 117, 107, 105, 111],
             output
         );
     }
