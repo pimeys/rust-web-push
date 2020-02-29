@@ -66,6 +66,8 @@ impl WebPushClient {
             }
             trace!("Body: {:?}", body);
 
+            trace!("Body text: {:?}", std::str::from_utf8(&body));
+
             let response = match service {
                 WebPushService::Firebase => {
                     firebase::parse_response(response_status, body.to_vec())
