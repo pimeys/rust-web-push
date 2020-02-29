@@ -40,6 +40,7 @@ impl WebPushClient {
 
         async move {
             let response = requesting.await?;
+            trace!("Response: {:?}", response);
 
             let retry_after = response
                 .headers()

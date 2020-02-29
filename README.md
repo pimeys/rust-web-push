@@ -82,3 +82,32 @@ an easy extension for the upcoming aes128gcm when the browsers are getting
 support for it.
 
 Tested with Google's and Mozilla's push notification services.
+
+Debugging
+--------
+If you get an error or the push notification doesn't work you can try to debug using the following instructions:
+
+Add the following to your Cargo.toml:
+```cargo
+log = "0.4"
+pretty_env_logger = "0.3"
+```
+
+Add the following to your main.rs:
+```rust
+extern crate pretty_env_logger;
+// ...
+fn main() {
+  pretty_env_logger::init();
+  // ...
+}
+```
+
+Or use any other logging library compatible with https://docs.rs/log/
+
+Then run your program with the following environment variables:
+```bash
+RUST_LOG="web_push::client=trace" cargo run
+```
+
+This should print some more information about the requests to the push service which may aid you or somebody else in finding the error.
