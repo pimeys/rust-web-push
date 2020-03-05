@@ -40,6 +40,7 @@ impl WebPushClient {
 
         async move {
             let response = requesting.await?;
+            trace!("Response: {:?}", response);
 
             let retry_after = response
                 .headers()
@@ -64,6 +65,8 @@ impl WebPushClient {
                 body.extend_from_slice(&chunk?);
             }
             trace!("Body: {:?}", body);
+
+            trace!("Body text: {:?}", std::str::from_utf8(&body));
 
             let response = match service {
                 WebPushService::Firebase => {
