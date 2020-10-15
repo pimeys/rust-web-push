@@ -77,6 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         let signature = sig_builder.build().unwrap();
 
         builder.set_vapid_signature(signature);
+        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
     };
 
     let client = WebPushClient::new();
