@@ -18,7 +18,8 @@ pub struct WebPushClient {
 impl WebPushClient {
     pub fn new() -> WebPushClient {
         let mut builder = Client::builder();
-        builder.keep_alive(true);
+        builder.pool_max_idle_per_host( std::usize::MAX);
+        
 
         WebPushClient {
             client: builder.build(HttpsConnector::new()),
