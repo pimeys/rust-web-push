@@ -59,9 +59,11 @@ impl<'a> HttpEce<'a> {
                     encrypt_aesgcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let payload = encrypted_block.ciphertext.to_owned();
+                let mut headers = encrypted_block.headers();
+                self.merge_headers(&mut headers)?;
                 Ok(WebPushPayload {
                     content_encoding: "aesgcm",
-                    crypto_headers: self.merge_headers(&mut encrypted_block.headers())?,
+                    crypto_headers: headers,
                     content: payload,
                 })
             }
@@ -71,17 +73,14 @@ impl<'a> HttpEce<'a> {
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 Ok(WebPushPayload {
                     content_encoding: "aes128gcm",
-                    crypto_headers: Vec::new(),
+                    crypto_headers: HashMap::new(),
                     content: payload,
                 })
             }
         }
     }
 
-    pub fn merge_headers(
-        &self,
-        headers: &mut HashMap<String, String>,
-    ) -> Result<Vec<(String, String)>, WebPushError> {
+    pub fn merge_headers(&self, headers: &mut HashMap<String, String>) -> Result<(), WebPushError> {
         match (headers.get("Crypto-Key"), &self.vapid_signature) {
             (None, _) => Err(WebPushError::MissingCryptoKeys),
             (Some(crypto_key), Some(ref signature)) => {
@@ -89,19 +88,11 @@ impl<'a> HttpEce<'a> {
                     format!("{}; p256ecdsa={}", crypto_key.to_string(), signature.auth_k);
                 headers.insert("Crypto-Key".to_string(), merged_key);
                 headers.insert("Authorization".to_string(), signature.into());
-                Ok(headers_to_vec(headers))
+                Ok(())
             }
-            _ => Ok(headers_to_vec(headers)),
+            _ => Ok(()),
         }
     }
-}
-
-fn headers_to_vec(hm: &HashMap<String, String>) -> Vec<(String, String)> {
-    let mut result = Vec::new();
-    for kv in hm.into_iter() {
-        result.push((kv.0.to_owned(), kv.1.to_owned()));
-    }
-    result
 }
 
 #[cfg(test)]
