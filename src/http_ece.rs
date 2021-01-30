@@ -101,6 +101,7 @@ mod tests {
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
     use base64::{self, URL_SAFE};
+    use regex::Regex;
 
     #[test]
     fn test_payload_too_big() {
@@ -115,6 +116,72 @@ mod tests {
             http_ece.encrypt(&content)
         );
     }
+
+    #[test]
+    fn test_aesgcm_headers_without_vapid() {
+        let crypto_re = Regex::new(r"dh=(?P<dh>[^;]*)(?P<vapid>(; p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
+        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
+
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
+        let content = "Hello, world!".as_bytes();
+
+        let wp_payload = http_ece.encrypt(content).unwrap();
+        
+        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
+
+        assert!(&wp_payload.crypto_headers.get("Authorization").is_none());
+        assert!(crypto_cap_opt.is_some());
+        assert!(encryption_cap_opt.is_some());
+        let crypto_cap = crypto_cap_opt.unwrap();
+        assert_eq!(&crypto_cap["vapid"],"");
+    }
+
+    #[test]
+    fn test_aesgcm_headers_with_vapid() {
+        let crypto_re = Regex::new(r"dh=(?P<dh>[^;]*)(?P<vapid>(; p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
+        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
+        let auth_re = Regex::new(r"WebPush (?P<sig>.*)").unwrap();
+
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+
+        let vapid_signature = VapidSignature {
+            auth_t: String::from("foo"),
+            auth_k: String::from("bar"),
+        };
+
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, Some(vapid_signature));
+        let content = "Hello, world!".as_bytes();
+
+        let wp_payload = http_ece.encrypt(content).unwrap();
+        
+        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
+        let auth_cap_opt = auth_re.captures(&wp_payload.crypto_headers["Authorization"]);
+
+        assert!(crypto_cap_opt.is_some());
+        assert!(encryption_cap_opt.is_some());
+        assert!(auth_cap_opt.is_some());
+        let crypto_cap = crypto_cap_opt.unwrap();
+        assert_eq!(&crypto_cap["ecdsa"],"bar");
+        assert_eq!(&auth_cap_opt.unwrap()["sig"],"foo");
+        
+    }
+
+    fn test_aesgcm() {
+        
+    }
+
+    fn test_aes128gcm() {
+
+    }
+    
     // TODO : adapt tests to new structure
     /*#[test]
     fn test_aes128gcm() {
@@ -129,74 +196,5 @@ mod tests {
             Ok(_)), //TODO (ietf?)
             http_ece.encrypt(&content)
         );
-    }*/
-
-    /*#[test]
-    fn test_headers_with_vapid() {
-        let as_pubkey =
-            base64::decode_config(
-                "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-                URL_SAFE
-            ).unwrap();
-
-        let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
-
-        let p256dh =
-            base64::decode_config(
-                "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                URL_SAFE
-            ).unwrap();
-
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let vapid_signature = VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let http_ece = HttpEce::new(
-            ContentEncoding::AesGcm,
-            &p256dh,
-            &auth,
-            Some(vapid_signature),
-        );
-
-        let payload = http_ece.encrypt("Hello, world!".as_bytes()).unwrap();
-
-        assert_eq!(
-            vec![
-                ("Authorization".to_string(), "WebPush foo".to_string()),
-                ("Crypto-Key".to_string(), "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs; p256ecdsa=bar".to_string()),
-                ("Encryption".to_string(), "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())],
-            payload.crypto_headers)
-    }
-
-    #[test]
-    fn test_headers_without_vapid() {
-        let as_pubkey =
-            base64::decode_config(
-                "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-                URL_SAFE
-            ).unwrap();
-
-        let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
-
-        let p256dh =
-            base64::decode_config(
-                "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                URL_SAFE
-            ).unwrap();
-
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
-
-        let payload = http_ece.encrypt("Hello, world!".as_bytes()).unwrap();
-
-        assert_eq!(
-            vec![
-                ("Crypto-Key".to_string(), "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs".to_string()),
-                ("Encryption".to_string(), "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())],
-            payload.crypto_headers)
     }*/
 }

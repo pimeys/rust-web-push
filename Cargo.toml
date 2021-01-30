@@ -35,4 +35,5 @@ ece = { git = "https://github.com/tiesselune/rust-ece.git", branch = "master"}
 
 [dev-dependencies]
 argparse = "0.2"
+regex = "1.4.3"
 tokio = { version = "0.2", features = ["rt-threaded", "macros"] }
