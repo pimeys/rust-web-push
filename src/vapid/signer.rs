@@ -1,5 +1,6 @@
-use base64::{self, URL_SAFE_NO_PAD};
 use crate::error::WebPushError;
+use crate::vapid::VapidKey;
+use base64::{self, URL_SAFE_NO_PAD};
 use hyper::Uri;
 use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
@@ -8,7 +9,6 @@ use serde_json;
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
 use time;
-use crate::vapid::VapidKey;
 
 lazy_static! {
     static ref JWT_HEADERS: String = base64::encode_config(
