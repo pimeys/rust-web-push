@@ -32,7 +32,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 
         for (k, v) in payload.crypto_headers.into_iter() {
             let v: &str = v.as_ref();
-            builder = builder.header(k, v);
+            builder = builder.header(k.as_str(), v);
         }
 
         builder.body(payload.content.into()).unwrap()
@@ -68,10 +68,10 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use hyper::StatusCode;
-    use hyper::Uri;
     use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
     use crate::services::autopush::*;
+    use hyper::StatusCode;
+    use hyper::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {

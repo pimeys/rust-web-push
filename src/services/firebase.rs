@@ -1,8 +1,8 @@
-use base64;
 use crate::error::WebPushError;
+use crate::message::WebPushMessage;
+use base64;
 use http::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::{Body, Request, StatusCode};
-use crate::message::WebPushMessage;
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -69,9 +69,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         _ => "https://android.googleapis.com/gcm/send",
     };
 
-    let mut builder = Request::builder()
-        .method("POST")
-        .uri(uri);
+    let mut builder = Request::builder().method("POST").uri(uri);
 
     if let Some(ref gcm_key) = message.gcm_key {
         builder = builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
@@ -87,7 +85,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         Some(payload) => {
             for (k, v) in payload.crypto_headers.into_iter() {
                 let v: &str = v.as_ref();
-                builder = builder.header(k, v);
+                builder = builder.header(k.as_str(), v);
             }
 
             Some(base64::encode(&payload.content))
@@ -108,7 +106,8 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
             CONTENT_LENGTH,
             format!("{}", json_payload.len() as u64).as_bytes(),
         )
-        .body(json_payload.into()).unwrap()
+        .body(json_payload.into())
+        .unwrap()
 }
 
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
@@ -151,10 +150,10 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use hyper::StatusCode;
-    use hyper::Uri;
     use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
     use crate::services::firebase::*;
+    use hyper::StatusCode;
+    use hyper::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
