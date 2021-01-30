@@ -1,4 +1,5 @@
 use base64::{self, URL_SAFE_NO_PAD};
+use chrono::offset;
 use crate::error::WebPushError;
 use hyper::Uri;
 use openssl::hash::MessageDigest;
@@ -7,7 +8,7 @@ use openssl::sign::Signer as SslSigner;
 use serde_json;
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
-use time;
+use time::{self, OffsetDateTime};
 use crate::vapid::VapidKey;
 
 lazy_static! {
@@ -58,8 +59,8 @@ impl VapidSigner {
         }
 
         if !claims.contains_key("exp") {
-            let expiry = time::now_utc() + time::Duration::hours(12);
-            let number = Number::from(expiry.to_timespec().sec);
+            let expiry = OffsetDateTime::now_utc() + time::Duration::hours(12);
+            let number = Number::from(expiry.unix_timestamp());
             claims.insert("exp", Value::Number(number));
         }
 

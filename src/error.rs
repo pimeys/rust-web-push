@@ -73,8 +73,8 @@ impl From<error::Unspecified> for WebPushError {
     }
 }
 
-impl From<hyper::error::Error> for WebPushError {
-    fn from(_: hyper::error::Error) -> Self {
+impl From<hyper::Error> for WebPushError {
+    fn from(_: hyper::Error) -> Self {
         Self::Unspecified
     }
 }
