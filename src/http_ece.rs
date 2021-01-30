@@ -173,28 +173,4 @@ mod tests {
         assert_eq!(&auth_cap_opt.unwrap()["sig"],"foo");
         
     }
-
-    fn test_aesgcm() {
-        
-    }
-
-    fn test_aes128gcm() {
-
-    }
-    
-    // TODO : adapt tests to new structure
-    /*#[test]
-    fn test_aes128gcm() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth, None);
-        let content = [0u8; 10];
-
-        assert_eq!(
-            Ok(_)), //TODO (ietf?)
-            http_ece.encrypt(&content)
-        );
-    }*/
 }
