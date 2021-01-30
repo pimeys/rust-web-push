@@ -1,9 +1,3 @@
 (function() {var implementors = {};
-implementors["web_push"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"enum\" href=\"web_push/enum.WebPushError.html\" title=\"enum web_push::WebPushError\">WebPushError</a>","synthetic":false,"types":["web_push::error::WebPushError"]},{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.StructuralPartialEq.html\" title=\"trait core::marker::StructuralPartialEq\">StructuralPartialEq</a> for <a class=\"struct\" href=\"web_push/struct.WebPushPayload.html\" title=\"struct web_push::WebPushPayload\">WebPushPayload</a>","synthetic":false,"types":["web_push::message::WebPushPayload"]}];
-
-            if (window.register_implementors) {
-                window.register_implementors(implementors);
-            } else {
-                window.pending_implementors = implementors;
-            }
-        })()
+implementors["web_push"] = [{"text":"impl StructuralPartialEq for WebPushError","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for WebPushPayload","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
