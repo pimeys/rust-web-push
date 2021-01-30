@@ -1,8 +1,4 @@
-use hyper::{
-    client::{Client, HttpConnector},
-    Body, Request as HttpRequest,
-};
-use futures::stream::StreamExt;
+use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
 use crate::error::{RetryAfter, WebPushError};
 use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
@@ -61,7 +57,7 @@ impl WebPushClient {
             let mut body: Vec<u8> = Vec::with_capacity(content_length);
             let mut chunks = response.into_body();
 
-            while let Some(chunk) = chunks.next().await {
+            while let Some(chunk) = chunks.data().await {
                 body.extend_from_slice(&chunk?);
             }
             trace!("Body: {:?}", body);
