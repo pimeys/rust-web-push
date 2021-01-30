@@ -8,7 +8,7 @@ homepage = "https://github.com/pimeys/rust-web-push"
 repository = "https://github.com/pimeys/rust-web-push"
 documentation = "https://docs.rs/web-push/"
 readme = "README.md"
-keywords = ["web-push", "http-ece", "vapid"]
+keywords = ["web-push", "vapid"]
 categories = ["web-programming", "asynchronous"]
 edition = "2018"
 
@@ -31,6 +31,7 @@ time = "^0.1"
 lazy_static = "^1.4"
 chrono = "^0.4"
 log = "^0.4"
+ece = { git = "https://github.com/tiesselune/rust-ece.git", branch = "master"}
 
 [dev-dependencies]
 argparse = "0.2"
