@@ -1,13 +1,13 @@
+use crate::error::{RetryAfter, WebPushError};
+use crate::message::{WebPushMessage, WebPushService};
+use crate::services::{autopush, firebase};
+use futures::stream::StreamExt;
+use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{
     client::{Client, HttpConnector},
     Body, Request as HttpRequest,
 };
-use futures::stream::StreamExt;
-use crate::error::{RetryAfter, WebPushError};
-use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
-use crate::message::{WebPushMessage, WebPushService};
-use crate::services::{autopush, firebase};
 use std::future::Future;
 
 /// An async client for sending the notification payload.
@@ -18,8 +18,7 @@ pub struct WebPushClient {
 impl WebPushClient {
     pub fn new() -> WebPushClient {
         let mut builder = Client::builder();
-        builder.pool_max_idle_per_host( std::usize::MAX);
-        
+        builder.pool_max_idle_per_host(std::usize::MAX);
 
         WebPushClient {
             client: builder.build(HttpsConnector::new()),
@@ -27,7 +26,10 @@ impl WebPushClient {
     }
 
     /// Sends a notification. Never times out.
-    pub fn send(&self, message: WebPushMessage) -> impl Future<Output = Result<(), WebPushError>> + 'static {
+    pub fn send(
+        &self,
+        message: WebPushMessage,
+    ) -> impl Future<Output = Result<(), WebPushError>> + 'static {
         let service = message.service.clone();
 
         let request: HttpRequest<Body> = match service {
