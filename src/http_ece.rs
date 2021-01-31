@@ -197,35 +197,8 @@ mod tests {
     }
 
     #[test]
-    fn test_aes128gcm_headers_without_vapid() {
-        let crypto_re =
-            Regex::new(r"dh=(?P<dh>[^;]*)(?P<vapid>(; p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
-        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
-
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
-        let content = "Hello, world!".as_bytes();
-
-        let wp_payload = http_ece.encrypt(content).unwrap();
-
-        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
-        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
-
-        assert!(&wp_payload.crypto_headers.get("Authorization").is_none());
-        assert!(crypto_cap_opt.is_some());
-        assert!(encryption_cap_opt.is_some());
-        let crypto_cap = crypto_cap_opt.unwrap();
-        assert_eq!(&crypto_cap["vapid"], "");
-    }
-
-    #[test]
     fn test_aes128gcm_headers_with_vapid() {
-        let crypto_re = Regex::new(r"(?P<vapid>(p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
-        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
-        let auth_re = Regex::new(r"WebPush (?P<sig>.*)").unwrap();
+        let auth_re = Regex::new(r"vapid t=(?P<sig_t>[^,]*), k=(?P<sig_k>[^,]*)").unwrap();
 
         let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
                                            URL_SAFE).unwrap();
@@ -246,15 +219,11 @@ mod tests {
 
         let wp_payload = http_ece.encrypt(content).unwrap();
 
-        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
-        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
         let auth_cap_opt = auth_re.captures(&wp_payload.crypto_headers["Authorization"]);
 
-        assert!(crypto_cap_opt.is_some());
-        assert!(encryption_cap_opt.is_some());
         assert!(auth_cap_opt.is_some());
-        let crypto_cap = crypto_cap_opt.unwrap();
-        assert_eq!(&crypto_cap["ecdsa"], "bar");
-        assert_eq!(&auth_cap_opt.unwrap()["sig"], "foo");
+        let auth_cap = auth_cap_opt.unwrap();
+        assert_eq!(&auth_cap["sig_t"], "foo");
+        assert_eq!(&auth_cap["sig_k"], "bar");
     }
 }
