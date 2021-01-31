@@ -60,7 +60,7 @@ impl<'a> HttpEce<'a> {
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let payload = encrypted_block.ciphertext.to_owned();
                 let mut headers = encrypted_block.headers();
-                self.merge_headers(&mut headers)?;
+                self.merge_headers(&mut headers, ContentEncoding::AesGcm)?;
                 Ok(WebPushPayload {
                     content_encoding: "aesgcm",
                     crypto_headers: headers,
@@ -71,25 +71,35 @@ impl<'a> HttpEce<'a> {
                 let payload =
                     encrypt_aes128gcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
+                let mut headers = HashMap::new();
+                self.merge_headers(&mut headers, ContentEncoding::Aes128Gcm)?;
                 Ok(WebPushPayload {
                     content_encoding: "aes128gcm",
-                    crypto_headers: HashMap::new(),
+                    crypto_headers: headers,
                     content: payload,
                 })
             }
         }
     }
 
-    pub fn merge_headers(&self, headers: &mut HashMap<String, String>) -> Result<(), WebPushError> {
-        match (headers.get("Crypto-Key"), &self.vapid_signature) {
-            (None, _) => Err(WebPushError::MissingCryptoKeys),
-            (Some(crypto_key), Some(ref signature)) => {
-                let merged_key =
-                    format!("{}; p256ecdsa={}", crypto_key.to_string(), signature.auth_k);
-                headers.insert("Crypto-Key".to_string(), merged_key);
-                headers.insert("Authorization".to_string(), signature.into());
+    pub fn merge_headers(&self, headers: &mut HashMap<String, String>, encoding : ContentEncoding) -> Result<(), WebPushError> {
+        match (encoding,&self.vapid_signature) {
+            (ContentEncoding::Aes128Gcm, Some(signature)) => {
+                headers.insert("Authorization".to_string(), format!("vapid t={}, k={}",signature.auth_t,signature.auth_k));
                 Ok(())
-            }
+            },
+            (ContentEncoding::AesGcm, Some(ref signature)) => {
+                if let Some(crypto_key) = headers.get("Crypto-Key") {
+                    let merged_key =
+                        format!("{}; p256ecdsa={}", crypto_key.to_string(), signature.auth_k);
+                    headers.insert("Crypto-Key".to_string(), merged_key);
+                    headers.insert("Authorization".to_string(), signature.into());
+                    Ok(())
+                }
+                else {
+                    Err(WebPushError::InvalidCryptoKeys)
+                }
+            },
             _ => Ok(()),
         }
     }
@@ -160,6 +170,69 @@ mod tests {
 
         let http_ece = HttpEce::new(
             ContentEncoding::AesGcm,
+            &p256dh,
+            &auth,
+            Some(vapid_signature),
+        );
+        let content = "Hello, world!".as_bytes();
+
+        let wp_payload = http_ece.encrypt(content).unwrap();
+
+        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
+        let auth_cap_opt = auth_re.captures(&wp_payload.crypto_headers["Authorization"]);
+
+        assert!(crypto_cap_opt.is_some());
+        assert!(encryption_cap_opt.is_some());
+        assert!(auth_cap_opt.is_some());
+        let crypto_cap = crypto_cap_opt.unwrap();
+        assert_eq!(&crypto_cap["ecdsa"], "bar");
+        assert_eq!(&auth_cap_opt.unwrap()["sig"], "foo");
+    }
+
+    #[test]
+    fn test_aes128gcm_headers_without_vapid() {
+        let crypto_re =
+            Regex::new(r"dh=(?P<dh>[^;]*)(?P<vapid>(; p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
+        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
+
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
+        let content = "Hello, world!".as_bytes();
+
+        let wp_payload = http_ece.encrypt(content).unwrap();
+
+        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
+
+        assert!(&wp_payload.crypto_headers.get("Authorization").is_none());
+        assert!(crypto_cap_opt.is_some());
+        assert!(encryption_cap_opt.is_some());
+        let crypto_cap = crypto_cap_opt.unwrap();
+        assert_eq!(&crypto_cap["vapid"], "");
+    }
+
+    #[test]
+    fn test_aes128gcm_headers_with_vapid() {
+        let crypto_re =
+            Regex::new(r"(?P<vapid>(p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
+        let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
+        let auth_re = Regex::new(r"WebPush (?P<sig>.*)").unwrap();
+
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+                                           URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+
+        let vapid_signature = VapidSignature {
+            auth_t: String::from("foo"),
+            auth_k: String::from("bar"),
+        };
+
+        let http_ece = HttpEce::new(
+            ContentEncoding::Aes128Gcm,
             &p256dh,
             &auth,
             Some(vapid_signature),
