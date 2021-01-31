@@ -1,5 +1,4 @@
 use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
-use log::trace;
 use crate::error::{RetryAfter, WebPushError};
 use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
@@ -66,7 +65,7 @@ impl WebPushClient {
             let mut chunks = response.into_body();
 
             while let Some(chunk) = chunks.data().await {
-                body.extend(&chunk?);
+                body.extend_from_slice(&chunk?);
             }
             trace!("Body: {:?}", body);
 
