@@ -1,4 +1,5 @@
 use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
+use log::trace;
 use crate::error::{RetryAfter, WebPushError};
 use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
@@ -23,11 +24,18 @@ impl WebPushClient {
 
     /// Sends a notification. Never times out.
     pub fn send(&self, message: WebPushMessage) -> impl Future<Output = Result<(), WebPushError>> + 'static {
+        trace!("Message: {:?}", message);
         let service = message.service.clone();
 
         let request: HttpRequest<Body> = match service {
-            WebPushService::Firebase => firebase::build_request(message),
-            _ => autopush::build_request(message),
+            WebPushService::Firebase => {
+                trace!("Building firebase request");
+                firebase::build_request(message)
+            },
+            _ => {
+                trace!("Building autopush request");
+                autopush::build_request(message)
+            },
         };
 
         trace!("Request: {:?}", request);
