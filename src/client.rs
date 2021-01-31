@@ -23,11 +23,18 @@ impl WebPushClient {
 
     /// Sends a notification. Never times out.
     pub fn send(&self, message: WebPushMessage) -> impl Future<Output = Result<(), WebPushError>> + 'static {
+        trace!("Message: {:?}", message);
         let service = message.service.clone();
 
         let request: HttpRequest<Body> = match service {
-            WebPushService::Firebase => firebase::build_request(message),
-            _ => autopush::build_request(message),
+            WebPushService::Firebase => {
+                trace!("Building firebase request");
+                firebase::build_request(message)
+            },
+            _ => {
+                trace!("Building autopush request");
+                autopush::build_request(message)
+            },
         };
 
         trace!("Request: {:?}", request);
@@ -58,7 +65,7 @@ impl WebPushClient {
             let mut chunks = response.into_body();
 
             while let Some(chunk) = chunks.data().await {
-                body.extend_from_slice(&chunk?);
+                body.extend(&chunk?);
             }
             trace!("Body: {:?}", body);
 
