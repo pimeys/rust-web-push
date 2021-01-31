@@ -1,12 +1,6 @@
+use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
 use crate::error::{RetryAfter, WebPushError};
-use crate::message::{WebPushMessage, WebPushService};
-use crate::services::{autopush, firebase};
-use futures::stream::StreamExt;
-use http::header::{CONTENT_LENGTH, RETRY_AFTER};
-use hyper::{
-    client::{Client, HttpConnector},
-    Body, Request as HttpRequest,
-};
+use http::header::{RETRY_AFTER, CONTENT_LENGTH};
 use hyper_tls::HttpsConnector;
 use std::future::Future;
 
@@ -64,7 +58,7 @@ impl WebPushClient {
             let mut body: Vec<u8> = Vec::with_capacity(content_length);
             let mut chunks = response.into_body();
 
-            while let Some(chunk) = chunks.next().await {
+            while let Some(chunk) = chunks.data().await {
                 body.extend_from_slice(&chunk?);
             }
             trace!("Body: {:?}", body);

@@ -1,3 +1,5 @@
+use base64::{self, URL_SAFE_NO_PAD};
+use chrono::offset;
 use crate::error::WebPushError;
 use crate::vapid::VapidKey;
 use base64::{self, URL_SAFE_NO_PAD};
@@ -8,7 +10,7 @@ use openssl::sign::Signer as SslSigner;
 use serde_json;
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
-use time;
+use time::{self, OffsetDateTime};
 
 lazy_static! {
     static ref JWT_HEADERS: String = base64::encode_config(
@@ -58,8 +60,8 @@ impl VapidSigner {
         }
 
         if !claims.contains_key("exp") {
-            let expiry = time::now_utc() + time::Duration::hours(12);
-            let number = Number::from(expiry.to_timespec().sec);
+            let expiry = OffsetDateTime::now_utc() + time::Duration::hours(12);
+            let number = Number::from(expiry.unix_timestamp());
             claims.insert("exp", Value::Number(number));
         }
 
