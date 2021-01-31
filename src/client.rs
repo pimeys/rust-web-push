@@ -65,7 +65,7 @@ impl WebPushClient {
             let mut chunks = response.into_body();
 
             while let Some(chunk) = chunks.data().await {
-                body.extend_from_slice(&chunk?);
+                body.extend(&chunk?);
             }
             trace!("Body: {:?}", body);
 
