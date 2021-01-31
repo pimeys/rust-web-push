@@ -82,12 +82,19 @@ impl<'a> HttpEce<'a> {
         }
     }
 
-    pub fn merge_headers(&self, headers: &mut HashMap<String, String>, encoding : ContentEncoding) -> Result<(), WebPushError> {
-        match (encoding,&self.vapid_signature) {
+    pub fn merge_headers(
+        &self,
+        headers: &mut HashMap<String, String>,
+        encoding: ContentEncoding,
+    ) -> Result<(), WebPushError> {
+        match (encoding, &self.vapid_signature) {
             (ContentEncoding::Aes128Gcm, Some(signature)) => {
-                headers.insert("Authorization".to_string(), format!("vapid t={}, k={}",signature.auth_t,signature.auth_k));
+                headers.insert(
+                    "Authorization".to_string(),
+                    format!("vapid t={}, k={}", signature.auth_t, signature.auth_k),
+                );
                 Ok(())
-            },
+            }
             (ContentEncoding::AesGcm, Some(ref signature)) => {
                 if let Some(crypto_key) = headers.get("Crypto-Key") {
                     let merged_key =
@@ -95,12 +102,11 @@ impl<'a> HttpEce<'a> {
                     headers.insert("Crypto-Key".to_string(), merged_key);
                     headers.insert("Authorization".to_string(), signature.into());
                     Ok(())
-                }
-                else {
+                } else {
                     Err(WebPushError::InvalidCryptoKeys)
                 }
-            },
-            _ => Ok(()),
+            }
+            (_, None) => Ok(()),
         }
     }
 }
@@ -217,8 +223,7 @@ mod tests {
 
     #[test]
     fn test_aes128gcm_headers_with_vapid() {
-        let crypto_re =
-            Regex::new(r"(?P<vapid>(p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
+        let crypto_re = Regex::new(r"(?P<vapid>(p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
         let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
         let auth_re = Regex::new(r"WebPush (?P<sig>.*)").unwrap();
 
