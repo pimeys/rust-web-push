@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
 use crate::vapid::VapidSignature;
@@ -54,7 +52,7 @@ pub struct WebPushPayload {
     /// Encrypted content data.
     pub content: Vec<u8>,
     /// Headers depending on the authorization scheme and encryption standard.
-    pub crypto_headers: HashMap<String, String>,
+    pub crypto_headers: Vec<(&'static str, String)>,
     /// The encryption standard.
     pub content_encoding: &'static str,
 }

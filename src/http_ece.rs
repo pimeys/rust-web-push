@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
-use ece::{encrypt as encrypt_aes128gcm, legacy::encrypt_aesgcm};
+use base64::URL_SAFE_NO_PAD;
+use ece::{AesGcmEncryptedBlock, encrypt as encrypt_aes128gcm, legacy::encrypt_aesgcm};
 use ring::rand;
 use ring::rand::SecureRandom;
 
@@ -58,9 +57,8 @@ impl<'a> HttpEce<'a> {
                 let encrypted_block =
                     encrypt_aesgcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
-                let payload = encrypted_block.ciphertext.to_owned();
-                let mut headers = encrypted_block.headers();
-                self.merge_headers(&mut headers, ContentEncoding::AesGcm)?;
+                let headers = self.generate_headers_aesgcm(&encrypted_block);
+                let payload = encrypted_block.ciphertext;
                 Ok(WebPushPayload {
                     content_encoding: "aesgcm",
                     crypto_headers: headers,
@@ -71,8 +69,7 @@ impl<'a> HttpEce<'a> {
                 let payload =
                     encrypt_aes128gcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
                         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
-                let mut headers = HashMap::new();
-                self.merge_headers(&mut headers, ContentEncoding::Aes128Gcm)?;
+                let headers = self.generate_headers_aes128gcm();
                 Ok(WebPushPayload {
                     content_encoding: "aes128gcm",
                     crypto_headers: headers,
@@ -82,42 +79,53 @@ impl<'a> HttpEce<'a> {
         }
     }
 
-    pub fn merge_headers(
-        &self,
-        headers: &mut HashMap<String, String>,
-        encoding: ContentEncoding,
-    ) -> Result<(), WebPushError> {
-        match (encoding, &self.vapid_signature) {
-            (ContentEncoding::Aes128Gcm, Some(signature)) => {
-                headers.insert(
-                    "Authorization".to_string(),
-                    format!("vapid t={}, k={}", signature.auth_t, signature.auth_k),
-                );
-                Ok(())
-            }
-            (ContentEncoding::AesGcm, Some(ref signature)) => {
-                if let Some(crypto_key) = headers.get("Crypto-Key") {
-                    let merged_key =
-                        format!("{}; p256ecdsa={}", crypto_key.to_string(), signature.auth_k);
-                    headers.insert("Crypto-Key".to_string(), merged_key);
-                    headers.insert("Authorization".to_string(), signature.into());
-                    Ok(())
-                } else {
-                    Err(WebPushError::InvalidCryptoKeys)
-                }
-            }
-            (_, None) => Ok(()),
+    pub fn generate_headers_aesgcm (&self, encrypted_block : &AesGcmEncryptedBlock) -> Vec<(&'static str,String)> {
+        let mut crypto_headers = Vec::new();
+
+        let mut crypto_key = format!("dh={}", base64::encode_config(&encrypted_block.dh, URL_SAFE_NO_PAD));
+
+        if let Some(ref signature) = self.vapid_signature {
+            crypto_key = format!("{}; p256ecdsa={}", crypto_key, signature.auth_k);
+
+            let sig_s: String = signature.into();
+            crypto_headers.push(("Authorization", sig_s));
+        };
+
+        crypto_headers.push(("Crypto-Key", crypto_key));
+        crypto_headers.push((
+            "Encryption",
+            format!("salt={}", base64::encode_config(&encrypted_block.salt, URL_SAFE_NO_PAD)),
+        ));
+
+        crypto_headers
+    }
+
+    pub fn generate_headers_aes128gcm(&self) -> Vec<(&'static str,String)> {
+        let headers = Vec::new();
+        if let Some(signature) = &self.vapid_signature {
+            headers.push(("Authorization",format!("vapid t={}, k={}", signature.auth_t, signature.auth_k)));
         }
+        headers
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::error::WebPushError;
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
     use base64::{self, URL_SAFE};
     use regex::Regex;
+
+    fn headers_to_hashmap(headers : Vec<(&'static str,String)>) -> HashMap<&'static str,String>{ 
+        let result = HashMap::new();
+        for kv in headers {
+            result.insert(kv.0, kv.1);
+        }
+        result
+    }
 
     #[test]
     fn test_payload_too_big() {
@@ -147,11 +155,13 @@ mod tests {
         let content = "Hello, world!".as_bytes();
 
         let wp_payload = http_ece.encrypt(content).unwrap();
+        let crypto_headers = headers_to_hashmap(wp_payload.crypto_headers);
 
-        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
-        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
+        let crypto_cap_opt = crypto_re.captures(&crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&crypto_headers["Encryption"]);
+        
 
-        assert!(&wp_payload.crypto_headers.get("Authorization").is_none());
+        assert!(&crypto_headers.get("Authorization").is_none());
         assert!(crypto_cap_opt.is_some());
         assert!(encryption_cap_opt.is_some());
         let crypto_cap = crypto_cap_opt.unwrap();
@@ -183,10 +193,11 @@ mod tests {
         let content = "Hello, world!".as_bytes();
 
         let wp_payload = http_ece.encrypt(content).unwrap();
+        let crypto_headers = headers_to_hashmap(wp_payload.crypto_headers);
 
-        let crypto_cap_opt = crypto_re.captures(&wp_payload.crypto_headers["Crypto-Key"]);
-        let encryption_cap_opt = encryption_re.captures(&wp_payload.crypto_headers["Encryption"]);
-        let auth_cap_opt = auth_re.captures(&wp_payload.crypto_headers["Authorization"]);
+        let crypto_cap_opt = crypto_re.captures(&crypto_headers["Crypto-Key"]);
+        let encryption_cap_opt = encryption_re.captures(&crypto_headers["Encryption"]);
+        let auth_cap_opt = auth_re.captures(&crypto_headers["Authorization"]);
 
         assert!(crypto_cap_opt.is_some());
         assert!(encryption_cap_opt.is_some());
@@ -218,8 +229,9 @@ mod tests {
         let content = "Hello, world!".as_bytes();
 
         let wp_payload = http_ece.encrypt(content).unwrap();
+        let crypto_headers = headers_to_hashmap(wp_payload.crypto_headers);
 
-        let auth_cap_opt = auth_re.captures(&wp_payload.crypto_headers["Authorization"]);
+        let auth_cap_opt = auth_re.captures(&crypto_headers["Authorization"]);
 
         assert!(auth_cap_opt.is_some());
         let auth_cap = auth_cap_opt.unwrap();
