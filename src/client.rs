@@ -1,8 +1,8 @@
-use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::{WebPushMessage, WebPushService};
 use crate::services::{autopush, firebase};
-use http::header::{RETRY_AFTER, CONTENT_LENGTH};
+use http::header::{CONTENT_LENGTH, RETRY_AFTER};
+use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 use std::future::Future;
 
@@ -22,7 +22,10 @@ impl WebPushClient {
     }
 
     /// Sends a notification. Never times out.
-    pub fn send(&self, message: WebPushMessage) -> impl Future<Output = Result<(), WebPushError>> + 'static {
+    pub fn send(
+        &self,
+        message: WebPushMessage,
+    ) -> impl Future<Output = Result<(), WebPushError>> + 'static {
         trace!("Message: {:?}", message);
         let service = message.service.clone();
 
@@ -30,11 +33,11 @@ impl WebPushClient {
             WebPushService::Firebase => {
                 trace!("Building firebase request");
                 firebase::build_request(message)
-            },
+            }
             _ => {
                 trace!("Building autopush request");
                 autopush::build_request(message)
-            },
+            }
         };
 
         trace!("Request: {:?}", request);

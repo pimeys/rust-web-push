@@ -1,6 +1,6 @@
-use base64::{self, URL_SAFE_NO_PAD};
 use crate::error::WebPushError;
 use crate::vapid::VapidKey;
+use base64::{self, URL_SAFE_NO_PAD};
 use hyper::Uri;
 use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;

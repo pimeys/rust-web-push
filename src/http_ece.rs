@@ -2,7 +2,7 @@ use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
 use base64::URL_SAFE_NO_PAD;
-use ece::{AesGcmEncryptedBlock, encrypt as encrypt_aes128gcm, legacy::encrypt_aesgcm};
+use ece::{encrypt as encrypt_aes128gcm, legacy::encrypt_aesgcm, AesGcmEncryptedBlock};
 use ring::rand;
 use ring::rand::SecureRandom;
 
@@ -79,10 +79,16 @@ impl<'a> HttpEce<'a> {
         }
     }
 
-    pub fn generate_headers_aesgcm (&self, encrypted_block : &AesGcmEncryptedBlock) -> Vec<(&'static str,String)> {
+    pub fn generate_headers_aesgcm(
+        &self,
+        encrypted_block: &AesGcmEncryptedBlock,
+    ) -> Vec<(&'static str, String)> {
         let mut crypto_headers = Vec::new();
 
-        let mut crypto_key = format!("dh={}", base64::encode_config(&encrypted_block.dh, URL_SAFE_NO_PAD));
+        let mut crypto_key = format!(
+            "dh={}",
+            base64::encode_config(&encrypted_block.dh, URL_SAFE_NO_PAD)
+        );
 
         if let Some(ref signature) = self.vapid_signature {
             crypto_key = format!("{}; p256ecdsa={}", crypto_key, signature.auth_k);
@@ -94,16 +100,22 @@ impl<'a> HttpEce<'a> {
         crypto_headers.push(("Crypto-Key", crypto_key));
         crypto_headers.push((
             "Encryption",
-            format!("salt={}", base64::encode_config(&encrypted_block.salt, URL_SAFE_NO_PAD)),
+            format!(
+                "salt={}",
+                base64::encode_config(&encrypted_block.salt, URL_SAFE_NO_PAD)
+            ),
         ));
 
         crypto_headers
     }
 
-    pub fn generate_headers_aes128gcm(&self) -> Vec<(&'static str,String)> {
+    pub fn generate_headers_aes128gcm(&self) -> Vec<(&'static str, String)> {
         let headers = Vec::new();
         if let Some(signature) = &self.vapid_signature {
-            headers.push(("Authorization",format!("vapid t={}, k={}", signature.auth_t, signature.auth_k)));
+            headers.push((
+                "Authorization",
+                format!("vapid t={}, k={}", signature.auth_t, signature.auth_k),
+            ));
         }
         headers
     }
@@ -119,7 +131,7 @@ mod tests {
     use base64::{self, URL_SAFE};
     use regex::Regex;
 
-    fn headers_to_hashmap(headers : Vec<(&'static str,String)>) -> HashMap<&'static str,String>{ 
+    fn headers_to_hashmap(headers: Vec<(&'static str, String)>) -> HashMap<&'static str, String> {
         let result = HashMap::new();
         for kv in headers {
             result.insert(kv.0, kv.1);
@@ -159,7 +171,6 @@ mod tests {
 
         let crypto_cap_opt = crypto_re.captures(&crypto_headers["Crypto-Key"]);
         let encryption_cap_opt = encryption_re.captures(&crypto_headers["Encryption"]);
-        
 
         assert!(&crypto_headers.get("Authorization").is_none());
         assert!(crypto_cap_opt.is_some());
