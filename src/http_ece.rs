@@ -110,7 +110,7 @@ impl<'a> HttpEce<'a> {
     }
 
     pub fn generate_headers_aes128gcm(&self) -> Vec<(&'static str, String)> {
-        let headers = Vec::new();
+        let mut headers = Vec::new();
         if let Some(signature) = &self.vapid_signature {
             headers.push((
                 "Authorization",
@@ -132,7 +132,7 @@ mod tests {
     use regex::Regex;
 
     fn headers_to_hashmap(headers: Vec<(&'static str, String)>) -> HashMap<&'static str, String> {
-        let result = HashMap::new();
+        let mut result = HashMap::new();
         for kv in headers {
             result.insert(kv.0, kv.1);
         }

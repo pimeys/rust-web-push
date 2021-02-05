@@ -85,7 +85,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         Some(payload) => {
             for (k, v) in payload.crypto_headers.into_iter() {
                 let v: &str = v.as_ref();
-                builder = builder.header(k.as_str(), v);
+                builder = builder.header(k, v);
             }
 
             Some(base64::encode(&payload.content))

@@ -32,7 +32,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 
         for (k, v) in payload.crypto_headers.into_iter() {
             let v: &str = v.as_ref();
-            builder = builder.header(k.as_str(), v);
+            builder = builder.header(k, v);
         }
 
         builder.body(payload.content.into()).unwrap()
