@@ -2,7 +2,7 @@ use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
 use base64::URL_SAFE_NO_PAD;
-use ece::{encrypt as encrypt_aes128gcm, legacy::encrypt_aesgcm, AesGcmEncryptedBlock};
+use ece::AesGcmEncryptedBlock;
 use ring::rand;
 use ring::rand::SecureRandom;
 
@@ -54,9 +54,13 @@ impl<'a> HttpEce<'a> {
 
         match self.encoding {
             ContentEncoding::AesGcm => {
-                let encrypted_block =
-                    encrypt_aesgcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
-                        .map_err(|_| WebPushError::InvalidCryptoKeys)?;
+                let encrypted_block = ece::legacy::encrypt_aesgcm(
+                    self.peer_public_key,
+                    self.peer_secret,
+                    &salt_bytes,
+                    content,
+                )
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let headers = self.generate_headers_aesgcm(&encrypted_block);
                 let payload = encrypted_block.ciphertext;
                 Ok(WebPushPayload {
@@ -66,9 +70,13 @@ impl<'a> HttpEce<'a> {
                 })
             }
             ContentEncoding::Aes128Gcm => {
-                let payload =
-                    encrypt_aes128gcm(self.peer_public_key, self.peer_secret, &salt_bytes, content)
-                        .map_err(|_| WebPushError::InvalidCryptoKeys)?;
+                let payload = ece::encrypt(
+                    self.peer_public_key,
+                    self.peer_secret,
+                    &salt_bytes,
+                    content,
+                )
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let headers = self.generate_headers_aes128gcm();
                 Ok(WebPushPayload {
                     content_encoding: "aes128gcm",
