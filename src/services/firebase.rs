@@ -1,8 +1,7 @@
-use base64;
 use crate::error::WebPushError;
-use http::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE};
-use hyper::{Body, Request, StatusCode};
 use crate::message::WebPushMessage;
+use base64;
+use http_types::{Method, Request, StatusCode, Url};
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -63,18 +62,16 @@ struct GcmData {
     raw_data: Option<String>,
 }
 
-pub fn build_request(message: WebPushMessage) -> Request<Body> {
-    let uri = match message.endpoint.host() {
+pub fn build_request(message: WebPushMessage) -> Request {
+    let uri = match message.endpoint.host_str() {
         Some("fcm.googleapis.com") => "https://fcm.googleapis.com/fcm/send",
         _ => "https://android.googleapis.com/gcm/send",
     };
 
-    let mut builder = Request::builder()
-        .method("POST")
-        .uri(uri);
+    let mut builder = Request::new(Method::Post, Url::parse(uri).unwrap());
 
     if let Some(ref gcm_key) = message.gcm_key {
-        builder = builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
+        builder.insert_header("Authorization", format!("key={}", gcm_key));
     }
 
     let mut registration_ids = Vec::with_capacity(1);
@@ -86,8 +83,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     let raw_data = match message.payload {
         Some(payload) => {
             for (k, v) in payload.crypto_headers.into_iter() {
-                let v: &str = v.as_ref();
-                builder = builder.header(k, v);
+                builder.insert_header(k, v);
             }
 
             Some(base64::encode(&payload.content))
@@ -96,24 +92,19 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     };
 
     let gcm_data = GcmData {
-        registration_ids: registration_ids,
-        raw_data: raw_data,
+        registration_ids,
+        raw_data,
     };
 
-    let json_payload = serde_json::to_string(&gcm_data).unwrap();
+    let body = serde_json::to_string(&gcm_data).unwrap();
+    builder.set_body(body);
 
     builder
-        .header(CONTENT_TYPE, "application/json")
-        .header(
-            CONTENT_LENGTH,
-            format!("{}", json_payload.len() as u64).as_bytes(),
-        )
-        .body(json_payload.into()).unwrap()
 }
 
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
     match response_status {
-        StatusCode::OK => {
+        StatusCode::Ok => {
             let body_str = String::from_utf8(body)?;
             let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
@@ -132,8 +123,8 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
                 }
             }
         }
-        StatusCode::UNAUTHORIZED => Err(WebPushError::Unauthorized),
-        StatusCode::BAD_REQUEST => {
+        StatusCode::Unauthorized => Err(WebPushError::Unauthorized),
+        StatusCode::BadRequest => {
             let body_str = String::from_utf8(body)?;
             let gcm_response: GcmResponse = serde_json::from_str(&body_str)?;
 
@@ -149,19 +140,20 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 
 #[cfg(test)]
 mod tests {
-    use crate::error::WebPushError;
-    use crate::http_ece::ContentEncoding;
-    use hyper::StatusCode;
-    use hyper::Uri;
-    use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
-    use crate::services::firebase::*;
+    use crate::{
+        error::WebPushError,
+        http_ece::ContentEncoding,
+        message::{SubscriptionInfo, WebPushMessageBuilder},
+        services::firebase::*,
+    };
+    use http_types::{StatusCode, Url};
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
         let info = SubscriptionInfo::new(
             "https://android.googleapis.com/gcm/send/device_token_2",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -171,19 +163,12 @@ mod tests {
         builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
 
         let request = build_request(builder.build().unwrap());
-
-        let authorization = request
-            .headers()
-            .get("Authorization")
-            .unwrap()
-            .to_str()
-            .unwrap();
-
-        let expected_uri: Uri = "https://android.googleapis.com/gcm/send".parse().unwrap();
+        let authorization = request.header("Authorization").unwrap().as_str();
+        let expected_uri: Url = "https://android.googleapis.com/gcm/send".parse().unwrap();
 
         assert_eq!("key=test_key", authorization);
-        assert_eq!(expected_uri.host(), request.uri().host());
-        assert_eq!(expected_uri.path(), request.uri().path());
+        assert_eq!(expected_uri.host(), request.url().host());
+        assert_eq!(expected_uri.path(), request.url().path());
     }
 
     #[test]
@@ -191,7 +176,7 @@ mod tests {
         let info = SubscriptionInfo::new(
             "https://fcm.googleapis.com/gcm/send/device_token_2",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -202,20 +187,12 @@ mod tests {
 
         let request = build_request(builder.build().unwrap());
 
-        let authorization = request
-            .headers()
-            .get("Authorization")
-            .unwrap()
-            .to_str()
-            .unwrap();
-
-        let expected_uri: Uri = "https://fcm.googleapis.com/fcm/send".parse().unwrap();
-        let length = request.headers().get("Content-Length").unwrap();
+        let authorization = request.header("Authorization").unwrap().as_str();
+        let expected_uri: Url = "https://fcm.googleapis.com/fcm/send".parse().unwrap();
 
         assert_eq!("key=test_key", authorization);
-        assert_eq!(expected_uri.host(), request.uri().host());
-        assert_eq!(expected_uri.path(), request.uri().path());
-        assert_eq!("4149", length);
+        assert_eq!(expected_uri.host(), request.url().host());
+        assert_eq!(expected_uri.path(), request.url().path());
     }
 
     #[test]
@@ -228,10 +205,7 @@ mod tests {
             "failure": 0
         }
         "#;
-        assert_eq!(
-            Ok(()),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
-        )
+        assert_eq!(Ok(()), parse_response(StatusCode::Ok, response.as_bytes().to_vec()))
     }
 
     #[test]
@@ -247,7 +221,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::EndpointNotFound),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -264,7 +238,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::EndpointNotValid),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -281,7 +255,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::EndpointNotValid),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -298,7 +272,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::InvalidPackageName),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -315,7 +289,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::PayloadTooLarge),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -332,7 +306,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::Other(String::from("InvalidDataKey"))),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -349,7 +323,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::InvalidTtl),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -366,7 +340,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::ServerError(None)),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 
@@ -383,7 +357,7 @@ mod tests {
         "#;
         assert_eq!(
             Err(WebPushError::ServerError(None)),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
+            parse_response(StatusCode::Ok, response.as_bytes().to_vec())
         )
     }
 }

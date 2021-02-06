@@ -1,12 +1,19 @@
-use base64::{self, URL_SAFE_NO_PAD};
 use crate::error::WebPushError;
 use crate::message::WebPushPayload;
-use ring::rand::SecureRandom;
-use ring::{aead::{self, BoundKey}, agreement, hkdf, rand};
 use crate::vapid::VapidSignature;
+use base64::{self, URL_SAFE_NO_PAD};
+use ring::rand::SecureRandom;
+use ring::{
+    aead::{self, BoundKey},
+    agreement, hkdf, rand,
+};
 
+/// The encryption standard.
+#[derive(Debug, PartialEq)]
 pub enum ContentEncoding {
+    /// The legacy http-ece standard.
     AesGcm,
+    /// The current http-ece standard.
     Aes128Gcm,
 }
 
@@ -28,7 +35,7 @@ impl hkdf::KeyType for EceKey<usize> {
 }
 
 impl From<hkdf::Okm<'_, EceKey<usize>>> for EceKey<Vec<u8>> {
-    fn from(okm: hkdf::Okm<EceKey<usize>>) -> Self {
+    fn from(okm: hkdf::Okm<'_, EceKey<usize>>) -> Self {
         let mut r = vec![0u8; okm.len().0];
         okm.fill(&mut r).unwrap();
         EceKey(r)
@@ -101,8 +108,7 @@ impl<'a> HttpEce<'a> {
             return Err(WebPushError::PayloadTooLarge);
         }
 
-        let private_key =
-            agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
+        let private_key = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
         let public_key = private_key.compute_public_key()?;
         let mut salt_bytes = [0u8; 16];
 
@@ -118,12 +124,7 @@ impl<'a> HttpEce<'a> {
                     let mut payload = vec![0; 3054];
                     front_pad(content, &mut payload);
 
-                    self.aes_gcm(
-                        shared_secret,
-                        public_key.as_ref(),
-                        &salt_bytes,
-                        &mut payload,
-                    )?;
+                    self.aes_gcm(shared_secret, public_key.as_ref(), &salt_bytes, &mut payload)?;
 
                     Ok(WebPushPayload {
                         content: payload.to_vec(),
@@ -136,11 +137,7 @@ impl<'a> HttpEce<'a> {
         )
     }
 
-    pub fn generate_headers(
-        &self,
-        public_key: &'a [u8],
-        salt: &'a [u8],
-    ) -> Vec<(&'static str, String)> {
+    pub fn generate_headers(&self, public_key: &'a [u8], salt: &'a [u8]) -> Vec<(&'static str, String)> {
         let mut crypto_headers = Vec::new();
 
         let mut crypto_key = format!("dh={}", base64::encode_config(public_key, URL_SAFE_NO_PAD));
@@ -192,21 +189,13 @@ impl<'a> HttpEce<'a> {
         cek_info.extend_from_slice("Content-Encoding: aesgcm\0".as_bytes());
         cek_info.extend_from_slice(&context);
 
-        let EceKey(content_encryption_key) = salt
-            .extract(&prk)
-            .expand(&[&cek_info], EceKey(16))
-            .unwrap()
-            .into();
+        let EceKey(content_encryption_key) = salt.extract(&prk).expand(&[&cek_info], EceKey(16)).unwrap().into();
 
         let mut nonce_info = Vec::with_capacity(164);
         nonce_info.extend_from_slice("Content-Encoding: nonce\0".as_bytes());
         nonce_info.extend_from_slice(&context);
 
-        let EceKey(nonce_bytes) = salt
-            .extract(&prk)
-            .expand(&[&nonce_info], EceKey(12))
-            .unwrap()
-            .into();
+        let EceKey(nonce_bytes) = salt.extract(&prk).expand(&[&nonce_info], EceKey(12)).unwrap().into();
 
         let mut nonce = EceNonce::default();
         nonce.fill(nonce_bytes);
@@ -235,51 +224,55 @@ fn front_pad(payload: &[u8], output: &mut [u8]) {
 
 #[cfg(test)]
 mod tests {
-    use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
     use crate::error::WebPushError;
     use crate::http_ece::{front_pad, ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
+    use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
 
     #[test]
     fn test_payload_too_big() {
-        let p256dh = base64::decode_config("BLMaF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
+        let p256dh = base64::decode_config(
+            "BLMaF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            URL_SAFE,
+        )
+        .unwrap();
         let auth = base64::decode_config("xS03Fj5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
         let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
         let content = [0u8; 3801];
 
-        assert_eq!(
-            Err(WebPushError::PayloadTooLarge),
-            http_ece.encrypt(&content)
-        );
+        assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
     }
 
     #[test]
     fn test_aes128gcm() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
+        let p256dh = base64::decode_config(
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            URL_SAFE,
+        )
+        .unwrap();
         let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
 
         let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth, None);
         let content = [0u8; 10];
 
-        assert_eq!(
-            Err(WebPushError::NotImplemented),
-            http_ece.encrypt(&content)
-        );
+        assert_eq!(Err(WebPushError::NotImplemented), http_ece.encrypt(&content));
     }
 
     #[test]
     fn test_aesgcm() {
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                                           URL_SAFE).unwrap();
+        let p256dh = base64::decode_config(
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            URL_SAFE,
+        )
+        .unwrap();
         let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
         let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
-        let shared_secret =
-            base64::decode_config("9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=", URL_SAFE)
-                .unwrap();
-        let as_pubkey = base64::decode_config("BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-                                              URL_SAFE).unwrap();
+        let shared_secret = base64::decode_config("9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=", URL_SAFE).unwrap();
+        let as_pubkey = base64::decode_config(
+            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
+            URL_SAFE,
+        )
+        .unwrap();
         let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
 
         let mut payload = "This is test data. XXX".as_bytes().to_vec();
@@ -295,19 +288,19 @@ mod tests {
 
     #[test]
     fn test_headers_with_vapid() {
-        let as_pubkey =
-            base64::decode_config(
-                "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-                URL_SAFE
-            ).unwrap();
+        let as_pubkey = base64::decode_config(
+            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
+            URL_SAFE,
+        )
+        .unwrap();
 
         let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
 
-        let p256dh =
-            base64::decode_config(
-                "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                URL_SAFE
-            ).unwrap();
+        let p256dh = base64::decode_config(
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            URL_SAFE,
+        )
+        .unwrap();
 
         let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
 
@@ -316,12 +309,7 @@ mod tests {
             auth_k: String::from("bar"),
         };
 
-        let http_ece = HttpEce::new(
-            ContentEncoding::AesGcm,
-            &p256dh,
-            &auth,
-            Some(vapid_signature),
-        );
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, Some(vapid_signature));
 
         assert_eq!(
             vec![
@@ -333,19 +321,19 @@ mod tests {
 
     #[test]
     fn test_headers_without_vapid() {
-        let as_pubkey =
-            base64::decode_config(
-                "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-                URL_SAFE
-            ).unwrap();
+        let as_pubkey = base64::decode_config(
+            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
+            URL_SAFE,
+        )
+        .unwrap();
 
         let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
 
-        let p256dh =
-            base64::decode_config(
-                "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-                URL_SAFE
-            ).unwrap();
+        let p256dh = base64::decode_config(
+            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+            URL_SAFE,
+        )
+        .unwrap();
 
         let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
 
@@ -353,9 +341,15 @@ mod tests {
 
         assert_eq!(
             vec![
-                ("Crypto-Key", "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs".to_string()),
-                ("Encryption", "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())],
-            http_ece.generate_headers(&as_pubkey, &salt_bytes))
+                (
+                    "Crypto-Key",
+                    "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs"
+                        .to_string()
+                ),
+                ("Encryption", "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())
+            ],
+            http_ece.generate_headers(&as_pubkey, &salt_bytes)
+        )
     }
 
     #[test]

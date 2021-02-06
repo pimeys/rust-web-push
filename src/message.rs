@@ -1,8 +1,12 @@
+use std::fmt;
+
+use crate::{
+    error::WebPushError,
+    http_ece::{ContentEncoding, HttpEce},
+    vapid::VapidSignature,
+};
 use base64;
-use crate::error::WebPushError;
-use crate::http_ece::{ContentEncoding, HttpEce};
-use hyper::Uri;
-use crate::vapid::VapidSignature;
+use http_types::Url;
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
@@ -64,7 +68,7 @@ pub struct WebPushMessage {
     /// sending a notification.
     pub gcm_key: Option<String>,
     /// The endpoint URI where to send the payload.
-    pub endpoint: Uri,
+    pub endpoint: Url,
     /// Time to live, how long the message should wait in the server if user is
     /// not online. Some services require this value to be set.
     pub ttl: u32,
@@ -80,7 +84,14 @@ struct WebPushPayloadBuilder<'a> {
     pub encoding: ContentEncoding,
 }
 
+impl<'a> fmt::Debug for WebPushPayloadBuilder<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("WebPushMessageBuilder").finish()
+    }
+}
+
 /// The main class for creating a notification payload.
+#[derive(Debug)]
 pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
     gcm_key: Option<&'a str>,
@@ -94,9 +105,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(
-        subscription_info: &'a SubscriptionInfo,
-    ) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
+    pub fn new(subscription_info: &'a SubscriptionInfo) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
         Ok(WebPushMessageBuilder {
             subscription_info: subscription_info,
             ttl: 2_419_200,
@@ -136,11 +145,11 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
     /// something was wrong in the given public key or authentication.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
-        let endpoint: Uri = self.subscription_info.endpoint.parse()?;
+        let endpoint: Url = self.subscription_info.endpoint.parse().unwrap();
 
         let service = match self.vapid_signature {
             Some(_) => WebPushService::Autopush,
-            _ => match endpoint.host() {
+            _ => match endpoint.host_str() {
                 Some("android.googleapis.com") => WebPushService::Firebase,
                 Some("fcm.googleapis.com") => WebPushService::Firebase,
                 _ => WebPushService::Autopush,
@@ -148,15 +157,14 @@ impl<'a> WebPushMessageBuilder<'a> {
         };
 
         if let Some(payload) = self.payload {
-            let p256dh =
-                base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
+            let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
             let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
 
             let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
-                endpoint: endpoint,
+                endpoint,
                 ttl: self.ttl,
                 payload: Some(http_ece.encrypt(payload.content)?),
                 service: service,

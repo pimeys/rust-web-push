@@ -1,20 +1,30 @@
 Rust Web Push
 =============
 
-[![Travis Build Status](https://travis-ci.org/pimeys/rust-web-push.svg?branch=master)](https://travis-ci.org/pimeys/rust-web-push)
+![CI](https://github.com/pimeys/rust-web-push/workflows/CI/badge.svg)
 [![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
+[![docs.rs](https://docs.rs/web-push/badge.svg)](https://docs.rs/web-push)
 
 Web push notification sender.
 
-## Requirements
+## Runtime requirements
 
-Needs a Tokio executor version 0.2 or later and Rust compiler version 1.39.0 or later.
+By default, compiles with the feature `rt-tokio` enabled, and should be used from Tokio 1.x runtime. Additionally, the feature `rt-async-std` allows using the crate with async-std 1.x runtime. Both flags cannot be enabled at the same time, so default features should be disabled if having the `rt-async-std` feature flag enabled.
 
-Documentation
--------------
+Example Cargo.toml usage for Tokio:
 
-* [Released](https://docs.rs/web-push/)
-* [Master](https://pimeys.github.io/rust-web-push/master/index.html)
+``` toml
+web-push = "0.8"
+```
+
+Example Cargo.toml usage for async-std:
+
+``` toml
+web-push = { version = "0.8", default-features = false, features = ["rt-async-std"] }
+```
+
+Examples
+--------
 
 To send a web push from command line, first subscribe to receive push
 notifications with your browser and store the subscription info into a json

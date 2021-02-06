@@ -32,11 +32,22 @@
 //! # Ok(())
 //! # }
 //! ```
+#![warn(missing_docs)]
+#![warn(missing_debug_implementations, rust_2018_idioms)]
+#![doc(test(attr(deny(rust_2018_idioms, warnings))))]
+#![doc(test(attr(allow(unused_extern_crates, unused_variables))))]
 
-#[macro_use] extern crate serde_derive;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate serde_json;
-#[macro_use] extern crate log;
+#[cfg(all(feature = "rt-tokio", feature = "rt-async-std"))]
+compile_error!("only one of 'rt-tokio' or 'rt-async-std' features can be enabled");
+
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate log;
 
 mod client;
 mod error;
@@ -48,9 +59,7 @@ mod vapid;
 pub use crate::client::WebPushClient;
 pub use crate::error::WebPushError;
 
-pub use crate::message::{
-    SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload,
-};
+pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
 
 pub use crate::http_ece::ContentEncoding;
 pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};

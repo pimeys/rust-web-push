@@ -1,12 +1,12 @@
-use crate::error::WebPushError;
-use hyper::Uri;
-use crate::message::SubscriptionInfo;
-use openssl::ec::EcKey;
-use openssl::pkey::Private;
+use crate::{
+    error::WebPushError,
+    message::SubscriptionInfo,
+    vapid::{VapidKey, VapidSignature, VapidSigner},
+};
+use http_types::Url;
+use openssl::{ec::EcKey, pkey::Private};
 use serde_json::Value;
-use std::collections::BTreeMap;
-use std::io::Read;
-use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
+use std::{collections::BTreeMap, fmt, io::Read};
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. With a given signature, one can pass the registration to Google's
@@ -73,6 +73,16 @@ pub struct VapidSignatureBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
 }
 
+impl<'a> fmt::Debug for VapidSignatureBuilder<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("VapidSignatureBuilder")
+            .field("claims", &"<HIDDEN>")
+            .field("key", &"<HIDDEN>")
+            .field("subscription_info", &"<HIDDEN>")
+            .finish()
+    }
+}
+
 impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key.
     pub fn from_pem<R: Read>(
@@ -82,10 +92,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut pem_key: Vec<u8> = Vec::new();
         pk_pem.read_to_end(&mut pem_key)?;
 
-        Ok(Self::from_ec(
-            EcKey::private_key_from_pem(&pem_key)?,
-            subscription_info,
-        ))
+        Ok(Self::from_ec(EcKey::private_key_from_pem(&pem_key)?, subscription_info))
     }
 
     /// Creates a new builder from a DER formatted private key.
@@ -96,10 +103,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut der_key: Vec<u8> = Vec::new();
         pk_der.read_to_end(&mut der_key)?;
 
-        Ok(Self::from_ec(
-            EcKey::private_key_from_der(&der_key)?,
-            subscription_info,
-        ))
+        Ok(Self::from_ec(EcKey::private_key_from_der(&der_key)?, subscription_info))
     }
 
     /// Add a claim to the signature. Claims `aud` and `exp` are automatically
@@ -117,20 +121,17 @@ impl<'a> VapidSignatureBuilder<'a> {
 
     /// Builds a signature to be used in [WebPushMessageBuilder](struct.WebPushMessageBuilder.html).
     pub fn build(self) -> Result<VapidSignature, WebPushError> {
-        let endpoint: Uri = self.subscription_info.endpoint.parse()?;
+        let endpoint: Url = self.subscription_info.endpoint.parse().unwrap();
         let signature = VapidSigner::sign(self.key, &endpoint, self.claims)?;
 
         Ok(signature)
     }
 
-    fn from_ec(
-        ec_key: EcKey<Private>,
-        subscription_info: &'a SubscriptionInfo,
-    ) -> VapidSignatureBuilder<'a> {
+    fn from_ec(ec_key: EcKey<Private>, subscription_info: &'a SubscriptionInfo) -> VapidSignatureBuilder<'a> {
         VapidSignatureBuilder {
             claims: BTreeMap::new(),
             key: VapidKey::new(ec_key),
-            subscription_info: subscription_info,
+            subscription_info,
         }
     }
 }
@@ -138,9 +139,9 @@ impl<'a> VapidSignatureBuilder<'a> {
 #[cfg(test)]
 mod tests {
     use crate::message::SubscriptionInfo;
+    use crate::vapid::VapidSignatureBuilder;
     use serde_json;
     use std::fs::File;
-    use crate::vapid::VapidSignatureBuilder;
 
     lazy_static! {
         static ref PRIVATE_PEM: File = File::open("resources/vapid_test_key.pem").unwrap();
