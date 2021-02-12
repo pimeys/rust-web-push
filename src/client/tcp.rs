@@ -1,7 +1,7 @@
 use async_tls::{client::TlsStream, TlsConnector};
 use async_trait::async_trait;
 use deadpool::managed::{Manager, Object, RecycleResult};
-use futures::{AsyncRead, AsyncWrite};
+use futures_io::{AsyncRead, AsyncWrite};
 use http_types::Url;
 use std::{
     io,
@@ -89,7 +89,7 @@ impl AsyncRead for TlsConnWrapper {
 
 impl AsyncWrite for TlsConnWrapper {
     fn poll_write(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<std::io::Result<usize>> {
-        let amt = futures::ready!(Pin::new(&mut *self.conn).poll_write(cx, buf))?;
+        let amt = futures_core::ready!(Pin::new(&mut *self.conn).poll_write(cx, buf))?;
         Poll::Ready(Ok(amt))
     }
 
@@ -117,7 +117,7 @@ impl AsyncRead for WebPushStream {
 
 impl AsyncWrite for WebPushStream {
     fn poll_write(self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<io::Result<usize>> {
-        let amt = futures::ready!(Pin::new(&mut self.get_mut().inner).poll_write(cx, buf))?;
+        let amt = futures_core::ready!(Pin::new(&mut self.get_mut().inner).poll_write(cx, buf))?;
         Poll::Ready(Ok(amt))
     }
 

@@ -1,12 +1,8 @@
 mod tcp;
 
-use crate::{
-    error::{RetryAfter, WebPushError},
-    message::{WebPushMessage, WebPushService},
-    services::{autopush, firebase},
-};
+use crate::{error::WebPushError, message::WebPushMessage, read_response};
 use deadpool::managed::Pool;
-use http_types::Url;
+use http_types::{Request, Url};
 use std::{collections::HashMap, fmt, io};
 use tcp::{TlsConnWrapper, WebPushManager, WebPushStream};
 
@@ -39,53 +35,19 @@ impl WebPushClient {
     /// Sends a notification. Never times out.
     pub async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);
+        let service = message.service;
 
-        let service = message.service.clone();
-        let conn = self.get_conn(&message.endpoint).await;
+        let request: Request = message.into();
 
-        let request = match service {
-            WebPushService::Firebase => {
-                trace!("Building firebase request");
-                firebase::build_request(message)
-            }
-            _ => {
-                trace!("Building autopush request");
-                autopush::build_request(message)
-            }
-        };
+        let conn = self.get_conn(request.url()).await;
 
         trace!("Request: {:?}", request);
 
-        let mut response = async_h1::connect(conn, request).await?;
+        let response = async_h1::connect(conn, request).await?;
 
         trace!("Response: {:?}", response);
 
-        let retry_after = response
-            .header("Retry-After")
-            .map(|h| h.last().as_str())
-            .and_then(RetryAfter::from_str);
-
-        let response_status = response.status();
-
-        trace!("Response status: {}", response_status);
-
-        let body = response.body_bytes().await?;
-
-        trace!("Body: {:?}", body);
-        trace!("Body text: {:?}", std::str::from_utf8(&body));
-
-        let response = match service {
-            WebPushService::Firebase => firebase::parse_response(response_status, body.to_vec()),
-            _ => autopush::parse_response(response_status, body.to_vec()),
-        };
-
-        debug!("Response: {:?}", response);
-
-        if let Err(WebPushError::ServerError(None)) = response {
-            Err(WebPushError::ServerError(retry_after))
-        } else {
-            Ok(response?)
-        }
+        read_response(response, service).await
     }
 
     async fn get_conn(&self, endpoint: &Url) -> TlsConnWrapper {
