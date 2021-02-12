@@ -3,10 +3,11 @@ use std::fmt;
 use crate::{
     error::WebPushError,
     http_ece::{ContentEncoding, HttpEce},
+    services::*,
     vapid::VapidSignature,
 };
 use base64;
-use http_types::Url;
+use http_types::{Request, Url};
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
@@ -44,7 +45,7 @@ impl SubscriptionInfo {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum WebPushService {
     Firebase,
     Autopush,
@@ -77,6 +78,24 @@ pub struct WebPushMessage {
     /// The service type where to connect. Firebase when not using VAPID with
     /// Chrome-based browsers. Data is in JSON format instead of binary.
     pub service: WebPushService,
+}
+
+impl From<WebPushMessage> for Request {
+    fn from(message: WebPushMessage) -> Self {
+        let service = message.service;
+
+        match service {
+            #[cfg(feature = "firebase")]
+            WebPushService::Firebase => {
+                trace!("Building firebase request");
+                firebase::build_request(message)
+            }
+            _ => {
+                trace!("Building autopush request");
+                autopush::build_request(message)
+            }
+        }
+    }
 }
 
 struct WebPushPayloadBuilder<'a> {

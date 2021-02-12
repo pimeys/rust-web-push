@@ -49,15 +49,19 @@ extern crate serde_json;
 #[macro_use]
 extern crate log;
 
+#[cfg(feature = "client")]
 mod client;
 mod error;
 mod http_ece;
 mod message;
+mod response;
 mod services;
 mod vapid;
 
+#[cfg(feature = "client")]
 pub use crate::client::WebPushClient;
 pub use crate::error::WebPushError;
+pub use crate::response::read_response;
 
 pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
 
