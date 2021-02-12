@@ -23,6 +23,14 @@ Example Cargo.toml usage for async-std:
 web-push = { version = "0.8", default-features = false, features = ["rt-async-std"] }
 ```
 
+It is also possible to disable all features and BYO http client using `Request` and `Response` from the `http-types` crate:
+
+``` toml
+web-push = { version = "0.8", default-features = false }
+```
+
+You can then use `web_push::WebPushMessage::into` to obtain a `http_types::Request` and `web_push::read_reponse` to check the response.
+
 Examples
 --------
 
@@ -45,10 +53,7 @@ Google has
 building a frontend to receive notifications.
 
 Store the subscription info to `examples/test.json` and send a notification with
-`cargo run --example simple_send -- -f examples/test.json -p "It works!"`. If
-using Google Chrome, you need to register yourself
-into [Firebase](https://firebase.google.com/) and provide a GCM API Key with
-parameter `-k GCM_API_KEY`.
+`cargo run --example simple_send -- -f examples/test.json -p "It works!"`.
 
 Examples
 --------

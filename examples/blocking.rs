@@ -6,7 +6,6 @@ use web_push::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let mut subscription_info_file = String::new();
-    let mut gcm_api_key: Option<String> = None;
     let mut vapid_private_key: Option<String> = None;
     let mut push_payload: Option<String> = None;
     let mut ttl: Option<u32> = None;
@@ -14,9 +13,6 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     {
         let mut ap = ArgumentParser::new();
         ap.set_description("A web push sender");
-
-        ap.refer(&mut gcm_api_key)
-            .add_option(&["-k", "--gcm_api_key"], StoreOption, "Google GCM API Key");
 
         ap.refer(&mut vapid_private_key).add_option(
             &["-v", "--vapid_key"],
@@ -51,10 +47,6 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
     }
 
-    if let Some(ref gcm_key) = gcm_api_key {
-        builder.set_gcm_key(gcm_key);
-    }
-
     if let Some(time) = ttl {
         builder.set_ttl(time);
     }
@@ -74,10 +66,8 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
     };
 
-    let message = builder.build()?;
-    let service = message.service;
-    let request: Request = message.into();
-    let response = block_on(read_response(call(request)?, service))?;
+    let request: Request = builder.build()?.into();
+    let response = block_on(read_response(call(request)?))?;
 
     println!("Sent: {:?}", response);
 
