@@ -16,12 +16,11 @@ edition = "2018"
 travis-ci = { repository = "pimeys/rust-web-push" }
 
 [features]
-default = ["rt-tokio", "firebase"]
+default = ["rt-tokio"]
 rt-async-std = ["async-std", "client"]
 rt-tokio = ["tokio", "tokio-util", "client"]
 client = ["async-trait", "async-h1", "async-tls", "deadpool"]
 vendored-openssl = ["openssl/vendored"]
-firebase = []
 
 [dependencies]
 futures-core = "^0.3"

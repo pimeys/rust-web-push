@@ -35,19 +35,18 @@ impl WebPushClient {
     /// Sends a notification. Never times out.
     pub async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);
-        let service = message.service;
 
         let request: Request = message.into();
 
-        let conn = self.get_conn(request.url()).await;
-
         trace!("Request: {:?}", request);
+
+        let conn = self.get_conn(request.url()).await;
 
         let response = async_h1::connect(conn, request).await?;
 
         trace!("Response: {:?}", response);
 
-        read_response(response, service).await
+        read_response(response).await
     }
 
     async fn get_conn(&self, endpoint: &Url) -> TlsConnWrapper {

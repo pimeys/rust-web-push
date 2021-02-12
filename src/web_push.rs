@@ -1,5 +1,8 @@
-use crate::{error::WebPushError, message::WebPushMessage};
-use http_types::{Method, Request, StatusCode};
+use crate::{
+    error::{RetryAfter, WebPushError},
+    message::WebPushMessage,
+};
+use http_types::{Method, Request, Response, StatusCode};
 use serde_json;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
@@ -27,6 +30,33 @@ pub fn build_request(message: WebPushMessage) -> Request {
     }
 
     builder
+}
+
+/// Read a web push response, particularly to find ot whether it errored
+pub async fn read_response(mut response: Response) -> Result<(), WebPushError> {
+    let retry_after = response
+        .header("Retry-After")
+        .map(|h| h.last().as_str())
+        .and_then(RetryAfter::from_str);
+
+    let response_status = response.status();
+
+    trace!("Response status: {}", response_status);
+
+    let body = response.body_bytes().await?;
+
+    trace!("Body: {:?}", body);
+    trace!("Body text: {:?}", std::str::from_utf8(&body));
+
+    let response = parse_response(response_status, body.to_vec());
+
+    debug!("Response: {:?}", response);
+
+    if let Err(WebPushError::ServerError(None)) = response {
+        Err(WebPushError::ServerError(retry_after))
+    } else {
+        Ok(response?)
+    }
 }
 
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
@@ -58,7 +88,7 @@ mod tests {
         error::WebPushError,
         http_ece::ContentEncoding,
         message::{SubscriptionInfo, WebPushMessageBuilder},
-        services::autopush::*,
+        web_push::*,
     };
     use http_types::{StatusCode, Url};
 
