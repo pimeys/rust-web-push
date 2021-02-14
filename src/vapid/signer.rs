@@ -31,12 +31,6 @@ pub struct VapidSignature {
     pub auth_k: String,
 }
 
-impl<'a> Into<String> for &'a VapidSignature {
-    fn into(self) -> String {
-        format!("WebPush {}", self.auth_t)
-    }
-}
-
 pub struct VapidSigner {}
 
 impl VapidSigner {

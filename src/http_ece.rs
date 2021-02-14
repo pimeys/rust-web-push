@@ -101,8 +101,7 @@ impl<'a> HttpEce<'a> {
         if let Some(ref signature) = self.vapid_signature {
             crypto_key = format!("{}; p256ecdsa={}", crypto_key, signature.auth_k);
 
-            let sig_s: String = signature.into();
-            crypto_headers.push(("Authorization", sig_s));
+            crypto_headers.push(("Authorization", format!("WebPush {}", signature.auth_t)));
         };
 
         crypto_headers.push(("Crypto-Key", crypto_key));
