@@ -103,20 +103,3 @@ impl VapidSigner {
         Ok(VapidSignature { auth_t, auth_k })
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::vapid::VapidSignature;
-
-    #[test]
-    fn test_vapid_signature_aesgcm_format() {
-        let vapid_signature = &VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let header_value: String = vapid_signature.into();
-
-        assert_eq!("WebPush foo", &header_value);
-    }
-}
