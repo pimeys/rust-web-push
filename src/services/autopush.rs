@@ -103,7 +103,7 @@ mod tests {
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
         let request = build_request(builder.build().unwrap());
 
@@ -114,11 +114,9 @@ mod tests {
             .to_str()
             .unwrap();
 
-        let length = request.headers().get("Content-Length").unwrap();
         let expected_uri: Uri = "http://google.com".parse().unwrap();
 
-        assert_eq!("3070", length);
-        assert_eq!("aesgcm", encoding);
+        assert_eq!("aes128gcm", encoding);
         assert_eq!(expected_uri.host(), request.uri().host());
     }
 

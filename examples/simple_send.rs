@@ -9,6 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut vapid_private_key: Option<String> = None;
     let mut push_payload: Option<String> = None;
     let mut ttl: Option<u32> = None;
+    let mut encoding : Option<String> = None;
 
     {
         let mut ap = ArgumentParser::new();
@@ -42,6 +43,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
             "TTL of the notification",
         );
 
+        ap.refer(&mut encoding).add_option(
+            &["-e", "--encoding"],
+            StoreOption,
+            "Encoding Scheme ('aes128gcm' or 'aesgcm'). Defaults to current standard aes128gcm",
+        );
+
         ap.parse_args_or_exit();
     }
 
@@ -53,8 +60,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
 
+    let mut content_encoding = ContentEncoding::Aes128Gcm;
+    if let Some(encoding) = encoding {
+        match encoding.to_lowercase().as_str() {
+            "aes128gcm" => {},
+            "aesgcm" => content_encoding = ContentEncoding::AesGcm,
+            e => panic!("Encoding option {} is not valid. Please use either 'aes128gcm' or 'aesgcm'.",e),
+        }
+    }
+
     if let Some(ref payload) = push_payload {
-        builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
+        builder.set_payload(content_encoding, payload.as_bytes());
     }
 
     if let Some(ref gcm_key) = gcm_api_key {
