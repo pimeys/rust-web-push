@@ -128,9 +128,9 @@ impl WebPushError {
     }
 }
 
-impl Error for WebPushError {
-    fn description(&self) -> &str {
-        match *self {
+impl fmt::Display for WebPushError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",  match *self {
             WebPushError::Unspecified =>
                 "An unknown error happened encrypting the message",
             WebPushError::Unauthorized =>
@@ -162,19 +162,11 @@ impl Error for WebPushError {
             WebPushError::MissingCryptoKeys  => "The request is missing cryptographic keys",
             WebPushError::InvalidCryptoKeys  => "The request is having invalid cryptographic keys",
             WebPushError::Other(_) => "An unknown error when connecting the notification service",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        None
+        })
     }
 }
 
-impl fmt::Display for WebPushError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self)
-    }
-}
+impl Error for WebPushError {}
 
 pub struct RetryAfter;
 impl RetryAfter {
