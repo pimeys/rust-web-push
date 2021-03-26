@@ -93,9 +93,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     ///
     /// All parameters are from the subscription info given by browser when
     /// subscribing to push notifications.
-    pub fn new(
-        subscription_info: &'a SubscriptionInfo,
-    ) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
+    pub fn new(subscription_info: &'a SubscriptionInfo) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
         Ok(WebPushMessageBuilder {
             subscription_info,
             ttl: 2_419_200,
@@ -144,8 +142,7 @@ impl<'a> WebPushMessageBuilder<'a> {
         };
 
         if let Some(payload) = self.payload {
-            let p256dh =
-                base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
+            let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
             let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
 
             let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);

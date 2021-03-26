@@ -82,10 +82,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut pem_key: Vec<u8> = Vec::new();
         pk_pem.read_to_end(&mut pem_key)?;
 
-        Ok(Self::from_ec(
-            EcKey::private_key_from_pem(&pem_key)?,
-            subscription_info,
-        ))
+        Ok(Self::from_ec(EcKey::private_key_from_pem(&pem_key)?, subscription_info))
     }
 
     /// Creates a new builder from a DER formatted private key.
@@ -96,10 +93,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut der_key: Vec<u8> = Vec::new();
         pk_der.read_to_end(&mut der_key)?;
 
-        Ok(Self::from_ec(
-            EcKey::private_key_from_der(&der_key)?,
-            subscription_info,
-        ))
+        Ok(Self::from_ec(EcKey::private_key_from_der(&der_key)?, subscription_info))
     }
 
     /// Add a claim to the signature. Claims `aud` and `exp` are automatically
@@ -123,10 +117,7 @@ impl<'a> VapidSignatureBuilder<'a> {
         Ok(signature)
     }
 
-    fn from_ec(
-        ec_key: EcKey<Private>,
-        subscription_info: &'a SubscriptionInfo,
-    ) -> VapidSignatureBuilder<'a> {
+    fn from_ec(ec_key: EcKey<Private>, subscription_info: &'a SubscriptionInfo) -> VapidSignatureBuilder<'a> {
         VapidSignatureBuilder {
             claims: BTreeMap::new(),
             key: VapidKey::new(ec_key),
