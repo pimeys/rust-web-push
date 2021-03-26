@@ -3,7 +3,7 @@ Rust Web Push
 
 [![Cargo tests](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml/badge.svg)](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml)
 [![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
-[![docs.rs](https://docs.rs/web_push/badge.svg)](https://docs.rs/web_push)
+[![docs.rs](https://docs.rs/web-push/badge.svg)](https://docs.rs/web-push)
 
 [Matrix chat](https://matrix.to/#/!lcXPcLYqIXRyoxzJmp:nauk.io?via=nauk.io)
 
