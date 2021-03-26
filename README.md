@@ -1,7 +1,7 @@
 Rust Web Push
 =============
 
-[![Travis Build Status](https://travis-ci.org/pimeys/rust-web-push.svg?branch=master)](https://travis-ci.org/pimeys/rust-web-push)
+[![Cargo tests](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml/badge.svg)](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml)
 [![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
 
 [Matrix chat](https://matrix.to/#/!lcXPcLYqIXRyoxzJmp:nauk.io?via=nauk.io)
