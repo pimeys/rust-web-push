@@ -1,11 +1,6 @@
-use crate::message::WebPushMessage;
-
-use hyper::{Body, Request, StatusCode};
-
+use crate::{error::WebPushError, message::WebPushMessage};
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
-
-use crate::error::WebPushError;
-use serde_json;
+use hyper::{Body, Request, StatusCode};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 struct ErrorInfo {
@@ -24,10 +19,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     if let Some(payload) = message.payload {
         builder = builder
             .header(CONTENT_ENCODING, payload.content_encoding)
-            .header(
-                CONTENT_LENGTH,
-                format!("{}", payload.content.len() as u64).as_bytes(),
-            )
+            .header(CONTENT_LENGTH, format!("{}", payload.content.len() as u64).as_bytes())
             .header(CONTENT_TYPE, "application/octet-stream");
 
         for (k, v) in payload.crypto_headers.into_iter() {
@@ -55,7 +47,7 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
             Err(_) => Err(WebPushError::BadRequest(None)),
             Ok(body_str) => match serde_json::from_str::<ErrorInfo>(&body_str) {
                 Ok(error_info) => Err(WebPushError::BadRequest(Some(error_info.error))),
-                Err(_) if body_str != "" => Err(WebPushError::BadRequest(Some(body_str))),
+                Err(_) if body_str.is_empty() => Err(WebPushError::BadRequest(Some(body_str))),
                 Err(_) => Err(WebPushError::BadRequest(None)),
             },
         },
@@ -68,17 +60,17 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use hyper::StatusCode;
-    use hyper::Uri;
     use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
     use crate::services::autopush::*;
+    use hyper::StatusCode;
+    use hyper::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
         let info = SubscriptionInfo::new(
             "http://google.com",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -98,7 +90,7 @@ mod tests {
         let info = SubscriptionInfo::new(
             "http://google.com",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -107,12 +99,7 @@ mod tests {
 
         let request = build_request(builder.build().unwrap());
 
-        let encoding = request
-            .headers()
-            .get("Content-Encoding")
-            .unwrap()
-            .to_str()
-            .unwrap();
+        let encoding = request.headers().get("Content-Encoding").unwrap().to_str().unwrap();
 
         let length = request.headers().get("Content-Length").unwrap();
         let expected_uri: Uri = "http://google.com".parse().unwrap();
