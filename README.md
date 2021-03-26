@@ -3,7 +3,7 @@ Rust Web Push
 
 [![Cargo tests](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml/badge.svg)](https://github.com/pimeys/rust-web-push/actions/workflows/test.yml)
 [![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
-[![docs.rs](https://docs.rs/tiberius/badge.svg)](https://docs.rs/tiberius)
+[![docs.rs](https://docs.rs/web_push/badge.svg)](https://docs.rs/web_push)
 
 [Matrix chat](https://matrix.to/#/!lcXPcLYqIXRyoxzJmp:nauk.io?via=nauk.io)
 
@@ -13,11 +13,7 @@ Web push notification sender.
 
 Needs a Tokio executor version 0.2 or later and Rust compiler version 1.39.0 or later.
 
-Documentation
--------------
-
-* [Released](https://docs.rs/web-push/)
-* [Master](https://pimeys.github.io/rust-web-push/master/index.html)
+## Usage
 
 To send a web push from command line, first subscribe to receive push
 notifications with your browser and store the subscription info into a json
