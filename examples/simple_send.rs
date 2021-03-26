@@ -14,11 +14,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         let mut ap = ArgumentParser::new();
         ap.set_description("A web push sender");
 
-        ap.refer(&mut gcm_api_key).add_option(
-            &["-k", "--gcm_api_key"],
-            StoreOption,
-            "Google GCM API Key",
-        );
+        ap.refer(&mut gcm_api_key)
+            .add_option(&["-k", "--gcm_api_key"], StoreOption, "Google GCM API Key");
 
         ap.refer(&mut vapid_private_key).add_option(
             &["-v", "--vapid_key"],
@@ -26,21 +23,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
             "A NIST P256 EC private key to create a VAPID signature",
         );
 
-        ap.refer(&mut subscription_info_file)
-            .add_option(&["-f", "--subscription_info_file"], Store,
-                        "Subscription info JSON file, https://developers.google.com/web/updates/2016/03/web-push-encryption");
-
-        ap.refer(&mut push_payload).add_option(
-            &["-p", "--push_payload"],
-            StoreOption,
-            "Push notification content",
+        ap.refer(&mut subscription_info_file).add_option(
+            &["-f", "--subscription_info_file"],
+            Store,
+            "Subscription info JSON file, https://developers.google.com/web/updates/2016/03/web-push-encryption",
         );
 
-        ap.refer(&mut ttl).add_option(
-            &["-t", "--time_to_live"],
-            StoreOption,
-            "TTL of the notification",
-        );
+        ap.refer(&mut push_payload)
+            .add_option(&["-p", "--push_payload"], StoreOption, "Push notification content");
+
+        ap.refer(&mut ttl)
+            .add_option(&["-t", "--time_to_live"], StoreOption, "TTL of the notification");
 
         ap.parse_args_or_exit();
     }
