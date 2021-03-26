@@ -1,9 +1,6 @@
-use base64;
-use crate::error::WebPushError;
+use crate::{error::WebPushError, message::WebPushMessage};
 use http::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::{Body, Request, StatusCode};
-use crate::message::WebPushMessage;
-use serde_json;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum GcmError {
@@ -69,9 +66,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
         _ => "https://android.googleapis.com/gcm/send",
     };
 
-    let mut builder = Request::builder()
-        .method("POST")
-        .uri(uri);
+    let mut builder = Request::builder().method("POST").uri(uri);
 
     if let Some(ref gcm_key) = message.gcm_key {
         builder = builder.header(AUTHORIZATION, format!("key={}", gcm_key).as_bytes());
@@ -79,7 +74,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
 
     let mut registration_ids = Vec::with_capacity(1);
 
-    if let Some(token) = message.endpoint.path().split("/").last() {
+    if let Some(token) = message.endpoint.path().split('/').last() {
         registration_ids.push(token.to_string());
     }
 
@@ -96,19 +91,17 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     };
 
     let gcm_data = GcmData {
-        registration_ids: registration_ids,
-        raw_data: raw_data,
+        registration_ids,
+        raw_data,
     };
 
     let json_payload = serde_json::to_string(&gcm_data).unwrap();
 
     builder
         .header(CONTENT_TYPE, "application/json")
-        .header(
-            CONTENT_LENGTH,
-            format!("{}", json_payload.len() as u64).as_bytes(),
-        )
-        .body(json_payload.into()).unwrap()
+        .header(CONTENT_LENGTH, format!("{}", json_payload.len() as u64).as_bytes())
+        .body(json_payload.into())
+        .unwrap()
 }
 
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
@@ -151,17 +144,17 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use hyper::StatusCode;
-    use hyper::Uri;
     use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
     use crate::services::firebase::*;
+    use hyper::StatusCode;
+    use hyper::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
         let info = SubscriptionInfo::new(
             "https://android.googleapis.com/gcm/send/device_token_2",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -172,12 +165,7 @@ mod tests {
 
         let request = build_request(builder.build().unwrap());
 
-        let authorization = request
-            .headers()
-            .get("Authorization")
-            .unwrap()
-            .to_str()
-            .unwrap();
+        let authorization = request.headers().get("Authorization").unwrap().to_str().unwrap();
 
         let expected_uri: Uri = "https://android.googleapis.com/gcm/send".parse().unwrap();
 
@@ -191,7 +179,7 @@ mod tests {
         let info = SubscriptionInfo::new(
             "https://fcm.googleapis.com/gcm/send/device_token_2",
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig"
+            "xS03Fi5ErfTNH_l9WHE9Ig",
         );
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
@@ -202,12 +190,7 @@ mod tests {
 
         let request = build_request(builder.build().unwrap());
 
-        let authorization = request
-            .headers()
-            .get("Authorization")
-            .unwrap()
-            .to_str()
-            .unwrap();
+        let authorization = request.headers().get("Authorization").unwrap().to_str().unwrap();
 
         let expected_uri: Uri = "https://fcm.googleapis.com/fcm/send".parse().unwrap();
         let length = request.headers().get("Content-Length").unwrap();
@@ -228,10 +211,7 @@ mod tests {
             "failure": 0
         }
         "#;
-        assert_eq!(
-            Ok(()),
-            parse_response(StatusCode::OK, response.as_bytes().to_vec())
-        )
+        assert_eq!(Ok(()), parse_response(StatusCode::OK, response.as_bytes().to_vec()))
     }
 
     #[test]

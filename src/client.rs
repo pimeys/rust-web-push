@@ -1,9 +1,9 @@
-use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
 use crate::error::{RetryAfter, WebPushError};
-use http::header::{RETRY_AFTER, CONTENT_LENGTH};
-use hyper_tls::HttpsConnector;
 use crate::message::{WebPushMessage, WebPushService};
 use crate::services::{autopush, firebase};
+use http::header::{CONTENT_LENGTH, RETRY_AFTER};
+use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
+use hyper_tls::HttpsConnector;
 use std::future::Future;
 
 /// An async client for sending the notification payload.
@@ -11,13 +11,16 @@ pub struct WebPushClient {
     client: Client<HttpsConnector<HttpConnector>>,
 }
 
+impl Default for WebPushClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WebPushClient {
     pub fn new() -> WebPushClient {
-        let mut builder = Client::builder();
-        builder.keep_alive(true);
-
         WebPushClient {
-            client: builder.build(HttpsConnector::new()),
+            client: Client::builder().build(HttpsConnector::new()),
         }
     }
 
@@ -30,11 +33,11 @@ impl WebPushClient {
             WebPushService::Firebase => {
                 trace!("Building firebase request");
                 firebase::build_request(message)
-            },
+            }
             _ => {
                 trace!("Building autopush request");
                 autopush::build_request(message)
-            },
+            }
         };
 
         trace!("Request: {:?}", request);
@@ -72,9 +75,7 @@ impl WebPushClient {
             trace!("Body text: {:?}", std::str::from_utf8(&body));
 
             let response = match service {
-                WebPushService::Firebase => {
-                    firebase::parse_response(response_status, body.to_vec())
-                }
+                WebPushService::Firebase => firebase::parse_response(response_status, body.to_vec()),
                 _ => autopush::parse_response(response_status, body.to_vec()),
             };
 

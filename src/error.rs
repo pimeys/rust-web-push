@@ -1,7 +1,5 @@
 use base64::DecodeError;
-use chrono;
 use http::uri::InvalidUri;
-use native_tls;
 use openssl::error::ErrorStack;
 use ring::error;
 use serde_json::error::Error as JsonError;
@@ -48,6 +46,8 @@ pub enum WebPushError {
     InvalidResponse,
     Other(String),
 }
+
+impl Error for WebPushError {}
 
 impl From<JsonError> for WebPushError {
     fn from(_: JsonError) -> WebPushError {
@@ -128,51 +128,41 @@ impl WebPushError {
     }
 }
 
-impl Error for WebPushError {
-    fn description(&self) -> &str {
-        match *self {
-            WebPushError::Unspecified =>
-                "An unknown error happened encrypting the message",
-            WebPushError::Unauthorized =>
-                "Please provide valid credentials to send the notification",
-            WebPushError::BadRequest(_) =>
-                "Request was badly formed",
-            WebPushError::ServerError(_) =>
-                "Server was unable to process the request, please try again later",
-            WebPushError::PayloadTooLarge =>
-                "Maximum allowed payload size is 3070 characters",
-            WebPushError::InvalidUri =>
-                "The provided URI is invalid",
-            WebPushError::NotImplemented =>
-                "The feature is not implemented yet",
-            WebPushError::EndpointNotValid =>
-                "The URL specified is no longer valid and should no longer be used",
-            WebPushError::EndpointNotFound =>
-                "The URL specified is invalid and should not be used again",
-            WebPushError::TlsError =>
-                "Could not initialize a TLS connection",
-            WebPushError::SslError =>
-                "Error signing with SSL",
-            WebPushError::IoError =>
-                "Error opening a file",
-            WebPushError::InvalidPackageName =>
-                "Make sure the message was addressed to a registration token whose package name matches the value passed in the request.",
-            WebPushError::InvalidTtl => "The TTL value provided was not valid or was not provided",
-            WebPushError::InvalidResponse => "The response data couldn't be parses",
-            WebPushError::MissingCryptoKeys  => "The request is missing cryptographic keys",
-            WebPushError::InvalidCryptoKeys  => "The request is having invalid cryptographic keys",
-            WebPushError::Other(_) => "An unknown error when connecting the notification service",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        None
-    }
-}
-
 impl fmt::Display for WebPushError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
+        match *self {
+            WebPushError::Unspecified =>
+                write!(f, "An unknown error happened encrypting the message"),
+            WebPushError::Unauthorized =>
+                write!(f, "Please provide valid credentials to send the notification"),
+            WebPushError::BadRequest(_) =>
+                write!(f, "Request was badly formed"),
+            WebPushError::ServerError(_) =>
+                write!(f, "Server was unable to process the request, please try again later"),
+            WebPushError::PayloadTooLarge =>
+                write!(f, "Maximum allowed payload size is 3070 characters"),
+            WebPushError::InvalidUri =>
+                write!(f, "The provided URI is invalid"),
+            WebPushError::NotImplemented =>
+                write!(f, "The feature is not implemented yet"),
+            WebPushError::EndpointNotValid =>
+                write!(f, "The URL specified is no longer valid and should no longer be used"),
+            WebPushError::EndpointNotFound =>
+                write!(f, "The URL specified is invalid and should not be used again"),
+            WebPushError::TlsError =>
+                write!(f, "Could not initialize a TLS connection"),
+            WebPushError::SslError =>
+                write!(f, "Error signing with SSL"),
+            WebPushError::IoError =>
+                write!(f, "Error opening a file"),
+            WebPushError::InvalidPackageName =>
+                write!(f, "Make sure the message was addressed to a registration token whose package name matches the value passed in the request."),
+            WebPushError::InvalidTtl => write!(f, "The TTL value provided was not valid or was not provided"),
+            WebPushError::InvalidResponse => write!(f, "The response data couldn't be parses"),
+            WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
+            WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),
+            WebPushError::Other(_) => write!(f, "An unknown error when connecting the notification service"),
+        }
     }
 }
 

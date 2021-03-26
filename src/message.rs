@@ -1,8 +1,7 @@
-use base64;
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
-use hyper::Uri;
 use crate::vapid::VapidSignature;
+use hyper::Uri;
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
@@ -98,7 +97,7 @@ impl<'a> WebPushMessageBuilder<'a> {
         subscription_info: &'a SubscriptionInfo,
     ) -> Result<WebPushMessageBuilder<'a>, WebPushError> {
         Ok(WebPushMessageBuilder {
-            subscription_info: subscription_info,
+            subscription_info,
             ttl: 2_419_200,
             gcm_key: None,
             payload: None,
@@ -126,11 +125,8 @@ impl<'a> WebPushMessageBuilder<'a> {
 
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
-    pub fn set_payload(&mut self, encoding: ContentEncoding, payload: &'a [u8]) {
-        self.payload = Some(WebPushPayloadBuilder {
-            content: payload,
-            encoding: encoding,
-        });
+    pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
+        self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
 
     /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
@@ -156,18 +152,18 @@ impl<'a> WebPushMessageBuilder<'a> {
 
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
-                endpoint: endpoint,
+                endpoint,
                 ttl: self.ttl,
                 payload: Some(http_ece.encrypt(payload.content)?),
-                service: service,
+                service,
             })
         } else {
             Ok(WebPushMessage {
                 gcm_key: self.gcm_key.map(|k| k.to_string()),
-                endpoint: endpoint,
+                endpoint,
                 ttl: self.ttl,
                 payload: None,
-                service: service,
+                service,
             })
         }
     }

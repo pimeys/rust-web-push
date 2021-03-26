@@ -1,15 +1,10 @@
+use crate::{error::WebPushError, vapid::VapidKey};
 use base64::{self, URL_SAFE_NO_PAD};
-use chrono::offset;
-use crate::error::WebPushError;
 use hyper::Uri;
-use openssl::hash::MessageDigest;
-use openssl::pkey::PKey;
-use openssl::sign::Signer as SslSigner;
-use serde_json;
+use openssl::{hash::MessageDigest, pkey::PKey, sign::Signer as SslSigner};
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
 use time::{self, OffsetDateTime};
-use crate::vapid::VapidKey;
 
 lazy_static! {
     static ref JWT_HEADERS: String = base64::encode_config(
@@ -32,8 +27,8 @@ pub struct VapidSignature {
     pub auth_k: String,
 }
 
-impl<'a> Into<String> for &'a VapidSignature {
-    fn into(self) -> String {
+impl<'a> ToString for &'a VapidSignature {
+    fn to_string(&self) -> String {
         format!("WebPush {}", self.auth_t)
     }
 }
@@ -50,11 +45,7 @@ impl VapidSigner {
         mut claims: BTreeMap<&str, Value>,
     ) -> Result<VapidSignature, WebPushError> {
         if !claims.contains_key("aud") {
-            let audience = format!(
-                "{}://{}",
-                endpoint.scheme_str().unwrap(),
-                endpoint.host().unwrap()
-            );
+            let audience = format!("{}://{}", endpoint.scheme_str().unwrap(), endpoint.host().unwrap());
             claims.insert("aud", Value::String(audience));
         }
 
@@ -101,11 +92,7 @@ impl VapidSigner {
 
         trace!("Public key: {}", auth_k);
 
-        let auth_t = format!(
-            "{}.{}",
-            signing_input,
-            base64::encode_config(&sigval, URL_SAFE_NO_PAD)
-        );
+        let auth_t = format!("{}.{}", signing_input, base64::encode_config(&sigval, URL_SAFE_NO_PAD));
 
         Ok(VapidSignature { auth_t, auth_k })
     }
@@ -122,7 +109,7 @@ mod tests {
             auth_k: String::from("bar"),
         };
 
-        let header_value: String = vapid_signature.into();
+        let header_value: String = vapid_signature.to_string();
 
         assert_eq!("WebPush foo", &header_value);
     }
