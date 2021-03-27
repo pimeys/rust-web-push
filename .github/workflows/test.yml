@@ -43,6 +43,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
+          - windows-latest
 
     runs-on: ${{ matrix.os }}
 
@@ -57,4 +58,4 @@ jobs:
           toolchain: ${{matrix.rust}}
 
       - name: Run tests
-        run: cargo test
+        run: cargo test --features=openssl/vendored
