@@ -56,11 +56,5 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            target
-          key: ${{ runner.os }}-cargo-${{ matrix.rust }}
-
       - name: Run tests
         run: cargo test
