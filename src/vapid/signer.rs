@@ -27,7 +27,7 @@ pub struct VapidSignature {
     pub auth_k: String,
 }
 
-impl<'a> ToString for &'a VapidSignature {
+impl ToString for VapidSignature {
     fn to_string(&self) -> String {
         format!("WebPush {}", self.auth_t)
     }
