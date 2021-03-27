@@ -5,7 +5,7 @@ Rust Web Push
 [![crates.io](http://meritbadge.herokuapp.com/web_push)](https://crates.io/crates/web_push)
 [![docs.rs](https://docs.rs/web-push/badge.svg)](https://docs.rs/web-push)
 
-[Matrix chat](https://matrix.to/#/!lcXPcLYqIXRyoxzJmp:nauk.io?via=nauk.io)
+[Matrix chat](https://matrix.to/#/#rust-push:nauk.io?via=nauk.io&via=matrix.org&via=shine.horse)
 
 Web push notification sender.
 
