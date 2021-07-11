@@ -100,10 +100,12 @@ impl<'a> HttpEce<'a> {
         if content.len() > 3052 {
             return Err(WebPushError::PayloadTooLarge);
         }
+        let mut payload = vec![0; 3054];
+        front_pad(content, &mut payload);
         
         match self.encoding {
             ContentEncoding::AesGcm => {
-                let encrypted_block = encrypt_aesgcm(self.peer_public_key,self.peer_secret, content).map_err(|_| WebPushError::InvalidCryptoKeys)?;
+                let encrypted_block = encrypt_aesgcm(self.peer_public_key,self.peer_secret, &payload).map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let vapid_public_key = match &self.vapid_signature {
                     None => None,
                     Some(sig) => Some(sig.auth_k.clone().into_bytes()),
@@ -115,7 +117,7 @@ impl<'a> HttpEce<'a> {
                 })
             }
             ContentEncoding::Aes128Gcm => {
-                let result = encrypt(self.peer_public_key, self.peer_secret, content);
+                let result = encrypt(self.peer_public_key, self.peer_secret, &payload);
                 match result {
                     Ok(data) => Ok(WebPushPayload {
                         content: data,
@@ -137,6 +139,19 @@ impl<'a> HttpEce<'a> {
             ));
         }
         headers
+    }
+}
+
+fn front_pad(payload: &[u8], output: &mut [u8]) {
+    let payload_len = payload.len();
+    let max_payload = output.len() - 2;
+    let padding_size = max_payload - payload.len();
+
+    output[0] = (padding_size >> 8) as u8;
+    output[1] = (padding_size & 0xff) as u8;
+
+    for i in 0..payload_len {
+        output[padding_size + i + 2] = payload[i];
     }
 }
 
