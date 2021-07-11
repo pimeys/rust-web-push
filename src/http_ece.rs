@@ -1,12 +1,11 @@
 use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
-use base64::{self, URL_SAFE_NO_PAD};
-use ring::rand::SecureRandom;
 use ring::{
-    aead::{self, BoundKey},
-    agreement, hkdf, rand,
+    aead,
+    hkdf,
 };
+use ece::{legacy::encrypt_aesgcm,encrypt};
 
 pub enum ContentEncoding {
     AesGcm,
@@ -17,7 +16,6 @@ pub struct HttpEce<'a> {
     peer_public_key: &'a [u8],
     peer_secret: &'a [u8],
     encoding: ContentEncoding,
-    rng: rand::SystemRandom,
     vapid_signature: Option<VapidSignature>,
 }
 
@@ -88,7 +86,6 @@ impl<'a> HttpEce<'a> {
         vapid_signature: Option<VapidSignature>,
     ) -> HttpEce<'a> {
         HttpEce {
-            rng: rand::SystemRandom::new(),
             peer_public_key,
             peer_secret,
             encoding,
@@ -103,125 +100,50 @@ impl<'a> HttpEce<'a> {
         if content.len() > 3052 {
             return Err(WebPushError::PayloadTooLarge);
         }
-
-        let private_key = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, &self.rng)?;
-        let public_key = private_key.compute_public_key()?;
-        let mut salt_bytes = [0u8; 16];
-
-        self.rng.fill(&mut salt_bytes)?;
-        let peer_public_key = agreement::UnparsedPublicKey::new(&agreement::ECDH_P256, self.peer_public_key);
-
-        agreement::agree_ephemeral(
-            private_key,
-            &peer_public_key,
-            WebPushError::Unspecified,
-            |shared_secret| match self.encoding {
-                ContentEncoding::AesGcm => {
-                    let mut payload = vec![0; 3054];
-                    front_pad(content, &mut payload);
-
-                    self.aes_gcm(shared_secret, public_key.as_ref(), &salt_bytes, &mut payload)?;
-
-                    Ok(WebPushPayload {
-                        content: payload.to_vec(),
-                        crypto_headers: self.generate_headers(public_key.as_ref(), &salt_bytes),
-                        content_encoding: "aesgcm",
-                    })
+        
+        match self.encoding {
+            ContentEncoding::AesGcm => {
+                let encrypted_block = encrypt_aesgcm(self.peer_public_key,self.peer_secret, content).map_err(|_| WebPushError::InvalidCryptoKeys)?;
+                let vapid_public_key = match &self.vapid_signature {
+                    None => None,
+                    Some(sig) => Some(sig.auth_k.clone().into_bytes()),
+                };
+                Ok(WebPushPayload {
+                    content: encrypted_block.body().into_bytes(),
+                    crypto_headers: encrypted_block.headers(vapid_public_key.as_deref()),
+                    content_encoding: "aesgcm",
+                })
+            }
+            ContentEncoding::Aes128Gcm => {
+                let result = encrypt(self.peer_public_key, self.peer_secret, content);
+                match result {
+                    Ok(data) => Ok(WebPushPayload {
+                        content: data,
+                        crypto_headers: self.generate_headers_aes128gcm(),
+                        content_encoding: "aes128gcm",
+                    }),
+                    _ => Err(WebPushError::InvalidCryptoKeys)
                 }
-                ContentEncoding::Aes128Gcm => Err(WebPushError::NotImplemented),
             },
-        )
+        }
     }
 
-    pub fn generate_headers(&self, public_key: &'a [u8], salt: &'a [u8]) -> Vec<(&'static str, String)> {
-        let mut crypto_headers = Vec::new();
-
-        let mut crypto_key = format!("dh={}", base64::encode_config(public_key, URL_SAFE_NO_PAD));
-
-        if let Some(ref signature) = self.vapid_signature {
-            crypto_key = format!("{}; p256ecdsa={}", crypto_key, signature.auth_k);
-
-            let sig_s: String = signature.to_string();
-            crypto_headers.push(("Authorization", sig_s));
-        };
-
-        crypto_headers.push(("Crypto-Key", crypto_key));
-        crypto_headers.push((
-            "Encryption",
-            format!("salt={}", base64::encode_config(&salt, URL_SAFE_NO_PAD)),
-        ));
-
-        crypto_headers
-    }
-
-    /// The aesgcm encrypted content-encoding, draft 3.
-    pub fn aes_gcm(
-        &self,
-        shared_secret: &'a [u8],
-        as_public_key: &'a [u8],
-        salt_bytes: &'a [u8],
-        payload: &'a mut Vec<u8>,
-    ) -> Result<(), WebPushError> {
-        let mut context = Vec::with_capacity(140);
-
-        context.extend_from_slice("P-256\0".as_bytes());
-        context.push((self.peer_public_key.len() >> 8) as u8);
-        context.push((self.peer_public_key.len() & 0xff) as u8);
-        context.extend_from_slice(self.peer_public_key);
-        context.push((as_public_key.len() >> 8) as u8);
-        context.push((as_public_key.len() & 0xff) as u8);
-        context.extend_from_slice(as_public_key);
-
-        let client_auth_secret = hkdf::Salt::new(hkdf::HKDF_SHA256, &self.peer_secret);
-        let salt = hkdf::Salt::new(hkdf::HKDF_SHA256, salt_bytes);
-
-        let EceKey(prk) = client_auth_secret
-            .extract(shared_secret)
-            .expand(&[&"Content-Encoding: auth\0".as_bytes()], EceKey(32))
-            .unwrap()
-            .into();
-
-        let mut cek_info = Vec::with_capacity(165);
-        cek_info.extend_from_slice("Content-Encoding: aesgcm\0".as_bytes());
-        cek_info.extend_from_slice(&context);
-
-        let EceKey(content_encryption_key) = salt.extract(&prk).expand(&[&cek_info], EceKey(16)).unwrap().into();
-
-        let mut nonce_info = Vec::with_capacity(164);
-        nonce_info.extend_from_slice("Content-Encoding: nonce\0".as_bytes());
-        nonce_info.extend_from_slice(&context);
-
-        let EceKey(nonce_bytes) = salt.extract(&prk).expand(&[&nonce_info], EceKey(12)).unwrap().into();
-
-        let mut nonce = EceNonce::default();
-        nonce.fill(nonce_bytes);
-
-        let unbound_key = aead::UnboundKey::new(&aead::AES_128_GCM, &content_encryption_key)?;
-        let mut sealing_key = aead::SealingKey::new(unbound_key, nonce);
-
-        sealing_key.seal_in_place_append_tag(aead::Aad::empty(), payload)?;
-
-        Ok(())
-    }
-}
-
-fn front_pad(payload: &[u8], output: &mut [u8]) {
-    let payload_len = payload.len();
-    let max_payload = output.len() - 2;
-    let padding_size = max_payload - payload.len();
-
-    output[0] = (padding_size >> 8) as u8;
-    output[1] = (padding_size & 0xff) as u8;
-
-    for i in 0..payload_len {
-        output[padding_size + i + 2] = payload[i];
+    pub fn generate_headers_aes128gcm(&self) -> Vec<(&'static str, String)> {
+        let mut headers = Vec::new();
+        if let Some(signature) = &self.vapid_signature {
+            headers.push((
+                "Authorization",
+                format!("vapid t={}, k={}", signature.auth_t, signature.auth_k),
+            ));
+        }
+        headers
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::error::WebPushError;
-    use crate::http_ece::{front_pad, ContentEncoding, HttpEce};
+    use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
     use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
 
