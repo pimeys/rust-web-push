@@ -1,10 +1,6 @@
 use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
-use ring::{
-    aead,
-    hkdf,
-};
 use ece::{legacy::encrypt_aesgcm,encrypt};
 
 pub enum ContentEncoding {
@@ -17,58 +13,6 @@ pub struct HttpEce<'a> {
     peer_secret: &'a [u8],
     encoding: ContentEncoding,
     vapid_signature: Option<VapidSignature>,
-}
-
-#[derive(Debug, PartialEq)]
-struct EceKey<T: core::fmt::Debug + PartialEq>(T);
-
-impl hkdf::KeyType for EceKey<usize> {
-    fn len(&self) -> usize {
-        self.0
-    }
-}
-
-impl From<hkdf::Okm<'_, EceKey<usize>>> for EceKey<Vec<u8>> {
-    fn from(okm: hkdf::Okm<EceKey<usize>>) -> Self {
-        let mut r = vec![0u8; okm.len().0];
-        okm.fill(&mut r).unwrap();
-        EceKey(r)
-    }
-}
-
-#[derive(Debug, PartialEq, Default)]
-struct EceNonce {
-    used: bool,
-    nonce: Vec<u8>,
-}
-
-impl EceNonce {
-    fn fill(&mut self, nonce: Vec<u8>) {
-        self.nonce = nonce;
-        self.used = false;
-    }
-}
-
-impl aead::NonceSequence for EceNonce {
-    fn advance(&mut self) -> Result<aead::Nonce, ring::error::Unspecified> {
-        if self.used {
-            return Err(ring::error::Unspecified);
-        }
-
-        let mut nonce = [0u8; 12];
-
-        for (i, n) in self.nonce.iter().enumerate() {
-            if i >= 12 {
-                return Err(ring::error::Unspecified);
-            }
-
-            nonce[i] = *n;
-        }
-
-        self.used = true;
-
-        Ok(aead::Nonce::assume_unique_for_key(nonce))
-    }
 }
 
 impl<'a> HttpEce<'a> {
@@ -161,6 +105,7 @@ mod tests {
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
     use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
+    use super::front_pad;
 
     #[test]
     fn test_payload_too_big() {
