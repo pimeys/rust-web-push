@@ -16,10 +16,7 @@ pub struct HttpEce<'a> {
 }
 
 impl<'a> HttpEce<'a> {
-    /// Create a new encryptor. The content encoding has preliminary support for
-    /// Aes128Gcm, which is the 8th draft of the Encrypted Content-Encoding, but
-    /// currently using it will return an error when trying to encrypt. There is
-    /// no real support yet for the encoding in web browsers.
+    /// Create a new encryptor.
     ///
     /// `peer_public_key` is the `p256dh` and `peer_secret` the `auth` from
     /// browser subscription info.
