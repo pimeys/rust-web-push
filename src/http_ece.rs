@@ -104,7 +104,7 @@ mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::vapid::VapidSignature;
-    use base64::{self, URL_SAFE, URL_SAFE_NO_PAD};
+    use base64::{self, URL_SAFE};
     use super::front_pad;
 
     #[test]
@@ -119,49 +119,6 @@ mod tests {
         let content = [0u8; 3801];
 
         assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
-    }
-
-    #[test]
-    fn test_aes128gcm() {
-        let p256dh = base64::decode_config(
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            URL_SAFE,
-        )
-        .unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth, None);
-        let content = [0u8; 10];
-
-        assert_eq!(Err(WebPushError::NotImplemented), http_ece.encrypt(&content));
-    }
-
-    #[test]
-    fn test_aesgcm() {
-        let p256dh = base64::decode_config(
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            URL_SAFE,
-        )
-        .unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
-        let shared_secret = base64::decode_config("9vcttSQ8tq-Wi_lLQ_xA37tkYssMtJsdY6xENG5f1sE=", URL_SAFE).unwrap();
-        let as_pubkey = base64::decode_config(
-            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-            URL_SAFE,
-        )
-        .unwrap();
-        let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
-
-        let mut payload = "This is test data. XXX".as_bytes().to_vec();
-
-        http_ece
-            .aes_gcm(&shared_secret, &as_pubkey, &salt_bytes, &mut payload)
-            .unwrap();
-        assert_eq!(
-            "tmE7-emq6iasohjXNMue0i0vn5o7EIOyP-bKyDoM1teHLcLtg44",
-            base64::encode_config(&payload.to_vec(), URL_SAFE_NO_PAD)
-        );
     }
 
     #[test]
