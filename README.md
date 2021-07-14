@@ -75,10 +75,9 @@ Overview
 
 Currently implements
 [HTTP-ECE Draft-3](https://datatracker.ietf.org/doc/draft-ietf-httpbis-encryption-encoding/03/?include_text=1)
-content encryption for notification payloads. The client requires
-[Tokio](https://tokio.rs) for asynchronious requests. The modular design allows
-an easy extension for the upcoming aes128gcm when the browsers are getting
-support for it.
+content encryption for notification payloads and
+[HTTP-ECE RFC 8188](https://datatracker.ietf.org/doc/rfc8188/). The client requires
+[Tokio](https://tokio.rs) for asynchronious requests.
 
 Tested with Google's and Mozilla's push notification services.
 
