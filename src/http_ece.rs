@@ -105,6 +105,7 @@ fn front_pad(payload: &[u8], output: &mut [u8]) {
 mod tests {
     use crate::VapidSignature;
     use crate::error::WebPushError;
+    use crate::WebPushPayload;
     use crate::http_ece::{ContentEncoding, HttpEce};
     use base64::{self, URL_SAFE};
     use regex::Regex;
@@ -137,23 +138,29 @@ mod tests {
             output
         );
     }
+
+    fn setup_payload(vapid_signature : Option<VapidSignature>, encoding : ContentEncoding) -> WebPushPayload{
+        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+        URL_SAFE).unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+        
+        let http_ece = HttpEce::new(encoding, &p256dh, &auth, vapid_signature);
+        let content = "Hello, world!".as_bytes();
+        
+        http_ece.encrypt(content).unwrap()
+    }
     
     fn test_aesgcm_common_headers(vapid_signature : Option<VapidSignature>) -> Option<String>{
         let crypto_re =
         Regex::new(r"dh=(?P<dh>[^;]*)(?P<vapid>(; p256ecdsa=(?P<ecdsa>.*))?)").unwrap();
         let encryption_re = Regex::new(r"salt=(?P<salt>.*)").unwrap();
         
-        let p256dh = base64::decode_config("BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-        URL_SAFE).unwrap();
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
+        let wp_payload = setup_payload(vapid_signature, ContentEncoding::AesGcm);
         
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, vapid_signature);
-        let content = "Hello, world!".as_bytes();
-        
-        let wp_payload = http_ece.encrypt(content).unwrap();
         let mut has_enc = false;
         let mut has_crypto = false;
         let mut authorization = None;
+
         for kvp in &wp_payload.crypto_headers {
             match kvp.0 {
                 "Authorization" => authorization = Some(kvp.1.clone()),
@@ -198,11 +205,22 @@ mod tests {
     
     #[test]
     fn test_aes128gcm_headers_no_vapid(){
-        todo!()
+        let wp_payload = setup_payload(None, ContentEncoding::Aes128Gcm);
+        assert_eq!(wp_payload.crypto_headers.len(),0);
     }
     
     #[test]
     fn test_aes128gcm_headers_vapid(){
-        todo!()
+        let auth_re = Regex::new(r"vapid t=(?P<sig_t>[^,]*), k=(?P<sig_k>[^,]*)").unwrap();
+        let vapid_signature = VapidSignature {
+            auth_t: String::from("foo"),
+            auth_k: String::from("bar"),
+        };
+        let wp_payload = setup_payload(Some(vapid_signature), ContentEncoding::Aes128Gcm);
+        assert_eq!(wp_payload.crypto_headers.len(),1);
+        let auth = wp_payload.crypto_headers[0].clone();
+        assert_eq!(auth.0,"Authorization");
+        assert!(auth_re.captures(&auth.1).is_some());
+        
     }
 }
