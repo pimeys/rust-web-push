@@ -104,7 +104,7 @@ mod tests {
         let length = request.headers().get("Content-Length").unwrap();
         let expected_uri: Uri = "http://google.com".parse().unwrap();
 
-        assert_eq!("3070", length);
+        assert_eq!("4118", length);
         assert_eq!("aesgcm", encoding);
         assert_eq!(expected_uri.host(), request.uri().host());
     }
