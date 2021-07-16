@@ -100,7 +100,6 @@ fn front_pad(payload: &[u8], output: &mut [u8]) {
 mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::{ContentEncoding, HttpEce};
-    use crate::vapid::VapidSignature;
     use base64::{self, URL_SAFE};
     use super::front_pad;
 
@@ -119,72 +118,6 @@ mod tests {
     }
 
     #[test]
-    fn test_headers_with_vapid() {
-        let as_pubkey = base64::decode_config(
-            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-            URL_SAFE,
-        )
-        .unwrap();
-
-        let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
-
-        let p256dh = base64::decode_config(
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            URL_SAFE,
-        )
-        .unwrap();
-
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let vapid_signature = VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, Some(vapid_signature));
-
-        assert_eq!(
-            vec![
-                ("Authorization", "WebPush foo".to_string()),
-                ("Crypto-Key", "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs; p256ecdsa=bar".to_string()),
-                ("Encryption", "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())],
-            http_ece.generate_headers(&as_pubkey, &salt_bytes))
-    }
-
-    #[test]
-    fn test_headers_without_vapid() {
-        let as_pubkey = base64::decode_config(
-            "BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs=",
-            URL_SAFE,
-        )
-        .unwrap();
-
-        let salt_bytes = base64::decode_config("YMcMuxqRkchXwy7vMwNl1Q==", URL_SAFE).unwrap();
-
-        let p256dh = base64::decode_config(
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            URL_SAFE,
-        )
-        .unwrap();
-
-        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
-
-        let http_ece = HttpEce::new(ContentEncoding::AesGcm, &p256dh, &auth, None);
-
-        assert_eq!(
-            vec![
-                (
-                    "Crypto-Key",
-                    "dh=BBXpqeMbtt1iwSoYzs7uRL-QVSKTAuAPrunJoNyW2wMKeVBUyNFCqbkmpVTZOVbqWpwpr_-6TpJvk1qT8T-iOYs"
-                        .to_string()
-                ),
-                ("Encryption", "salt=YMcMuxqRkchXwy7vMwNl1Q".to_string())
-            ],
-            http_ece.generate_headers(&as_pubkey, &salt_bytes)
-        )
-    }
-
-    #[test]
     fn test_front_pad() {
         // writes the padding count in the beginning, zeroes, content and again space for the encryption tag
         let content = "naukio";
@@ -196,5 +129,25 @@ mod tests {
             vec![0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 97, 117, 107, 105, 111],
             output
         );
+    }
+
+    #[test]
+    fn test_aesgcm_headers_no_vapid(){
+        todo!()
+    }
+
+    #[test]
+    fn test_aesgcm_headers_vapid(){
+        todo!()
+    }
+
+    #[test]
+    fn test_aes128gcm_headers_no_vapid(){
+        todo!()
+    }
+
+    #[test]
+    fn test_aes128gcm_headers_vapid(){
+        todo!()
     }
 }
