@@ -8,6 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut gcm_api_key: Option<String> = None;
     let mut vapid_private_key: Option<String> = None;
     let mut push_payload: Option<String> = None;
+    let mut encoding : Option<String> = None;
     let mut ttl: Option<u32> = None;
 
     {
@@ -21,6 +22,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
             &["-v", "--vapid_key"],
             StoreOption,
             "A NIST P256 EC private key to create a VAPID signature",
+        );
+
+        ap.refer(&mut encoding).add_option(
+            &["-e", "--encoding"],
+            StoreOption,
+            "Content Encoding Scheme : either 'aesgcm' or 'aes128gcm'. Defaults to 'aes128gcm'",
         );
 
         ap.refer(&mut subscription_info_file).add_option(
@@ -42,12 +49,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
+    let ece_scheme = match encoding.as_deref() {
+        Some("aesgcm") => ContentEncoding::AesGcm,
+        Some("aes128gcm") => ContentEncoding::Aes128Gcm,
+        None => ContentEncoding::Aes128Gcm,
+        Some(_) => panic!("Content encoding can only be 'aesgcm' or 'aes128gcm'"),
+    };
+
+
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
     let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
 
     if let Some(ref payload) = push_payload {
-        builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
+        builder.set_payload(ece_scheme, payload.as_bytes());
     }
 
     if let Some(ref gcm_key) = gcm_api_key {
