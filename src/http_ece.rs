@@ -41,12 +41,14 @@ impl<'a> HttpEce<'a> {
         if content.len() > 3052 {
             return Err(WebPushError::PayloadTooLarge);
         }
-        let mut payload = vec![0; 3054];
-        front_pad(content, &mut payload);
 
         match self.encoding {
             ContentEncoding::AesGcm => {
-                let encrypted_block = encrypt_aesgcm(self.peer_public_key, self.peer_secret, &payload)
+                //let mut payload = vec![0; 3054];
+
+                //front_pad(content, &mut payload);//TODO AESGCM still fails
+
+                let encrypted_block = encrypt_aesgcm(self.peer_public_key, self.peer_secret, content)
                     .map_err(|_| WebPushError::InvalidCryptoKeys)?;
                 let vapid_public_key = match &self.vapid_signature {
                     None => None,
@@ -65,7 +67,7 @@ impl<'a> HttpEce<'a> {
                 })
             }
             ContentEncoding::Aes128Gcm => {
-                let result = encrypt(self.peer_public_key, self.peer_secret, &payload);
+                let result = encrypt(self.peer_public_key, self.peer_secret, content);
 
                 let mut headers = Vec::new();
 
@@ -89,7 +91,11 @@ impl<'a> HttpEce<'a> {
     }
 }
 
+/// Prepends padding bytes to the payload.
+///
+/// *This should only be called when using aesGCM, as aes128GCM uses appended padding.*
 fn front_pad(payload: &[u8], output: &mut [u8]) {
+    //TODO Im pretty sure this is handled by the ece crate, and is causing problems. It does at least for 128.
     let payload_len = payload.len();
     let max_payload = output.len() - 2;
     let padding_size = max_payload - payload.len();

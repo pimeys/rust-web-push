@@ -40,7 +40,7 @@ impl WebPushClient {
             }
         };
 
-        trace!("Request: {:?}", request);
+        info!("Request: {:?}", request);
 
         let requesting = self.client.request(request);
 
