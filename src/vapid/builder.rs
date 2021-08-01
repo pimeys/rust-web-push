@@ -75,6 +75,9 @@ pub struct VapidSignatureBuilder<'a> {
 
 impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key.
+    ///
+    /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
+    /// If you have a public and private key in the same PEM, the function will still work.
     pub fn from_pem<R: Read>(
         mut pk_pem: R,
         subscription_info: &'a SubscriptionInfo,
@@ -82,7 +85,9 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut pem_key: Vec<u8> = Vec::new();
         pk_pem.read_to_end(&mut pem_key)?;
 
-        Ok(Self::from_ec(EcKey::private_key_from_pem(&pem_key)?, subscription_info))
+        let pr_key = EcKey::private_key_from_pem(&pem_key)?;
+
+        Ok(Self::from_ec(pr_key, subscription_info))
     }
 
     /// Creates a new builder from a DER formatted private key.

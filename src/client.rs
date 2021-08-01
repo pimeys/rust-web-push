@@ -5,6 +5,7 @@ use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 use std::future::Future;
+use std::borrow::BorrowMut;
 
 /// An async client for sending the notification payload.
 pub struct WebPushClient {
@@ -46,6 +47,7 @@ impl WebPushClient {
 
         async move {
             let response = requesting.await?;
+
             trace!("Response: {:?}", response);
 
             let retry_after = response
@@ -72,7 +74,7 @@ impl WebPushClient {
             }
             trace!("Body: {:?}", body);
 
-            trace!("Body text: {:?}", std::str::from_utf8(&body));
+            info!("Body text: {:?}", std::str::from_utf8(&body));
 
             let response = match service {
                 WebPushService::Firebase => firebase::parse_response(response_status, body.to_vec()),

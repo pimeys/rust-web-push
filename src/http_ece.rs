@@ -44,16 +44,12 @@ impl<'a> HttpEce<'a> {
 
         match self.encoding {
             ContentEncoding::AesGcm => {
-                //let mut payload = vec![0; 3054];
-
-                //front_pad(content, &mut payload);//TODO AESGCM still fails
-
                 let encrypted_block = encrypt_aesgcm(self.peer_public_key, self.peer_secret, content)
                     .map_err(|_| WebPushError::InvalidCryptoKeys)?;
-                let vapid_public_key = match &self.vapid_signature {
-                    None => None,
-                    Some(sig) => Some(sig.auth_k.clone().into_bytes()),
-                };
+
+                let vapid_public_key = self.vapid_signature.as_ref().map(|sig| sig.auth_k.clone().into_bytes());
+
+                //Ece headers will automatically base64 encode.
                 let mut headers = encrypted_block.headers(vapid_public_key.as_deref());
 
                 if let Some(ref signature) = self.vapid_signature {
@@ -74,7 +70,11 @@ impl<'a> HttpEce<'a> {
                 if let Some(signature) = &self.vapid_signature {
                     headers.push((
                         "Authorization",
-                        format!("vapid t={}, k={}", signature.auth_t, signature.auth_k),
+                        format!(
+                            "vapid t={}, k={}",
+                            signature.auth_t,
+                            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD) //Must base64 encode here, as we dont pass to ece.
+                        ),
                     ));
                 }
 
@@ -91,26 +91,8 @@ impl<'a> HttpEce<'a> {
     }
 }
 
-/// Prepends padding bytes to the payload.
-///
-/// *This should only be called when using aesGCM, as aes128GCM uses appended padding.*
-fn front_pad(payload: &[u8], output: &mut [u8]) {
-    //TODO Im pretty sure this is handled by the ece crate, and is causing problems. It does at least for 128.
-    let payload_len = payload.len();
-    let max_payload = output.len() - 2;
-    let padding_size = max_payload - payload.len();
-
-    output[0] = (padding_size >> 8) as u8;
-    output[1] = (padding_size & 0xff) as u8;
-
-    for i in 0..payload_len {
-        output[padding_size + i + 2] = payload[i];
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::front_pad;
     use crate::error::WebPushError;
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::VapidSignature;
@@ -130,20 +112,6 @@ mod tests {
         let content = [0u8; 3801];
 
         assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
-    }
-
-    #[test]
-    fn test_front_pad() {
-        // writes the padding count in the beginning, zeroes, content and again space for the encryption tag
-        let content = "naukio";
-        let mut output = [0u8; 30];
-
-        front_pad(content.as_bytes(), &mut output);
-
-        assert_eq!(
-            vec![0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 97, 117, 107, 105, 111],
-            output
-        );
     }
 
     fn setup_payload(vapid_signature: Option<VapidSignature>, encoding: ContentEncoding) -> WebPushPayload {
