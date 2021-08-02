@@ -18,13 +18,13 @@ lazy_static! {
 /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
 #[derive(Debug)]
 pub struct VapidSignature {
-    /// The signature
+    /// The signed JWT
     pub auth_t: String,
-    /// The public key
-    pub auth_k: String,
+    /// The public key bytes
+    pub auth_k: Vec<u8>,
 }
 
-pub struct VapidSigner {}//TODO we can just make this a free function in a module named 'VapidSigner'
+pub struct VapidSigner {}
 
 impl VapidSigner {
     /// Create a signature with a given key. Sets the default audience from the
@@ -53,10 +53,7 @@ impl VapidSigner {
             base64::encode_config(&serde_json::to_string(&claims)?, URL_SAFE_NO_PAD)
         );
 
-        let public_key = key.public_key();
-
-        //This key should have already been base64 encoded, as that is what ece does.
-        let auth_k = unsafe { String::from_utf8_unchecked(public_key) }; //TODO test if we can remove this unsafe or if this is even needed anymore
+        let auth_k = key.public_key();
 
         let pkey = PKey::from_ec_key(key.0)?;
 
@@ -85,8 +82,6 @@ impl VapidSigner {
         sigval.extend(r_val);
         sigval.extend(s_val);
 
-        trace!("Public key: {}", auth_k);
-
         let auth_t = format!("{}.{}", signing_input, base64::encode_config(&sigval, URL_SAFE_NO_PAD));
 
         Ok(VapidSignature { auth_t, auth_k })
@@ -95,6 +90,4 @@ impl VapidSigner {
 
 #[cfg(test)]
 mod tests {
-    use crate::vapid::VapidSignature;
-
 }

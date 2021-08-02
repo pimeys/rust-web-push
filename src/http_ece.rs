@@ -123,7 +123,7 @@ mod tests {
         let auth_re = Regex::new(r"vapid t=(?P<sig_t>[^,]*), k=(?P<sig_k>[^,]*)").unwrap();
         let vapid_signature = VapidSignature {
             auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
+            auth_k: String::from("bar").into_bytes(),
         };
         let wp_payload = setup_payload(Some(vapid_signature), ContentEncoding::Aes128Gcm);
         assert_eq!(wp_payload.crypto_headers.len(), 1);

@@ -198,7 +198,7 @@ mod tests {
         assert_eq!("key=test_key", authorization);
         assert_eq!(expected_uri.host(), request.uri().host());
         assert_eq!(expected_uri.path(), request.uri().path());
-        assert_eq!("5545", length);//TODO this header is no longer stable as padding is now variable
+        assert_eq!("361", length);
     }
 
     #[test]

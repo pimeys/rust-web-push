@@ -10,10 +10,11 @@ use std::io::Read;
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. With a given signature, one can pass the registration to Google's
-/// FCM service. And prevent unauthorized notifications to be sent to the client.
+/// FCM service and prevent unauthorized notifications to be sent to the client. This
+/// encryption is required for payloads in all current and future browsers.
 ///
 /// To communicate with the site, one needs to generate a private key to keep in
-/// the server and derive a public key from the generated private key to the
+/// the server and derive a public key from the generated private key for the
 /// client.
 ///
 /// Private key generation:
@@ -41,6 +42,8 @@ use std::io::Read;
 /// openssl ec -in private.pem -pubout -outform DER|tail -c 65|base64|tr '/+' '_-'|tr -d '\n'
 /// ```
 ///
+/// The above commands can be done in code using a library such as openssl if you prefer.
+///
 /// To create a VAPID signature:
 ///
 /// ```no_run
@@ -48,7 +51,7 @@ use std::io::Read;
 /// # use web_push::*;
 /// # use std::fs::File;
 /// # fn main () {
-/// //You would get this as a `pushSubscription` object from the client.
+/// //You would get this as a `pushSubscription` object from the client. They need your public key to get that object.
 /// let subscription_info = SubscriptionInfo {
 ///     keys: SubscriptionKeys {
 ///         p256dh: String::from("something"),
@@ -61,7 +64,7 @@ use std::io::Read;
 ///
 /// let mut sig_builder = VapidSignatureBuilder::from_pem(file, &subscription_info).unwrap();
 ///
-/// //These fields are optional, and most likely unneeded.
+/// //These fields are optional, and likely unneeded for most uses.
 /// sig_builder.add_claim("sub", "mailto:test@example.com");
 /// sig_builder.add_claim("foo", "bar");
 /// sig_builder.add_claim("omg", 123);
@@ -79,10 +82,11 @@ pub struct VapidSignatureBuilder<'a> {
 impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key.
     ///
+    /// #Details
+    ///
     /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
     /// If you have a public and private key in the same PEM, the function will still work.
     pub fn from_pem<R: Read>(
-        //TODO make sure the above comment is still valid, as it may work with base64
         mut pk_pem: R,
         subscription_info: &'a SubscriptionInfo,
     ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
@@ -91,7 +95,25 @@ impl<'a> VapidSignatureBuilder<'a> {
 
         let pr_key = EcKey::private_key_from_pem(&pem_key)?;
 
-        Ok(Self::from_ec(pr_key, subscription_info))//TODO make a function that lets you add the sub info later to avoid reading the key over and over again
+        Ok(Self::from_ec(pr_key, subscription_info))
+    }
+
+    /// Creates a new builder from a PEM formatted private key. This function doesn't take a subscription,
+    /// allowing the reuse of one builder for multiple messages by cloning the resulting builder.
+    ///
+    /// #Details
+    ///
+    /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
+    /// If you have a public and private key in the same PEM, the function will still work.
+    pub fn from_pem_no_sub<R: Read>(mut pk_pem: R) -> Result<PartialVapidSignatureBuilder, WebPushError> {
+        let mut pem_key: Vec<u8> = Vec::new();
+        pk_pem.read_to_end(&mut pem_key)?;
+
+        let pr_key = EcKey::private_key_from_pem(&pem_key)?;
+
+        Ok(PartialVapidSignatureBuilder {
+            key: VapidKey::new(pr_key),
+        })
     }
 
     /// Creates a new builder from a DER formatted private key.
@@ -103,6 +125,17 @@ impl<'a> VapidSignatureBuilder<'a> {
         pk_der.read_to_end(&mut der_key)?;
 
         Ok(Self::from_ec(EcKey::private_key_from_der(&der_key)?, subscription_info))
+    }
+
+    /// Creates a new builder from a DER formatted private key. This function doesn't take a subscription,
+    /// allowing the reuse of one builder for multiple messages by cloning the resulting builder.
+    pub fn from_der_no_sub<R: Read>(mut pk_der: R) -> Result<PartialVapidSignatureBuilder, WebPushError> {
+        let mut der_key: Vec<u8> = Vec::new();
+        pk_der.read_to_end(&mut der_key)?;
+
+        Ok(PartialVapidSignatureBuilder {
+            key: VapidKey::new(EcKey::private_key_from_der(&der_key)?),
+        })
     }
 
     /// Add a claim to the signature. Claims `aud` and `exp` are automatically
@@ -135,11 +168,43 @@ impl<'a> VapidSignatureBuilder<'a> {
     }
 }
 
+/// A [`VapidSignatureBuilder`] without VAPID subscription info.
+///
+/// #Example
+///
+/// ```no_run
+/// use web_push::VapidSignatureBuilder;
+///
+/// let builder = VapidSignatureBuilder::from_pem_no_sub("Some PEM")?;
+///
+/// //Clone builder for each use of the same private key
+/// {
+///     let builder = builder.clone();
+///     let sig = builder.add_sub_info(...).build();
+///     //Sign message ect.
+/// }
+///
+/// ```
+#[derive(Clone)]
+pub struct PartialVapidSignatureBuilder {
+    key: VapidKey,
+}
+
+impl<'a> PartialVapidSignatureBuilder {
+    /// Adds the VAPID subscription info for a particular client.
+    pub fn add_sub_info(self, subscription_info: &'a SubscriptionInfo) -> VapidSignatureBuilder {
+        VapidSignatureBuilder {
+            key: self.key,
+            claims: BTreeMap::new(),
+            subscription_info,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::message::SubscriptionInfo;
     use crate::vapid::VapidSignatureBuilder;
-    use serde_json;
     use std::fs::File;
 
     lazy_static! {
@@ -167,7 +232,7 @@ mod tests {
 
         assert_eq!(
             "BMo1HqKF6skMZYykrte9duqYwBD08mDQKTunRkJdD3sTJ9E-yyN6sJlPWTpKNhp-y2KeS6oANHF-q3w37bClb7U",
-            &signature.auth_k
+            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
         );
 
         assert!(!signature.auth_t.is_empty());
@@ -180,7 +245,7 @@ mod tests {
 
         assert_eq!(
             "BMo1HqKF6skMZYykrte9duqYwBD08mDQKTunRkJdD3sTJ9E-yyN6sJlPWTpKNhp-y2KeS6oANHF-q3w37bClb7U",
-            &signature.auth_k
+            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
         );
 
         assert!(!signature.auth_t.is_empty());
