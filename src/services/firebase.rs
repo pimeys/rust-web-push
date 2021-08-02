@@ -61,7 +61,7 @@ struct GcmData {
 }
 
 pub fn build_request(message: WebPushMessage) -> Request<Body> {
-    let uri = match message.endpoint.host() {
+    let uri = match message.endpoint.host() {//TODO perhaps add a check for non google domains in case this class is misused. Right now it assumes its a google domain.
         Some("fcm.googleapis.com") => "https://fcm.googleapis.com/fcm/send",
         _ => "https://android.googleapis.com/gcm/send",
     };
@@ -161,7 +161,7 @@ mod tests {
 
         builder.set_gcm_key("test_key");
         builder.set_ttl(420);
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
         let request = build_request(builder.build().unwrap());
 
@@ -186,7 +186,7 @@ mod tests {
 
         builder.set_gcm_key("test_key");
         builder.set_ttl(420);
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
         let request = build_request(builder.build().unwrap());
 

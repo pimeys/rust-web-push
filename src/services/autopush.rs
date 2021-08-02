@@ -95,7 +95,7 @@ mod tests {
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
         let request = build_request(builder.build().unwrap());
 

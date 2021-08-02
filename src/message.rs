@@ -13,7 +13,9 @@ pub struct SubscriptionKeys {
 }
 
 /// Client info for sending the notification. Maps the values from browser's
-/// subscription info JSON data.
+/// subscription info JSON data (AKA pushSubscription object).
+///
+/// Client pushSubscription objects can be directly deserialized into this struct using serde.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscriptionInfo {
     /// The endpoint URI for sending the notification.
@@ -111,6 +113,8 @@ impl<'a> WebPushMessageBuilder<'a> {
     }
 
     /// For Google's push service, one must provide an API key from Firebase console.
+    ///
+    /// This key was renamed to FCM in 2018, but remains the same.
     pub fn set_gcm_key(&mut self, gcm_key: &'a str) {
         self.gcm_key = Some(gcm_key);
     }
@@ -123,12 +127,16 @@ impl<'a> WebPushMessageBuilder<'a> {
 
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
+    ///
+    /// Currently, Aes128Gcm is the recommended and only encoding standard implemented.
     pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
 
     /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
     /// something was wrong in the given public key or authentication.
+    /// You can further debug these issues by checking the API responses visible with
+    /// `log::trace` level.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
 

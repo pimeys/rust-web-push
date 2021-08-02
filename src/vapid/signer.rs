@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use time::{self, OffsetDateTime};
 
 lazy_static! {
+    /// This is the header of all JWTs.
     static ref JWT_HEADERS: String = base64::encode_config(
         &serde_json::to_string(&json!({"typ": "JWT","alg": "ES256"})).unwrap(),
         URL_SAFE_NO_PAD
@@ -23,13 +24,7 @@ pub struct VapidSignature {
     pub auth_k: String,
 }
 
-impl ToString for VapidSignature {
-    fn to_string(&self) -> String {
-        format!("WebPush {}", self.auth_t)
-    }
-}
-
-pub struct VapidSigner {}
+pub struct VapidSigner {}//TODO we can just make this a free function in a module named 'VapidSigner'
 
 impl VapidSigner {
     /// Create a signature with a given key. Sets the default audience from the
@@ -61,7 +56,7 @@ impl VapidSigner {
         let public_key = key.public_key();
 
         //This key should have already been base64 encoded, as that is what ece does.
-        let auth_k = unsafe { String::from_utf8_unchecked(public_key) };
+        let auth_k = unsafe { String::from_utf8_unchecked(public_key) }; //TODO test if we can remove this unsafe or if this is even needed anymore
 
         let pkey = PKey::from_ec_key(key.0)?;
 
@@ -102,15 +97,4 @@ impl VapidSigner {
 mod tests {
     use crate::vapid::VapidSignature;
 
-    #[test]
-    fn test_vapid_signature_aesgcm_format() {
-        let vapid_signature = &VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let header_value: String = vapid_signature.to_string();
-
-        assert_eq!("WebPush foo", &header_value);
-    }
 }

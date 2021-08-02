@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         ap.refer(&mut encoding).add_option(
             &["-e", "--encoding"],
             StoreOption,
-            "Content Encoding Scheme : either 'aesgcm' or 'aes128gcm'. Defaults to 'aes128gcm'",
+            "Content Encoding Scheme : currently only accepts 'aes128gcm'. Defaults to 'aes128gcm'. Reserved for future use.",
         );
 
         ap.refer(&mut subscription_info_file).add_option(
@@ -50,10 +50,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     file.read_to_string(&mut contents).unwrap();
 
     let ece_scheme = match encoding.as_deref() {
-        Some("aesgcm") => ContentEncoding::AesGcm,
         Some("aes128gcm") => ContentEncoding::Aes128Gcm,
         None => ContentEncoding::Aes128Gcm,
-        Some(_) => panic!("Content encoding can only be 'aesgcm' or 'aes128gcm'"),
+        Some(_) => panic!("Content encoding can only be 'aes128gcm'"),
     };
 
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
@@ -84,7 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         let signature = sig_builder.build().unwrap();
 
         builder.set_vapid_signature(signature);
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
     };
 
     let client = WebPushClient::new();

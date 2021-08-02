@@ -48,6 +48,7 @@ use std::io::Read;
 /// # use web_push::*;
 /// # use std::fs::File;
 /// # fn main () {
+/// //You would get this as a `pushSubscription` object from the client.
 /// let subscription_info = SubscriptionInfo {
 ///     keys: SubscriptionKeys {
 ///         p256dh: String::from("something"),
@@ -59,6 +60,8 @@ use std::io::Read;
 /// let file = File::open("private.pem").unwrap();
 ///
 /// let mut sig_builder = VapidSignatureBuilder::from_pem(file, &subscription_info).unwrap();
+///
+/// //These fields are optional, and most likely unneeded.
 /// sig_builder.add_claim("sub", "mailto:test@example.com");
 /// sig_builder.add_claim("foo", "bar");
 /// sig_builder.add_claim("omg", 123);
@@ -79,6 +82,7 @@ impl<'a> VapidSignatureBuilder<'a> {
     /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
     /// If you have a public and private key in the same PEM, the function will still work.
     pub fn from_pem<R: Read>(
+        //TODO make sure the above comment is still valid, as it may work with base64
         mut pk_pem: R,
         subscription_info: &'a SubscriptionInfo,
     ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
@@ -87,7 +91,7 @@ impl<'a> VapidSignatureBuilder<'a> {
 
         let pr_key = EcKey::private_key_from_pem(&pem_key)?;
 
-        Ok(Self::from_ec(pr_key, subscription_info))
+        Ok(Self::from_ec(pr_key, subscription_info))//TODO make a function that lets you add the sub info later to avoid reading the key over and over again
     }
 
     /// Creates a new builder from a DER formatted private key.

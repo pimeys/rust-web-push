@@ -5,10 +5,9 @@ use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 use std::future::Future;
-use std::borrow::BorrowMut;
 
 /// An async client for sending the notification payload.
-pub struct WebPushClient {
+pub struct WebPushClient { //TODO see if we can add a non tokio client alternative
     client: Client<HttpsConnector<HttpConnector>>,
 }
 
