@@ -9,9 +9,7 @@ use std::collections::BTreeMap;
 use std::io::Read;
 
 /// A VAPID signature builder for generating an optional signature to the
-/// request. With a given signature, one can pass the registration to Google's
-/// FCM service and prevent unauthorized notifications to be sent to the client. This
-/// encryption is required for payloads in all current and future browsers.
+/// request. This encryption is required for payloads in all current and future browsers.
 ///
 /// To communicate with the site, one needs to generate a private key to keep in
 /// the server and derive a public key from the generated private key for the

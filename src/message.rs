@@ -1,14 +1,14 @@
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
 use crate::vapid::VapidSignature;
-use hyper::Uri;
+use hyper::Uri; //TODO try to make these uses use http instead of the hyper reimport
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscriptionKeys {
-    /// The public key
+    /// The public key.
     pub p256dh: String,
-    /// Authentication secret
+    /// Authentication secret.
     pub auth: String,
 }
 
@@ -41,12 +41,6 @@ impl SubscriptionInfo {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum WebPushService {
-    Firebase,
-    Autopush,
-}
-
 /// The push content payload, already in an encrypted form.
 #[derive(Debug, PartialEq)]
 pub struct WebPushPayload {
@@ -61,9 +55,6 @@ pub struct WebPushPayload {
 /// Everything needed to send a push notification to the user.
 #[derive(Debug)]
 pub struct WebPushMessage {
-    /// When not using VAPID, certain browsers need a Firebase account key for
-    /// sending a notification.
-    pub gcm_key: Option<String>,
     /// The endpoint URI where to send the payload.
     pub endpoint: Uri,
     /// Time to live, how long the message should wait in the server if user is
@@ -71,9 +62,6 @@ pub struct WebPushMessage {
     pub ttl: u32,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
-    /// The service type where to connect. Firebase when not using VAPID with
-    /// Chrome-based browsers. Data is in JSON format instead of binary.
-    pub service: WebPushService,
 }
 
 struct WebPushPayloadBuilder<'a> {
@@ -84,7 +72,6 @@ struct WebPushPayloadBuilder<'a> {
 /// The main class for creating a notification payload.
 pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
-    gcm_key: Option<&'a str>,
     payload: Option<WebPushPayloadBuilder<'a>>,
     ttl: u32,
     vapid_signature: Option<VapidSignature>,
@@ -99,7 +86,6 @@ impl<'a> WebPushMessageBuilder<'a> {
         Ok(WebPushMessageBuilder {
             subscription_info,
             ttl: 2_419_200,
-            gcm_key: None,
             payload: None,
             vapid_signature: None,
         })
@@ -110,13 +96,6 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// delivery.
     pub fn set_ttl(&mut self, ttl: u32) {
         self.ttl = ttl;
-    }
-
-    /// For Google's push service, one must provide an API key from Firebase console.
-    ///
-    /// This key was renamed to FCM in 2018, but remains the same.
-    pub fn set_gcm_key(&mut self, gcm_key: &'a str) {
-        self.gcm_key = Some(gcm_key);
     }
 
     /// Add a VAPID signature to the request. To be generated with the
@@ -140,15 +119,6 @@ impl<'a> WebPushMessageBuilder<'a> {
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
 
-        let service = match self.vapid_signature {
-            Some(_) => WebPushService::Autopush,
-            _ => match endpoint.host() {
-                Some("android.googleapis.com") => WebPushService::Firebase,
-                Some("fcm.googleapis.com") => WebPushService::Firebase,
-                _ => WebPushService::Autopush,
-            },
-        };
-
         if let Some(payload) = self.payload {
             let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
             let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
@@ -156,19 +126,15 @@ impl<'a> WebPushMessageBuilder<'a> {
             let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);
 
             Ok(WebPushMessage {
-                gcm_key: self.gcm_key.map(|k| k.to_string()),
                 endpoint,
                 ttl: self.ttl,
                 payload: Some(http_ece.encrypt(payload.content)?),
-                service,
             })
         } else {
             Ok(WebPushMessage {
-                gcm_key: self.gcm_key.map(|k| k.to_string()),
                 endpoint,
                 ttl: self.ttl,
                 payload: None,
-                service,
             })
         }
     }

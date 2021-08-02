@@ -1,6 +1,6 @@
 use crate::error::{RetryAfter, WebPushError};
-use crate::message::{WebPushMessage, WebPushService};
-use crate::services::{autopush, firebase};
+use crate::message::{WebPushMessage};
+use crate::services::{autopush};
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
@@ -27,18 +27,8 @@ impl WebPushClient {
     /// Sends a notification. Never times out.
     pub fn send(&self, message: WebPushMessage) -> impl Future<Output = Result<(), WebPushError>> + 'static {
         trace!("Message: {:?}", message);
-        let service = message.service.clone();
 
-        let request: HttpRequest<Body> = match service {
-            WebPushService::Firebase => {
-                trace!("Building firebase request");
-                firebase::build_request(message)
-            }
-            _ => {
-                trace!("Building autopush request");
-                autopush::build_request(message)
-            }
-        };
+        let request: HttpRequest<Body> = autopush::build_request(message);
 
         info!("Request: {:?}", request);
 
@@ -75,10 +65,7 @@ impl WebPushClient {
 
             info!("Body text: {:?}", std::str::from_utf8(&body));
 
-            let response = match service {
-                WebPushService::Firebase => firebase::parse_response(response_status, body.to_vec()),
-                _ => autopush::parse_response(response_status, body.to_vec()),
-            };
+            let response = autopush::parse_response(response_status, body.to_vec());
 
             debug!("Response: {:?}", response);
 

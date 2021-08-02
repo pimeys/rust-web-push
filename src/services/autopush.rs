@@ -1,7 +1,8 @@
 use crate::{error::WebPushError, message::WebPushMessage};
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
-use hyper::{Body, Request, StatusCode};
-
+use hyper::{Body};
+use http::{Request, StatusCode};
+//TODO rename this mod or move it to client
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 struct ErrorInfo {
     code: u16,
