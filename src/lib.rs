@@ -23,7 +23,7 @@
 //!
 //! let mut builder = WebPushMessageBuilder::new(&subscription_info)?;
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
-//! builder.set_payload(ContentEncoding::AesGcm, content);
+//! builder.set_payload(ContentEncoding::Aes128Gcm, content);
 //!
 //! let client = WebPushClient::new();
 //!

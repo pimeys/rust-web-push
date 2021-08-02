@@ -173,14 +173,21 @@ impl<'a> VapidSignatureBuilder<'a> {
 /// #Example
 ///
 /// ```no_run
-/// use web_push::VapidSignatureBuilder;
+/// use web_push::{VapidSignatureBuilder, SubscriptionInfo};
 ///
-/// let builder = VapidSignatureBuilder::from_pem_no_sub("Some PEM")?;
+/// let builder = VapidSignatureBuilder::from_pem_no_sub("Some PEM".as_bytes()).unwrap();
 ///
 /// //Clone builder for each use of the same private key
 /// {
+///     //Pretend this changes for each connection
+///     let subscription_info = SubscriptionInfo::new(
+///     "https://updates.push.services.mozilla.com/wpush/v1/...",
+///     "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+///     "xS03Fi5ErfTNH_l9WHE9Ig"
+///     );
+///
 ///     let builder = builder.clone();
-///     let sig = builder.add_sub_info(...).build();
+///     let sig = builder.add_sub_info(&subscription_info).build();
 ///     //Sign message ect.
 /// }
 ///
