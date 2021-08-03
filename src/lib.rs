@@ -25,7 +25,7 @@
 //! let content = "Encrypted payload to be sent in the notification".as_bytes();
 //! builder.set_payload(ContentEncoding::Aes128Gcm, content);
 //!
-//! let client = WebPushClient::new();
+//! let client = WebPushClient::new()?;
 //!
 //! let response = client.send(builder.build()?).await?;
 //! println!("Got response: {:?}", response);
@@ -42,14 +42,18 @@ extern crate serde_json;
 #[macro_use]
 extern crate log;
 
-mod client;
 mod error;
 mod http_ece;
 mod message;
-mod services;
 mod vapid;
+mod clients;
 
-pub use crate::client::WebPushClient;
+#[cfg(feature = "hyper-client")]
+pub use crate::clients::hyper_client::WebPushClient as WebPushClient;
+
+#[cfg(not(feature = "hyper-client"))]
+pub use crate::clients::isahc_client::WebPushClient as WebPushClient;
+
 pub use crate::error::WebPushError;
 
 pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};

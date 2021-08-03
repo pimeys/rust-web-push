@@ -1,7 +1,7 @@
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
 use crate::vapid::VapidSignature;
-use hyper::Uri; //TODO try to make these uses use http instead of the hyper reimport
+use http::uri::Uri;
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]

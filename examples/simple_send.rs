@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
     };
 
-    let client = WebPushClient::new();
+    let client = WebPushClient::new()?;
 
     let response = client.send(builder.build()?).await?;
     println!("Sent: {:?}", response);

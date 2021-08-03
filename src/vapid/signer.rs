@@ -1,6 +1,6 @@
 use crate::{error::WebPushError, vapid::VapidKey};
 use base64::{self, URL_SAFE_NO_PAD};
-use hyper::Uri;
+use http::uri::Uri;
 use openssl::{hash::MessageDigest, pkey::PKey, sign::Signer as SslSigner};
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
@@ -18,7 +18,7 @@ lazy_static! {
 /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
 #[derive(Debug)]
 pub struct VapidSignature {
-    /// The signed JWT
+    /// The signed JWT, base64 encoded
     pub auth_t: String,
     /// The public key bytes
     pub auth_k: Vec<u8>,
@@ -89,5 +89,4 @@ impl VapidSigner {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

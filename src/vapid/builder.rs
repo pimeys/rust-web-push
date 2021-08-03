@@ -1,7 +1,7 @@
 use crate::error::WebPushError;
 use crate::message::SubscriptionInfo;
 use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
-use hyper::Uri;
+use http::uri::Uri;
 use openssl::ec::EcKey;
 use openssl::pkey::Private;
 use serde_json::Value;

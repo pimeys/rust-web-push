@@ -73,8 +73,16 @@ impl From<error::Unspecified> for WebPushError {
     }
 }
 
+#[cfg(feature = "hyper-client")]
 impl From<hyper::Error> for WebPushError {
     fn from(_: hyper::Error) -> Self {
+        Self::Unspecified
+    }
+}
+
+#[cfg(not(feature = "hyper-client"))]
+impl From<isahc::Error> for WebPushError {
+    fn from(_: isahc::Error) -> Self {
         Self::Unspecified
     }
 }
