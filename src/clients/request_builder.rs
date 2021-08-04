@@ -1,3 +1,6 @@
+//! Functions used to send and consume push http messages.
+//! This module can be used to build custom clients.
+
 use crate::{error::WebPushError, message::WebPushMessage};
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
 use http::{Request, StatusCode};
@@ -15,7 +18,7 @@ struct ErrorInfo {
 /// This function is generic over the request body, this means that you can swap out client implementations
 /// even if they use different body types.
 ///
-/// #Example
+/// # Example
 ///
 /// ```no_run
 /// # use web_push::{SubscriptionInfo, WebPushMessageBuilder};
@@ -29,6 +32,7 @@ struct ErrorInfo {
 ///
 ///  //Build the request for isahc
 ///  let request = build_request::<isahc::Body>(builder.build().unwrap());
+///  //Send using a http client
 /// ```
 pub fn build_request<T>(message: WebPushMessage) -> Request<T>
 where

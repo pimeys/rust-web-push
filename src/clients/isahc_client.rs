@@ -6,7 +6,10 @@ use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
 use futures::AsyncReadExt;
 
-/// An async client for sending the notification payload.
+/// An async client for sending the notification payload. This client is expensive to create, and
+/// should be reused.
+///
+/// This client is built on [`isahc`](https://crates.io/crates/isahc), and will therefore work on any async executor.
 pub struct WebPushClient {
     client: HttpClient,
 }
@@ -18,7 +21,6 @@ impl Default for WebPushClient {
 }
 
 impl WebPushClient {
-
     /// Creates a new client. Can fail under resource depletion.
     pub fn new() -> Result<WebPushClient, WebPushError> {
         Ok(WebPushClient {

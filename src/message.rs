@@ -6,9 +6,9 @@ use http::uri::Uri;
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscriptionKeys {
-    /// The public key.
+    /// The public key. Base64 encoded.
     pub p256dh: String,
-    /// Authentication secret.
+    /// Authentication secret. Base64 encoded.
     pub auth: String,
 }
 
@@ -112,7 +112,8 @@ impl<'a> WebPushMessageBuilder<'a> {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
 
-    /// Builds and if set, encrypts the payload. Any errors will be `Undefined`, meaning
+    /// Builds and if set, encrypts the payload. Any errors due to bad encryption will be
+    /// [`WebPushError::Unspecified`], meaning
     /// something was wrong in the given public key or authentication.
     /// You can further debug these issues by checking the API responses visible with
     /// `log::trace` level.

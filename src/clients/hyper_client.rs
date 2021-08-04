@@ -9,6 +9,8 @@ use crate::message::WebPushMessage;
 use std::convert::Infallible;
 
 /// An async client for sending the notification payload.
+///
+/// This client is [`hyper`](https://crates.io/crates/hyper) based, and will only work in Tokio contexts.
 pub struct WebPushClient {
     client: Client<HttpsConnector<HttpConnector>>,
 }

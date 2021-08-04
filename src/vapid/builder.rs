@@ -80,7 +80,7 @@ pub struct VapidSignatureBuilder<'a> {
 impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key.
     ///
-    /// #Details
+    /// # Details
     ///
     /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
     /// If you have a public and private key in the same PEM, the function will still work.
@@ -99,7 +99,7 @@ impl<'a> VapidSignatureBuilder<'a> {
     /// Creates a new builder from a PEM formatted private key. This function doesn't take a subscription,
     /// allowing the reuse of one builder for multiple messages by cloning the resulting builder.
     ///
-    /// #Details
+    /// # Details
     ///
     /// This should be the raw private key PEM, including the -----BEGIN EC PRIVATE KEY----- header.
     /// If you have a public and private key in the same PEM, the function will still work.
@@ -168,7 +168,7 @@ impl<'a> VapidSignatureBuilder<'a> {
 
 /// A [`VapidSignatureBuilder`] without VAPID subscription info.
 ///
-/// #Example
+/// # Example
 ///
 /// ```no_run
 /// use web_push::{VapidSignatureBuilder, SubscriptionInfo};
