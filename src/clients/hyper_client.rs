@@ -37,7 +37,7 @@ impl WebPushClient {
 
         let request: HttpRequest<Body> = request_builder::build_request(message);
 
-        info!("Request: {:?}", request);
+        trace!("Request: {:?}", request);
 
         let requesting = self.client.request(request);
 
@@ -69,11 +69,11 @@ impl WebPushClient {
         }
         trace!("Body: {:?}", body);
 
-        info!("Body text: {:?}", std::str::from_utf8(&body));
+        trace!("Body text: {:?}", std::str::from_utf8(&body));
 
         let response = request_builder::parse_response(response_status, body.to_vec());
 
-        debug!("Response: {:?}", response);
+        trace!("Response: {:?}", response);
 
         if let Err(WebPushError::ServerError(None)) = response {
             Err(WebPushError::ServerError(retry_after))

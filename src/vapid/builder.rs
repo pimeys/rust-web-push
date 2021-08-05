@@ -204,6 +204,13 @@ impl<'a> PartialVapidSignatureBuilder {
             subscription_info,
         }
     }
+
+    /// Gets the public key bytes derived from the private key used for this VAPID signature.
+    ///
+    /// Base64 encode these bytes to get the key to send to the client.
+    pub fn get_public_key(&self) -> Vec<u8> {
+        self.key.public_key()
+    }
 }
 
 #[cfg(test)]
