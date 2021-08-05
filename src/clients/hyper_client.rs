@@ -37,7 +37,7 @@ impl WebPushClient {
 
         let request: HttpRequest<Body> = request_builder::build_request(message);
 
-        trace!("Request: {:?}", request);
+        debug!("Request: {:?}", request);
 
         let requesting = self.client.request(request);
 
@@ -73,7 +73,7 @@ impl WebPushClient {
 
         let response = request_builder::parse_response(response_status, body.to_vec());
 
-        trace!("Response: {:?}", response);
+        debug!("Response: {:?}", response);
 
         if let Err(WebPushError::ServerError(None)) = response {
             Err(WebPushError::ServerError(retry_after))

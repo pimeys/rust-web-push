@@ -94,11 +94,16 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-        let info = SubscriptionInfo::new(
-            "http://google.com",
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig",
-        );
+
+        //This *was* a real token
+        let sub = json!({"endpoint":"https://fcm.googleapis.com/fcm/send/eKClHsXFm9E:APA91bH2x3gNOMv4dF1lQfCgIfOet8EngqKCAUS5DncLOd5hzfSUxcjigIjw9ws-bqa-KmohqiTOcgepAIVO03N39dQfkEkopubML_m3fyvF03pV9_JCB7SxpUjcFmBSVhCaWS6m8l7x",
+            "expirationTime":null,
+            "keys":{"p256dh":
+                "BGa4N1PI79lboMR_YrwCiCsgp35DRvedt7opHcf0yM3iOBTSoQYqQLwWxAfRKE6tsDnReWmhsImkhDF_DBdkNSU",
+                "auth":"EvcWjEgzr4rbvhfi3yds0A"}
+        });
+
+        let info = serde_json::from_value(sub).unwrap();
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
@@ -106,7 +111,7 @@ mod tests {
 
         let request = build_request::<isahc::Body>(builder.build().unwrap());
         let ttl = request.headers().get("TTL").unwrap().to_str().unwrap();
-        let expected_uri: Uri = "http://google.com".parse().unwrap();
+        let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
         assert_eq!("420", ttl);
         assert_eq!(expected_uri.host(), request.uri().host());
@@ -114,11 +119,15 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_payload() {
-        let info = SubscriptionInfo::new(
-            "http://google.com",
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig",
-        );
+        //This *was* a real token
+        let sub = json!({"endpoint":"https://fcm.googleapis.com/fcm/send/eKClHsXFm9E:APA91bH2x3gNOMv4dF1lQfCgIfOet8EngqKCAUS5DncLOd5hzfSUxcjigIjw9ws-bqa-KmohqiTOcgepAIVO03N39dQfkEkopubML_m3fyvF03pV9_JCB7SxpUjcFmBSVhCaWS6m8l7x",
+            "expirationTime":null,
+            "keys":{"p256dh":
+                "BGa4N1PI79lboMR_YrwCiCsgp35DRvedt7opHcf0yM3iOBTSoQYqQLwWxAfRKE6tsDnReWmhsImkhDF_DBdkNSU",
+                "auth":"EvcWjEgzr4rbvhfi3yds0A"}
+        });
+
+        let info = serde_json::from_value(sub).unwrap();
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
@@ -129,7 +138,7 @@ mod tests {
         let encoding = request.headers().get("Content-Encoding").unwrap().to_str().unwrap();
 
         let length = request.headers().get("Content-Length").unwrap();
-        let expected_uri: Uri = "http://google.com".parse().unwrap();
+        let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
         assert_eq!("230", length);
         assert_eq!("aes128gcm", encoding);

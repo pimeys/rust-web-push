@@ -93,9 +93,30 @@ mod tests {
         .unwrap();
         let auth = base64::decode_config("xS03Fj5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
         let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth, None);
+        //This content is one above limit.
         let content = [0u8; 3801];
 
         assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
+    }
+
+    /// Tests that the content encryption is properly reversible while using aes128gcm.
+    #[test]
+    fn test_payload_encrypts_128() {
+        let (key, auth) = ece::generate_keypair_and_auth_secret().unwrap();
+        let p_key = key.raw_components().unwrap();
+        let p_key = p_key.public_key();
+
+        let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, p_key, &auth, None);
+        let plaintext = "Hello world!";
+        let ciphertext = http_ece.encrypt(plaintext.as_bytes()).unwrap();
+
+        assert_ne!(plaintext.as_bytes(), ciphertext.content);
+
+        assert_eq!(
+            String::from_utf8(ece::decrypt(&key.raw_components().unwrap(), &auth, &ciphertext.content).unwrap())
+                .unwrap(),
+            plaintext
+        )
     }
 
     fn setup_payload(vapid_signature: Option<VapidSignature>, encoding: ContentEncoding) -> WebPushPayload {
