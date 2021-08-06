@@ -13,6 +13,19 @@ Web push notification sender.
 
 Any async executor for use with client.
 
+## Migration to v0.8
+
+- The `aesgcm` variant of `ContentEncoding` has been removed. Aes128Gcm support was added in v0.8, so all uses
+  of `ContentEncoding::aesgcm` can simply be changed to `ContentEncoding::Aes128Gcm` with no change to functionality.
+  This will add support for Edge in the process.
+
+- `WebPushClient::new()` now returns a `Result`, as the default client now has a fallible constructor. Please handle
+  this error in the case of resource starvation.
+
+- All GCM/FCM support has been removed. If you relied on this functionality, consider
+  the [fcm crate](https://crates.io/crates/fcm). If you just require web push, you will need to use VAPID to send
+  payloads. See below for info.
+
 ## Usage
 
 To send a web push from command line, first subscribe to receive push notifications with your browser and store the
