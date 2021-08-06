@@ -22,6 +22,7 @@ struct ErrorInfo {
 ///
 /// ```no_run
 /// # use web_push::{SubscriptionInfo, WebPushMessageBuilder};
+/// # use web_push::request_builder::build_request;
 /// let info = SubscriptionInfo::new(
 ///  "http://google.com",
 ///  "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
@@ -89,7 +90,7 @@ mod tests {
     use crate::clients::request_builder::*;
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
+    use crate::message::{WebPushMessageBuilder};
     use http::Uri;
 
     #[test]
