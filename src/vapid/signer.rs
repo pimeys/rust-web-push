@@ -1,18 +1,15 @@
 use crate::{error::WebPushError, vapid::VapidKey};
 use base64::{self, URL_SAFE_NO_PAD};
-use hyper::Uri;
+use http::uri::Uri;
 use openssl::{hash::MessageDigest, pkey::PKey, sign::Signer as SslSigner};
 use serde_json::{Number, Value};
 use std::collections::BTreeMap;
 use time::{self, OffsetDateTime};
 
 lazy_static! {
+    /// This is the header of all JWTs.
     static ref JWT_HEADERS: String = base64::encode_config(
-        &serde_json::to_string(&json!({
-            "typ": "JWT",
-            "alg": "ES256"
-        }))
-        .unwrap(),
+        &serde_json::to_string(&json!({"typ": "JWT","alg": "ES256"})).unwrap(),
         URL_SAFE_NO_PAD
     );
 }
@@ -21,16 +18,10 @@ lazy_static! {
 /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
 #[derive(Debug)]
 pub struct VapidSignature {
-    /// The signature
+    /// The signed JWT, base64 encoded
     pub auth_t: String,
-    /// The public key
-    pub auth_k: String,
-}
-
-impl ToString for VapidSignature {
-    fn to_string(&self) -> String {
-        format!("WebPush {}", self.auth_t)
-    }
+    /// The public key bytes
+    pub auth_k: Vec<u8>,
 }
 
 pub struct VapidSigner {}
@@ -55,14 +46,15 @@ impl VapidSigner {
             claims.insert("exp", Value::Number(number));
         }
 
+        //Generate first half of JWT
         let signing_input = format!(
             "{}.{}",
             *JWT_HEADERS,
             base64::encode_config(&serde_json::to_string(&claims)?, URL_SAFE_NO_PAD)
         );
 
-        let public_key = key.public_key();
-        let auth_k = base64::encode_config(&public_key, URL_SAFE_NO_PAD);
+        let auth_k = key.public_key();
+
         let pkey = PKey::from_ec_key(key.0)?;
 
         let mut signer = SslSigner::new(MessageDigest::sha256(), &pkey)?;
@@ -90,8 +82,6 @@ impl VapidSigner {
         sigval.extend(r_val);
         sigval.extend(s_val);
 
-        trace!("Public key: {}", auth_k);
-
         let auth_t = format!("{}.{}", signing_input, base64::encode_config(&sigval, URL_SAFE_NO_PAD));
 
         Ok(VapidSignature { auth_t, auth_k })
@@ -99,18 +89,4 @@ impl VapidSigner {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::vapid::VapidSignature;
-
-    #[test]
-    fn test_vapid_signature_aesgcm_format() {
-        let vapid_signature = &VapidSignature {
-            auth_t: String::from("foo"),
-            auth_k: String::from("bar"),
-        };
-
-        let header_value: String = vapid_signature.to_string();
-
-        assert_eq!("WebPush foo", &header_value);
-    }
-}
+mod tests {}

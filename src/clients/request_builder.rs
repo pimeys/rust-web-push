@@ -1,6 +1,9 @@
+//! Functions used to send and consume push http messages.
+//! This module can be used to build custom clients.
+
 use crate::{error::WebPushError, message::WebPushMessage};
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
-use hyper::{Body, Request, StatusCode};
+use http::{Request, StatusCode};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 struct ErrorInfo {
@@ -10,7 +13,32 @@ struct ErrorInfo {
     message: String,
 }
 
-pub fn build_request(message: WebPushMessage) -> Request<Body> {
+/// Builds the request to send to the push service.
+///
+/// This function is generic over the request body, this means that you can swap out client implementations
+/// even if they use different body types.
+///
+/// # Example
+///
+/// ```no_run
+/// # use web_push::{SubscriptionInfo, WebPushMessageBuilder};
+/// # use web_push::request_builder::build_request;
+/// let info = SubscriptionInfo::new(
+///  "http://google.com",
+///  "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
+///  "xS03Fi5ErfTNH_l9WHE9Ig",
+///  );
+///
+///  let mut builder = WebPushMessageBuilder::new(&info).unwrap();
+///
+///  //Build the request for isahc
+///  let request = build_request::<isahc::Body>(builder.build().unwrap());
+///  //Send using a http client
+/// ```
+pub fn build_request<T>(message: WebPushMessage) -> Request<T>
+where
+    T: From<Vec<u8>> + From<&'static str>, //This bound can be reduced to a &[u8] instead of str if needed
+{
     let mut builder = Request::builder()
         .method("POST")
         .uri(message.endpoint)
@@ -33,6 +61,7 @@ pub fn build_request(message: WebPushMessage) -> Request<Body> {
     }
 }
 
+/// Parses the response from the push service, and will return `Err` if the request was bad.
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
     match response_status {
         status if status.is_success() => Ok(()),
@@ -58,28 +87,32 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 
 #[cfg(test)]
 mod tests {
+    use crate::clients::request_builder::*;
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use crate::message::{SubscriptionInfo, WebPushMessageBuilder};
-    use crate::services::autopush::*;
-    use hyper::StatusCode;
-    use hyper::Uri;
+    use crate::message::{WebPushMessageBuilder};
+    use http::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-        let info = SubscriptionInfo::new(
-            "http://google.com",
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig",
-        );
+
+        //This *was* a real token
+        let sub = json!({"endpoint":"https://fcm.googleapis.com/fcm/send/eKClHsXFm9E:APA91bH2x3gNOMv4dF1lQfCgIfOet8EngqKCAUS5DncLOd5hzfSUxcjigIjw9ws-bqa-KmohqiTOcgepAIVO03N39dQfkEkopubML_m3fyvF03pV9_JCB7SxpUjcFmBSVhCaWS6m8l7x",
+            "expirationTime":null,
+            "keys":{"p256dh":
+                "BGa4N1PI79lboMR_YrwCiCsgp35DRvedt7opHcf0yM3iOBTSoQYqQLwWxAfRKE6tsDnReWmhsImkhDF_DBdkNSU",
+                "auth":"EvcWjEgzr4rbvhfi3yds0A"}
+        });
+
+        let info = serde_json::from_value(sub).unwrap();
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_ttl(420);
 
-        let request = build_request(builder.build().unwrap());
+        let request = build_request::<isahc::Body>(builder.build().unwrap());
         let ttl = request.headers().get("TTL").unwrap().to_str().unwrap();
-        let expected_uri: Uri = "http://google.com".parse().unwrap();
+        let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
         assert_eq!("420", ttl);
         assert_eq!(expected_uri.host(), request.uri().host());
@@ -87,25 +120,29 @@ mod tests {
 
     #[test]
     fn builds_a_correct_request_with_payload() {
-        let info = SubscriptionInfo::new(
-            "http://google.com",
-            "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            "xS03Fi5ErfTNH_l9WHE9Ig",
-        );
+        //This *was* a real token
+        let sub = json!({"endpoint":"https://fcm.googleapis.com/fcm/send/eKClHsXFm9E:APA91bH2x3gNOMv4dF1lQfCgIfOet8EngqKCAUS5DncLOd5hzfSUxcjigIjw9ws-bqa-KmohqiTOcgepAIVO03N39dQfkEkopubML_m3fyvF03pV9_JCB7SxpUjcFmBSVhCaWS6m8l7x",
+            "expirationTime":null,
+            "keys":{"p256dh":
+                "BGa4N1PI79lboMR_YrwCiCsgp35DRvedt7opHcf0yM3iOBTSoQYqQLwWxAfRKE6tsDnReWmhsImkhDF_DBdkNSU",
+                "auth":"EvcWjEgzr4rbvhfi3yds0A"}
+        });
+
+        let info = serde_json::from_value(sub).unwrap();
 
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
-        let request = build_request(builder.build().unwrap());
+        let request = build_request::<isahc::Body>(builder.build().unwrap());
 
         let encoding = request.headers().get("Content-Encoding").unwrap().to_str().unwrap();
 
         let length = request.headers().get("Content-Length").unwrap();
-        let expected_uri: Uri = "http://google.com".parse().unwrap();
+        let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
-        assert_eq!("3070", length);
-        assert_eq!("aesgcm", encoding);
+        assert_eq!("230", length);
+        assert_eq!("aes128gcm", encoding);
         assert_eq!(expected_uri.host(), request.uri().host());
     }
 

@@ -5,22 +5,25 @@ use web_push::*;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let mut subscription_info_file = String::new();
-    let mut gcm_api_key: Option<String> = None;
     let mut vapid_private_key: Option<String> = None;
     let mut push_payload: Option<String> = None;
+    let mut encoding: Option<String> = None;
     let mut ttl: Option<u32> = None;
 
     {
         let mut ap = ArgumentParser::new();
         ap.set_description("A web push sender");
 
-        ap.refer(&mut gcm_api_key)
-            .add_option(&["-k", "--gcm_api_key"], StoreOption, "Google GCM API Key");
-
         ap.refer(&mut vapid_private_key).add_option(
             &["-v", "--vapid_key"],
             StoreOption,
             "A NIST P256 EC private key to create a VAPID signature",
+        );
+
+        ap.refer(&mut encoding).add_option(
+            &["-e", "--encoding"],
+            StoreOption,
+            "Content Encoding Scheme : currently only accepts 'aes128gcm'. Defaults to 'aes128gcm'. Reserved for future standards.",
         );
 
         ap.refer(&mut subscription_info_file).add_option(
@@ -42,16 +45,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
+    let ece_scheme = match encoding.as_deref() {
+        Some("aes128gcm") => ContentEncoding::Aes128Gcm,
+        None => ContentEncoding::Aes128Gcm,
+        Some(_) => panic!("Content encoding can only be 'aes128gcm'"),
+    };
+
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
     let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
 
     if let Some(ref payload) = push_payload {
-        builder.set_payload(ContentEncoding::AesGcm, payload.as_bytes());
-    }
-
-    if let Some(ref gcm_key) = gcm_api_key {
-        builder.set_gcm_key(gcm_key);
+        builder.set_payload(ece_scheme, payload.as_bytes());
     }
 
     if let Some(time) = ttl {
@@ -70,10 +75,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         let signature = sig_builder.build().unwrap();
 
         builder.set_vapid_signature(signature);
-        builder.set_payload(ContentEncoding::AesGcm, "test".as_bytes());
+        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
     };
 
-    let client = WebPushClient::new();
+    let client = WebPushClient::new()?;
 
     let response = client.send(builder.build()?).await?;
     println!("Sent: {:?}", response);

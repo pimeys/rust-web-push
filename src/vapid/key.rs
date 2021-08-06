@@ -3,6 +3,7 @@ use openssl::ec::{EcGroup, EcKey, PointConversionForm};
 use openssl::nid::Nid;
 use openssl::pkey::Private;
 
+#[derive(Clone)]
 pub struct VapidKey(pub EcKey<Private>);
 
 lazy_static! {
@@ -14,6 +15,7 @@ impl VapidKey {
         VapidKey(ec_key)
     }
 
+    /// Gets the public key bytes derived from this private key.
     pub fn public_key(&self) -> Vec<u8> {
         let mut ctx = BigNumContext::new().unwrap();
         let key = self.0.public_key();
