@@ -1,4 +1,3 @@
-
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
@@ -22,7 +21,6 @@ impl Default for WebPushClient {
 }
 
 impl WebPushClient {
-
     /// Creates a new client.
     pub fn new() -> Result<WebPushClient, Infallible> {
         //This method can never fail, but returns error to match API of the isahc client.

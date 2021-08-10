@@ -90,12 +90,11 @@ mod tests {
     use crate::clients::request_builder::*;
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
-    use crate::message::{WebPushMessageBuilder};
+    use crate::message::WebPushMessageBuilder;
     use http::Uri;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
-
         //This *was* a real token
         let sub = json!({"endpoint":"https://fcm.googleapis.com/fcm/send/eKClHsXFm9E:APA91bH2x3gNOMv4dF1lQfCgIfOet8EngqKCAUS5DncLOd5hzfSUxcjigIjw9ws-bqa-KmohqiTOcgepAIVO03N39dQfkEkopubML_m3fyvF03pV9_JCB7SxpUjcFmBSVhCaWS6m8l7x",
             "expirationTime":null,

@@ -68,7 +68,7 @@ pub use crate::error::WebPushError;
 pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
 
 pub use crate::http_ece::ContentEncoding;
-pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 pub use crate::vapid::builder::PartialVapidSignatureBuilder;
+pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 
 pub use crate::clients::request_builder;

@@ -1,4 +1,3 @@
-
 //! Contains implementations of web push clients.
 //!
 //! [`request_builder`] contains the functions used to send and consume push http messages.
