@@ -4,7 +4,7 @@ use isahc::HttpClient;
 use crate::clients::request_builder;
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
-use futures::AsyncReadExt;
+use futures_lite::AsyncReadExt;
 
 /// An async client for sending the notification payload. This client is expensive to create, and
 /// should be reused.

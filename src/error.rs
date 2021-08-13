@@ -1,6 +1,5 @@
 use base64::DecodeError;
 use http::uri::InvalidUri;
-use openssl::error::ErrorStack;
 use serde_json::error::Error as JsonError;
 use std::string::FromUtf8Error;
 use std::time::{Duration, SystemTime};
@@ -80,21 +79,9 @@ impl From<isahc::Error> for WebPushError {
     }
 }
 
-impl From<native_tls::Error> for WebPushError {
-    fn from(_: native_tls::Error) -> WebPushError {
-        WebPushError::TlsError
-    }
-}
-
 impl From<IoError> for WebPushError {
     fn from(_: IoError) -> WebPushError {
         WebPushError::IoError
-    }
-}
-
-impl From<ErrorStack> for WebPushError {
-    fn from(_: ErrorStack) -> WebPushError {
-        WebPushError::SslError
     }
 }
 

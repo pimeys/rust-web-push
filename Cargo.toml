@@ -16,24 +16,24 @@ edition = "2018"
 travis-ci = { repository = "pimeys/rust-web-push" }
 
 [features]
-default = ["isahc"]
+default = ["isahc", "futures-lite/futures-io"] #futures are only used for read_to_end() in isach client.
 hyper-client = ["hyper", "hyper-tls"] #use features = ["hyper-client"], default-features = false for about 300kb size decrease.
 
 [dependencies]
-futures = "^0.3"
 hyper = { version = "^0.14", features = ["client", "http1"], optional = true }
 hyper-tls = { version = "^0.5", optional = true }
 isahc = { version = "^1.4.0", optional = true }
+futures-lite = { version = "^1.12", optional = true }
 http = "^0.2"
 serde = "^1.0"
 serde_json = "^1.0"
 serde_derive = "^1.0"
-ece = "^2.1.0"
-native-tls = "^0.2"
+jwt-simple = "^0.10.4"
+ece = "^2.1"
+pem = "^0.8.3"
+pkcs8 = { version = "^0.7.5", features = ["alloc"] }
+sec1_decode = "^0.1.0"
 base64 = "^0.13"
-openssl = "^0.10"
-time = { version = "^0.2", features = ["std"] }
-lazy_static = "^1.4"
 chrono = "^0.4"
 log = "^0.4"
 
@@ -41,3 +41,4 @@ log = "^0.4"
 argparse = "^0.2"
 regex = "^1.5"
 tokio = { version = "^1.1", features = ["macros", "rt-multi-thread"] }
+lazy_static = "^1.4"
