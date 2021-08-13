@@ -1,7 +1,6 @@
 use base64::DecodeError;
 use http::uri::InvalidUri;
 use openssl::error::ErrorStack;
-use ring::error;
 use serde_json::error::Error as JsonError;
 use std::string::FromUtf8Error;
 use std::time::{Duration, SystemTime};
@@ -64,12 +63,6 @@ impl From<FromUtf8Error> for WebPushError {
 impl From<InvalidUri> for WebPushError {
     fn from(_: InvalidUri) -> WebPushError {
         WebPushError::InvalidUri
-    }
-}
-
-impl From<error::Unspecified> for WebPushError {
-    fn from(_: error::Unspecified) -> WebPushError {
-        WebPushError::Unspecified
     }
 }
 
