@@ -40,7 +40,8 @@ use std::io::Read;
 /// openssl ec -in private.pem -pubout -outform DER|tail -c 65|base64|tr '/+' '_-'|tr -d '\n'
 /// ```
 ///
-/// The above commands can be done in code using a library such as openssl if you prefer.
+/// The above commands can be done in code using [`PartialVapidSignatureBuilder::get_public_key`], then base64 URL safe
+/// encoding as well.
 ///
 /// To create a VAPID signature:
 ///
@@ -230,7 +231,7 @@ impl<'a> PartialVapidSignatureBuilder {
         }
     }
 
-    /// Gets the public key bytes derived from the private key used for this VAPID signature.
+    /// Gets the uncompressed public key bytes derived from the private key used for this VAPID signature.
     ///
     /// Base64 encode these bytes to get the key to send to the client.
     pub fn get_public_key(&self) -> Vec<u8> {

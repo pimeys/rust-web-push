@@ -51,6 +51,7 @@ impl<'a> HttpEce<'a> {
 
                 let mut headers = Vec::new();
 
+                //VAPID uses a special Authorisation header, which contains a ecdhsa key and a jwt.
                 if let Some(signature) = &self.vapid_signature {
                     headers.push((
                         "Authorization",

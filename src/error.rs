@@ -42,6 +42,8 @@ pub enum WebPushError {
     InvalidCryptoKeys,
     /// Corrupted response data
     InvalidResponse,
+    /// A claim had invalid data
+    InvalidClaims,
     Other(String),
 }
 
@@ -112,6 +114,7 @@ impl WebPushError {
             WebPushError::SslError => "ssl_error",
             WebPushError::IoError => "io_error",
             WebPushError::Other(_) => "other",
+            WebPushError::InvalidClaims => "invalidClaims"
         }
     }
 }
@@ -150,6 +153,7 @@ impl fmt::Display for WebPushError {
             WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
             WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),
             WebPushError::Other(_) => write!(f, "An unknown error when connecting the notification service"),
+            WebPushError::InvalidClaims => write!(f, "At least one JWT claim was invalid.")
         }
     }
 }

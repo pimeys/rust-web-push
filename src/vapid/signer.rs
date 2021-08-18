@@ -14,7 +14,7 @@ pub struct VapidSignature {
     pub auth_k: Vec<u8>,
 }
 
-/// JWT claims object. Should be kept internal to allow for API swaps.
+/// JWT claims object. Custom claims are implemented as a map.
 pub type Claims = JWTClaims<BTreeMap<String /*Use String as lifetimes bug out when serializing a tuple*/, Value>>;
 
 pub struct VapidSigner {}
@@ -39,14 +39,14 @@ impl VapidSigner {
         //Twice, as this is just for backwards compatibility.
         if claims.custom.contains_key("exp") {
             let exp = claims.custom.get("exp").unwrap().clone();
-            claims.expires_at = Some(Duration::from_secs(exp.as_u64().unwrap()));//TODO handle
+            claims.expires_at = Some(Duration::from_secs(exp.as_u64().ok_or(WebPushError::InvalidClaims)?));
             claims.custom.remove("exp");
         }
 
         let auth_k = key.public_key();
 
         //Generate JWT signature
-        let auth_t = key.0.sign(claims).unwrap(); //TODO handle
+        let auth_t = key.0.sign(claims).map_err(|_| WebPushError::InvalidClaims)?;
 
         Ok(VapidSignature { auth_t, auth_k })
     }

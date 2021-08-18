@@ -12,9 +12,6 @@ keywords = ["web-push", "http-ece", "vapid"]
 categories = ["web-programming", "asynchronous"]
 edition = "2018"
 
-[badges]
-travis-ci = { repository = "pimeys/rust-web-push" }
-
 [features]
 default = ["isahc", "futures-lite/futures-io"] #futures are only used for read_to_end() in isach client.
 hyper-client = ["hyper", "hyper-tls"] #use features = ["hyper-client"], default-features = false for about 300kb size decrease.

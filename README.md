@@ -11,7 +11,7 @@ Web push notification sender.
 
 ## Requirements
 
-Any async executor for use with client.
+Clients require an async executor. Openssl is needed for building.
 
 ## Migration to v0.8
 
@@ -111,7 +111,7 @@ these claims to the builder manually will override the default values.
 Overview
 --------
 
-Currently, implements
+Currently, the crate implements
 [RFC8188](https://datatracker.ietf.org/doc/html/rfc8188) content encryption for notification payloads. This is done by
 delegating encryption to mozilla's [ece crate](https://crates.io/crates/ece). Our security is thus tied
 to [theirs](https://github.com/mozilla/rust-ece/issues/18). The default client is built
@@ -119,6 +119,9 @@ on [isahc](https://crates.io/crates/isahc), but can be swapped out with a hyper 
 `hyper-client` feature. Custom clients can be made using the `request_builder` module.
 
 Library tested with Google's and Mozilla's push notification services. Also verified to work on Edge.
+
+Openssl is needed to build. Install `openssl-dev` or equivalent on *nix, or `openssl` using `vcpkg` on Windows. A nix 
+script is also available.
 
 Debugging
 --------

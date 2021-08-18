@@ -1,3 +1,5 @@
+//! Contains tooling for signing with VAPID.
+
 pub mod builder;
 mod key;
 mod signer;
