@@ -114,7 +114,7 @@ impl WebPushError {
             WebPushError::SslError => "ssl_error",
             WebPushError::IoError => "io_error",
             WebPushError::Other(_) => "other",
-            WebPushError::InvalidClaims => "invalidClaims"
+            WebPushError::InvalidClaims => "invalidClaims",
         }
     }
 }
