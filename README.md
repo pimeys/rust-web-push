@@ -11,9 +11,9 @@ Web push notification sender.
 
 ## Requirements
 
-Any async executor for use with client.
+Clients require an async executor. System Openssl is needed for compilation.
 
-## Migration to v0.8
+## Migration to greater than v0.7
 
 - The `aesgcm` variant of `ContentEncoding` has been removed. Aes128Gcm support was added in v0.8, so all uses
   of `ContentEncoding::aesgcm` can simply be changed to `ContentEncoding::Aes128Gcm` with no change to functionality.
@@ -25,6 +25,8 @@ Any async executor for use with client.
 - All GCM/FCM support has been removed. If you relied on this functionality, consider
   the [fcm crate](https://crates.io/crates/fcm). If you just require web push, you will need to use VAPID to send
   payloads. See below for info.
+
+- A new error variant `WebPushError::InvalidClaims` has been added. This may break exhaustive matches.
 
 ## Usage
 
@@ -111,7 +113,7 @@ these claims to the builder manually will override the default values.
 Overview
 --------
 
-Currently, implements
+Currently, the crate implements
 [RFC8188](https://datatracker.ietf.org/doc/html/rfc8188) content encryption for notification payloads. This is done by
 delegating encryption to mozilla's [ece crate](https://crates.io/crates/ece). Our security is thus tied
 to [theirs](https://github.com/mozilla/rust-ece/issues/18). The default client is built
@@ -119,6 +121,16 @@ on [isahc](https://crates.io/crates/isahc), but can be swapped out with a hyper 
 `hyper-client` feature. Custom clients can be made using the `request_builder` module.
 
 Library tested with Google's and Mozilla's push notification services. Also verified to work on Edge.
+
+Openssl is needed to build. Install `openssl-dev` or equivalent on *nix, or `openssl` using `vcpkg` on Windows. A nix
+script is also available.
+
+If installing on Windows, this is the exact command:
+
+```shell
+vcpkg integrate install
+vcpkg install openssl:x64-windows-static-md
+```
 
 Debugging
 --------

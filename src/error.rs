@@ -1,7 +1,5 @@
 use base64::DecodeError;
 use http::uri::InvalidUri;
-use openssl::error::ErrorStack;
-use ring::error;
 use serde_json::error::Error as JsonError;
 use std::string::FromUtf8Error;
 use std::time::{Duration, SystemTime};
@@ -44,6 +42,8 @@ pub enum WebPushError {
     InvalidCryptoKeys,
     /// Corrupted response data
     InvalidResponse,
+    /// A claim had invalid data
+    InvalidClaims,
     Other(String),
 }
 
@@ -67,12 +67,6 @@ impl From<InvalidUri> for WebPushError {
     }
 }
 
-impl From<error::Unspecified> for WebPushError {
-    fn from(_: error::Unspecified) -> WebPushError {
-        WebPushError::Unspecified
-    }
-}
-
 #[cfg(feature = "hyper-client")]
 impl From<hyper::Error> for WebPushError {
     fn from(_: hyper::Error) -> Self {
@@ -87,21 +81,9 @@ impl From<isahc::Error> for WebPushError {
     }
 }
 
-impl From<native_tls::Error> for WebPushError {
-    fn from(_: native_tls::Error) -> WebPushError {
-        WebPushError::TlsError
-    }
-}
-
 impl From<IoError> for WebPushError {
     fn from(_: IoError) -> WebPushError {
         WebPushError::IoError
-    }
-}
-
-impl From<ErrorStack> for WebPushError {
-    fn from(_: ErrorStack) -> WebPushError {
-        WebPushError::SslError
     }
 }
 
@@ -132,6 +114,7 @@ impl WebPushError {
             WebPushError::SslError => "ssl_error",
             WebPushError::IoError => "io_error",
             WebPushError::Other(_) => "other",
+            WebPushError::InvalidClaims => "invalidClaims",
         }
     }
 }
@@ -170,6 +153,7 @@ impl fmt::Display for WebPushError {
             WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
             WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),
             WebPushError::Other(_) => write!(f, "An unknown error when connecting the notification service"),
+            WebPushError::InvalidClaims => write!(f, "At least one JWT claim was invalid.")
         }
     }
 }

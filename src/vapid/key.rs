@@ -1,45 +1,36 @@
-use openssl::bn::BigNumContext;
-use openssl::ec::{EcGroup, EcKey, PointConversionForm};
-use openssl::nid::Nid;
-use openssl::pkey::Private;
+use jwt_simple::prelude::*;
 
-#[derive(Clone)]
-pub struct VapidKey(pub EcKey<Private>);
+/// The P256 curve key pair used for VAPID ECDHSA.
+pub struct VapidKey(pub ES256KeyPair);
 
-lazy_static! {
-    static ref GROUP: EcGroup = EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).expect("EC Prime256v1 not supported");
+impl Clone for VapidKey {
+    fn clone(&self) -> Self {
+        VapidKey(ES256KeyPair::from_bytes(&self.0.to_bytes()).unwrap())
+    }
 }
 
 impl VapidKey {
-    pub fn new(ec_key: EcKey<Private>) -> VapidKey {
+    pub fn new(ec_key: ES256KeyPair) -> VapidKey {
         VapidKey(ec_key)
     }
 
-    /// Gets the public key bytes derived from this private key.
+    /// Gets the uncompressed public key bytes derived from this private key.
     pub fn public_key(&self) -> Vec<u8> {
-        let mut ctx = BigNumContext::new().unwrap();
-        let key = self.0.public_key();
-
-        key.to_bytes(&*GROUP, PointConversionForm::UNCOMPRESSED, &mut ctx)
-            .unwrap()
+        self.0.public_key().public_key().to_bytes_uncompressed()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::vapid::key::VapidKey;
-    use openssl::ec::EcKey;
     use std::fs::File;
-    use std::io::Read;
 
     #[test]
+    /// Tests that VapidKey derives the correct public key.
     fn test_public_key_derivation() {
-        let mut f = File::open("resources/vapid_test_key.pem").unwrap();
-        let mut pem_key: Vec<u8> = Vec::new();
-        f.read_to_end(&mut pem_key).unwrap();
-
-        let ec = EcKey::private_key_from_pem(&pem_key).unwrap();
-        let key = VapidKey::new(ec);
+        let f = File::open("resources/vapid_test_key.pem").unwrap();
+        let key = crate::VapidSignatureBuilder::read_pem(f).unwrap();
+        let key = VapidKey::new(key);
 
         assert_eq!(
             vec![
@@ -49,5 +40,17 @@ mod tests {
             ],
             key.public_key()
         );
+    }
+
+    #[test]
+    /// Tests that VapidKey clones properly.
+    fn test_key_clones() {
+        let f = File::open("resources/vapid_test_key.pem").unwrap();
+        let key = crate::VapidSignatureBuilder::read_pem(f).unwrap();
+        let key = VapidKey::new(key);
+
+        let key2 = key.clone();
+
+        assert_eq!(key.0.to_bytes(), key2.0.to_bytes())
     }
 }

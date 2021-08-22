@@ -57,5 +57,11 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
 
+      - name: Install vcpkg openssl on windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          vcpkg integrate install
+          vcpkg install openssl:x64-windows-static-md
+
       - name: Run tests
-        run: cargo test --features=openssl/vendored
+        run: cargo test
