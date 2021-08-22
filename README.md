@@ -11,9 +11,9 @@ Web push notification sender.
 
 ## Requirements
 
-Clients require an async executor. Openssl is needed for building.
+Clients require an async executor. System Openssl is needed for compilation.
 
-## Migration to v0.8
+## Migration to greater than v0.7
 
 - The `aesgcm` variant of `ContentEncoding` has been removed. Aes128Gcm support was added in v0.8, so all uses
   of `ContentEncoding::aesgcm` can simply be changed to `ContentEncoding::Aes128Gcm` with no change to functionality.
@@ -25,6 +25,8 @@ Clients require an async executor. Openssl is needed for building.
 - All GCM/FCM support has been removed. If you relied on this functionality, consider
   the [fcm crate](https://crates.io/crates/fcm). If you just require web push, you will need to use VAPID to send
   payloads. See below for info.
+
+- A new error variant `WebPushError::InvalidClaims` has been added. This may break exhaustive matches.
 
 ## Usage
 
@@ -120,8 +122,15 @@ on [isahc](https://crates.io/crates/isahc), but can be swapped out with a hyper 
 
 Library tested with Google's and Mozilla's push notification services. Also verified to work on Edge.
 
-Openssl is needed to build. Install `openssl-dev` or equivalent on *nix, or `openssl` using `vcpkg` on Windows. A nix 
+Openssl is needed to build. Install `openssl-dev` or equivalent on *nix, or `openssl` using `vcpkg` on Windows. A nix
 script is also available.
+
+If installing on Windows, this is the exact command:
+
+```shell
+vcpkg integrate install
+vcpkg install openssl:x64-windows-static-md
+```
 
 Debugging
 --------
