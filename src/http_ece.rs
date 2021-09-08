@@ -1,7 +1,8 @@
+use ece::encrypt;
+
 use crate::error::WebPushError;
 use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
-use ece::encrypt;
 
 /// Content encoding profiles.
 pub enum ContentEncoding {
@@ -78,12 +79,13 @@ impl<'a> HttpEce<'a> {
 
 #[cfg(test)]
 mod tests {
+    use base64::{self, URL_SAFE};
+    use regex::Regex;
+
     use crate::error::WebPushError;
     use crate::http_ece::{ContentEncoding, HttpEce};
     use crate::VapidSignature;
     use crate::WebPushPayload;
-    use base64::{self, URL_SAFE};
-    use regex::Regex;
 
     #[test]
     fn test_payload_too_big() {

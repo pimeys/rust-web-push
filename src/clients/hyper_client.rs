@@ -1,11 +1,12 @@
+use std::convert::Infallible;
+
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
-use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
+use hyper::{Body, body::HttpBody, Client, client::HttpConnector, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 
 use crate::clients::request_builder;
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
-use std::convert::Infallible;
 
 /// An async client for sending the notification payload.
 ///

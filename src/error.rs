@@ -1,11 +1,12 @@
+use std::{convert::From, error::Error, fmt, io::Error as IoError};
+use std::string::FromUtf8Error;
+use std::time::{Duration, SystemTime};
+
 use base64::DecodeError;
 use http::uri::InvalidUri;
 use serde_json::error::Error as JsonError;
-use std::string::FromUtf8Error;
-use std::time::{Duration, SystemTime};
-use std::{convert::From, error::Error, fmt, io::Error as IoError};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Ord, PartialOrd, Eq, Deserialize, Serialize, Hash)]
 pub enum WebPushError {
     /// An unknown error happened encrypting the message,
     Unspecified,

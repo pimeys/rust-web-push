@@ -1,12 +1,14 @@
-use crate::{error::WebPushError, vapid::VapidKey};
+use std::collections::BTreeMap;
+
 use http::uri::Uri;
 use jwt_simple::prelude::*;
 use serde_json::Value;
-use std::collections::BTreeMap;
+
+use crate::{error::WebPushError, vapid::VapidKey};
 
 /// A struct representing a VAPID signature. Should be generated using the
 /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct VapidSignature {
     /// The signed JWT, base64 encoded
     pub auth_t: String,
