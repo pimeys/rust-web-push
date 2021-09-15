@@ -55,12 +55,11 @@ pub use crate::clients::request_builder;
 pub use crate::error::WebPushError;
 pub use crate::http_ece::ContentEncoding;
 pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
-pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 pub use crate::vapid::builder::PartialVapidSignatureBuilder;
+pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 
 mod clients;
 mod error;
 mod http_ece;
 mod message;
 mod vapid;
-

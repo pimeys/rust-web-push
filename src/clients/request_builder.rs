@@ -1,8 +1,8 @@
 //! Functions used to send and consume push http messages.
 //! This module can be used to build custom clients.
 
-use http::{Request, StatusCode};
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
+use http::{Request, StatusCode};
 
 use crate::{error::WebPushError, message::WebPushMessage};
 

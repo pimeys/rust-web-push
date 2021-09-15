@@ -9,4 +9,3 @@ use self::signer::VapidSigner;
 pub mod builder;
 mod key;
 mod signer;
-

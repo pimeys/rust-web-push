@@ -7,8 +7,8 @@ use serde_json::Value;
 
 use crate::error::WebPushError;
 use crate::message::SubscriptionInfo;
-use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
 use crate::vapid::signer::Claims;
+use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. This encryption is required for payloads in all current and future browsers.
