@@ -1,10 +1,11 @@
+use http::uri::Uri;
+
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
 use crate::vapid::VapidSignature;
-use http::uri::Uri;
 
 /// Encryption keys from the client.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
 pub struct SubscriptionKeys {
     /// The public key. Base64 encoded.
     pub p256dh: String,
@@ -16,7 +17,7 @@ pub struct SubscriptionKeys {
 /// subscription info JSON data (AKA pushSubscription object).
 ///
 /// Client pushSubscription objects can be directly deserialized into this struct using serde.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
 pub struct SubscriptionInfo {
     /// The endpoint URI for sending the notification.
     pub endpoint: String,

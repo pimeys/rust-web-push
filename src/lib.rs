@@ -43,28 +43,23 @@
 //! ```
 
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate log;
+#[macro_use]
+extern crate serde_derive;
+
+#[cfg(feature = "hyper-client")]
+pub use crate::clients::hyper_client::WebPushClient;
+#[cfg(not(feature = "hyper-client"))]
+pub use crate::clients::isahc_client::WebPushClient;
+pub use crate::clients::request_builder;
+pub use crate::error::WebPushError;
+pub use crate::http_ece::ContentEncoding;
+pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
+pub use crate::vapid::builder::PartialVapidSignatureBuilder;
+pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 
 mod clients;
 mod error;
 mod http_ece;
 mod message;
 mod vapid;
-
-#[cfg(feature = "hyper-client")]
-pub use crate::clients::hyper_client::WebPushClient;
-
-#[cfg(not(feature = "hyper-client"))]
-pub use crate::clients::isahc_client::WebPushClient;
-
-pub use crate::error::WebPushError;
-
-pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
-
-pub use crate::http_ece::ContentEncoding;
-pub use crate::vapid::builder::PartialVapidSignatureBuilder;
-pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
-
-pub use crate::clients::request_builder;

@@ -22,8 +22,9 @@ impl VapidKey {
 
 #[cfg(test)]
 mod tests {
-    use crate::vapid::key::VapidKey;
     use std::fs::File;
+
+    use crate::vapid::key::VapidKey;
 
     #[test]
     /// Tests that VapidKey derives the correct public key.
