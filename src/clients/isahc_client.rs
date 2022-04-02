@@ -9,7 +9,11 @@ use crate::message::WebPushMessage;
 /// An async client for sending the notification payload. This client is expensive to create, and
 /// should be reused.
 ///
+/// This client is thread-safe. Clones of this client will share the same underlying resources,
+/// so cloning is a cheap and effective method to provide access to the client.
+///
 /// This client is built on [`isahc`](https://crates.io/crates/isahc), and will therefore work on any async executor.
+#[derive(Clone)]
 pub struct WebPushClient {
     client: HttpClient,
 }
@@ -46,7 +50,7 @@ impl WebPushClient {
             .headers()
             .get(RETRY_AFTER)
             .and_then(|ra| ra.to_str().ok())
-            .and_then(|ra| RetryAfter::from_str(ra));
+            .and_then(RetryAfter::from_str);
 
         let response_status = response.status();
         trace!("Response status: {}", response_status);
