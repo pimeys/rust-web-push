@@ -119,10 +119,8 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut der_key: Vec<u8> = Vec::new();
         pk_der.read_to_end(&mut der_key)?;
 
-        let decoded = sec1_decode::parse_der(&der_key).map_err(|_| WebPushError::InvalidCryptoKeys)?;
-
         Ok(Self::from_ec(
-            ES256KeyPair::from_bytes(&decoded.key).unwrap(),
+            ES256KeyPair::from_der(&der_key).unwrap(),
             subscription_info,
         ))
     }
@@ -133,10 +131,8 @@ impl<'a> VapidSignatureBuilder<'a> {
         let mut der_key: Vec<u8> = Vec::new();
         pk_der.read_to_end(&mut der_key)?;
 
-        let decoded = sec1_decode::parse_der(&der_key).map_err(|_| WebPushError::InvalidCryptoKeys)?;
-
         Ok(PartialVapidSignatureBuilder {
-            key: VapidKey::new(ES256KeyPair::from_bytes(&decoded.key).unwrap()),
+            key: VapidKey::new(ES256KeyPair::from_der(&der_key).unwrap()),
         })
     }
 
@@ -173,8 +169,9 @@ impl<'a> VapidSignatureBuilder<'a> {
     pub(crate) fn read_pem<R: Read>(mut input: R) -> Result<ES256KeyPair, WebPushError> {
         let mut buffer = String::new();
         input.read_to_string(&mut buffer).map_err(|_| WebPushError::IoError)?;
+
         //Parse many PEM in the assumption of extra unneeded sections.
-        let parsed = pem::parse_many(&buffer);
+        let parsed = pem::parse_many(&buffer).map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
         let found_pkcs8 = parsed.iter().any(|pem| pem.tag == "PRIVATE KEY");
         let found_sec1 = parsed.iter().any(|pem| pem.tag == "EC PRIVATE KEY");
@@ -184,10 +181,7 @@ impl<'a> VapidSignatureBuilder<'a> {
             let key = sec1_decode::parse_pem(buffer.as_bytes()).map_err(|_| WebPushError::InvalidCryptoKeys)?;
             Ok(ES256KeyPair::from_bytes(&key.key).map_err(|_| WebPushError::InvalidCryptoKeys)?)
         } else if found_pkcs8 {
-            let key =
-                pkcs8::PrivateKeyDocument::from_pem(buffer.as_str()).map_err(|_| WebPushError::InvalidCryptoKeys)?;
-            Ok(ES256KeyPair::from_bytes(key.private_key_info().private_key)
-                .map_err(|_| WebPushError::InvalidCryptoKeys)?)
+            Ok(ES256KeyPair::from_pem(&buffer).map_err(|_| WebPushError::InvalidCryptoKeys)?)
         } else {
             Err(WebPushError::MissingCryptoKeys)
         }
@@ -270,7 +264,7 @@ mod tests {
 
     #[test]
     fn test_builder_from_pem() {
-        let builder = VapidSignatureBuilder::from_pem(&*PRIVATE_PEM, &*SUBSCRIPTION_INFO).unwrap();
+        let builder = VapidSignatureBuilder::from_pem(&*PRIVATE_PEM, &SUBSCRIPTION_INFO).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
@@ -283,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_builder_from_der() {
-        let builder = VapidSignatureBuilder::from_der(&*PRIVATE_DER, &*SUBSCRIPTION_INFO).unwrap();
+        let builder = VapidSignatureBuilder::from_der(&*PRIVATE_DER, &SUBSCRIPTION_INFO).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
