@@ -49,7 +49,7 @@ extern crate serde_derive;
 
 #[cfg(feature = "hyper-client")]
 pub use crate::clients::hyper_client::WebPushClient;
-#[cfg(not(feature = "hyper-client"))]
+#[cfg(feature = "isahc")]
 pub use crate::clients::isahc_client::WebPushClient;
 pub use crate::clients::request_builder;
 pub use crate::error::WebPushError;
