@@ -54,11 +54,12 @@ pub struct WebPushPayload {
     pub content_encoding: &'static str,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum Urgency {
     VeryLow,
     Low,
+    #[default]
     Normal,
     High,
 }
