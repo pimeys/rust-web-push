@@ -45,6 +45,10 @@ where
         .uri(message.endpoint)
         .header("TTL", format!("{}", message.ttl).as_bytes());
 
+    if let Some(urgency) = message.urgency {
+        builder = builder.header("Urgency", urgency.to_string());
+    }
+
     if let Some(payload) = message.payload {
         builder = builder
             .header(CONTENT_ENCODING, payload.content_encoding)

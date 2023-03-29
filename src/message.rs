@@ -1,4 +1,5 @@
 use http::uri::Uri;
+use std::fmt::{Display, Formatter};
 
 use crate::error::WebPushError;
 use crate::http_ece::{ContentEncoding, HttpEce};
@@ -53,6 +54,27 @@ pub struct WebPushPayload {
     pub content_encoding: &'static str,
 }
 
+#[derive(Debug)]
+pub enum Urgency {
+    VeryLow,
+    Low,
+    Normal,
+    High,
+}
+
+impl Display for Urgency {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            Urgency::VeryLow => "very-low",
+            Urgency::Low => "low",
+            Urgency::Normal => "normal",
+            Urgency::High => "high",
+        };
+
+        f.write_str(str)
+    }
+}
+
 /// Everything needed to send a push notification to the user.
 #[derive(Debug)]
 pub struct WebPushMessage {
@@ -61,6 +83,8 @@ pub struct WebPushMessage {
     /// Time to live, how long the message should wait in the server if user is
     /// not online. Some services require this value to be set.
     pub ttl: u32,
+    /// The urgency of the message (very-low | low | normal | high)
+    pub urgency: Option<Urgency>,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
 }
@@ -75,6 +99,7 @@ pub struct WebPushMessageBuilder<'a> {
     subscription_info: &'a SubscriptionInfo,
     payload: Option<WebPushPayloadBuilder<'a>>,
     ttl: u32,
+    urgency: Option<Urgency>,
     vapid_signature: Option<VapidSignature>,
 }
 
@@ -87,6 +112,7 @@ impl<'a> WebPushMessageBuilder<'a> {
         Ok(WebPushMessageBuilder {
             subscription_info,
             ttl: 2_419_200,
+            urgency: None,
             payload: None,
             vapid_signature: None,
         })
@@ -97,6 +123,15 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// delivery.
     pub fn set_ttl(&mut self, ttl: u32) {
         self.ttl = ttl;
+    }
+
+    /// Urgency indicates to the push service how important a message is to the
+    /// user. This can be used by the push service to help conserve the battery
+    /// life of a user's device by only waking up for important messages when
+    /// battery is low.
+    /// Possible values are 'very-low', 'low', 'normal' and 'high'.
+    pub fn set_urgency(&mut self, urgency: Urgency) {
+        self.urgency = Some(urgency);
     }
 
     /// Add a VAPID signature to the request. To be generated with the
@@ -130,12 +165,14 @@ impl<'a> WebPushMessageBuilder<'a> {
             Ok(WebPushMessage {
                 endpoint,
                 ttl: self.ttl,
+                urgency: self.urgency,
                 payload: Some(http_ece.encrypt(payload.content)?),
             })
         } else {
             Ok(WebPushMessage {
                 endpoint,
                 ttl: self.ttl,
+                urgency: self.urgency,
                 payload: None,
             })
         }
