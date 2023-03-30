@@ -54,7 +54,9 @@ pub use crate::clients::isahc_client::WebPushClient;
 pub use crate::clients::request_builder;
 pub use crate::error::WebPushError;
 pub use crate::http_ece::ContentEncoding;
-pub use crate::message::{SubscriptionInfo, SubscriptionKeys, WebPushMessage, WebPushMessageBuilder, WebPushPayload};
+pub use crate::message::{
+    SubscriptionInfo, SubscriptionKeys, Urgency, WebPushMessage, WebPushMessageBuilder, WebPushPayload,
+};
 pub use crate::vapid::builder::PartialVapidSignatureBuilder;
 pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 pub use base64::{Config, BCRYPT, BINHEX, CRYPT, IMAP_MUTF7, STANDARD, STANDARD_NO_PAD, URL_SAFE, URL_SAFE_NO_PAD};

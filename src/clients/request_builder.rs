@@ -45,6 +45,10 @@ where
         .uri(message.endpoint)
         .header("TTL", format!("{}", message.ttl).as_bytes());
 
+    if let Some(urgency) = message.urgency {
+        builder = builder.header("Urgency", urgency.to_string());
+    }
+
     if let Some(payload) = message.payload {
         builder = builder
             .header(CONTENT_ENCODING, payload.content_encoding)
@@ -94,6 +98,7 @@ mod tests {
     use crate::error::WebPushError;
     use crate::http_ece::ContentEncoding;
     use crate::message::WebPushMessageBuilder;
+    use crate::Urgency;
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
@@ -110,12 +115,15 @@ mod tests {
         let mut builder = WebPushMessageBuilder::new(&info).unwrap();
 
         builder.set_ttl(420);
+        builder.set_urgency(Urgency::VeryLow);
 
         let request = build_request::<isahc::Body>(builder.build().unwrap());
         let ttl = request.headers().get("TTL").unwrap().to_str().unwrap();
+        let urgency = request.headers().get("Urgency").unwrap().to_str().unwrap();
         let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
         assert_eq!("420", ttl);
+        assert_eq!("very-low", urgency);
         assert_eq!(expected_uri.host(), request.uri().host());
     }
 
