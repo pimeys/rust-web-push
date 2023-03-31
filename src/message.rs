@@ -145,7 +145,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
     ///
-    /// Currently, Aes128Gcm is the recommended and only encoding standard implemented.
+    /// Aes128gcm is preferred, if the browser supports it.
     pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
