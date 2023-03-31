@@ -78,7 +78,7 @@ impl<'a> HttpEce<'a> {
                 }
             }
             ContentEncoding::AesGcm => {
-                let result = ece::legacy::encrypt_aesgcm(self.peer_public_key, self.peer_secret, content);
+                let result = self.aesgcm_encrypt(content);
 
                 let data = result.map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
@@ -113,6 +113,13 @@ impl<'a> HttpEce<'a> {
                 ),
             ));
         }
+    }
+
+    /// Encrypts the content using the aesgcm encoding.
+    ///
+    /// This is extracted into a function for testing.
+    fn aesgcm_encrypt(&self, content: &[u8]) -> ece::Result<ece::legacy::AesGcmEncryptedBlock> {
+        ece::legacy::encrypt_aesgcm(self.peer_public_key, self.peer_secret, content)
     }
 }
 
@@ -161,6 +168,26 @@ mod tests {
         )
     }
 
+    /// Tests that the content encryption is properly reversible while using aesgcm.
+    #[test]
+    fn test_payload_encrypts() {
+        let (key, auth) = ece::generate_keypair_and_auth_secret().unwrap();
+        let p_key = key.raw_components().unwrap();
+        let p_key = p_key.public_key();
+
+        let http_ece = HttpEce::new(ContentEncoding::AesGcm, p_key, &auth, None);
+        let plaintext = "Hello world!";
+        let ciphertext = http_ece.aesgcm_encrypt(plaintext.as_bytes()).unwrap();
+
+        assert_ne!(plaintext, ciphertext.body());
+
+        assert_eq!(
+            String::from_utf8(ece::legacy::decrypt_aesgcm(&key.raw_components().unwrap(), &auth, &ciphertext).unwrap())
+                .unwrap(),
+            plaintext
+        )
+    }
+
     fn setup_payload(vapid_signature: Option<VapidSignature>, encoding: ContentEncoding) -> WebPushPayload {
         let p256dh = base64::decode_config(
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
@@ -182,6 +209,12 @@ mod tests {
     }
 
     #[test]
+    fn test_aesgcm_headers_no_vapid() {
+        let wp_payload = setup_payload(None, ContentEncoding::AesGcm);
+        assert_eq!(wp_payload.crypto_headers.len(), 2);
+    }
+
+    #[test]
     fn test_aes128gcm_headers_vapid() {
         let auth_re = Regex::new(r"vapid t=(?P<sig_t>[^,]*), k=(?P<sig_k>[^,]*)").unwrap();
         let vapid_signature = VapidSignature {
@@ -191,6 +224,21 @@ mod tests {
         let wp_payload = setup_payload(Some(vapid_signature), ContentEncoding::Aes128Gcm);
         assert_eq!(wp_payload.crypto_headers.len(), 1);
         let auth = wp_payload.crypto_headers[0].clone();
+        assert_eq!(auth.0, "Authorization");
+        assert!(auth_re.captures(&auth.1).is_some());
+    }
+
+    #[test]
+    fn test_aesgcm_headers_vapid() {
+        let auth_re = Regex::new(r"vapid t=(?P<sig_t>[^,]*), k=(?P<sig_k>[^,]*)").unwrap();
+        let vapid_signature = VapidSignature {
+            auth_t: String::from("foo"),
+            auth_k: String::from("bar").into_bytes(),
+        };
+        let wp_payload = setup_payload(Some(vapid_signature), ContentEncoding::AesGcm);
+        // Should have Authorization, Crypto-key, and Encryption
+        assert_eq!(wp_payload.crypto_headers.len(), 3);
+        let auth = wp_payload.crypto_headers[2].clone();
         assert_eq!(auth.0, "Authorization");
         assert!(auth_re.captures(&auth.1).is_some());
     }
