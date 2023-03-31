@@ -51,7 +51,7 @@ pub struct WebPushPayload {
     /// Headers depending on the authorization scheme and encryption standard.
     pub crypto_headers: Vec<(&'static str, String)>,
     /// The encryption standard.
-    pub content_encoding: &'static str,
+    pub content_encoding: ContentEncoding,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
@@ -150,11 +150,7 @@ impl<'a> WebPushMessageBuilder<'a> {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
 
-    /// Builds and if set, encrypts the payload. Any errors due to bad encryption will be
-    /// [`WebPushError::Unspecified`], meaning
-    /// something was wrong in the given public key or authentication.
-    /// You can further debug these issues by checking the API responses visible with
-    /// `log::trace` level.
+    /// Builds and if set, encrypts the payload.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
 

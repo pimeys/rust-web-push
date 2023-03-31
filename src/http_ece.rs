@@ -1,3 +1,5 @@
+//! Payload encryption algorithm
+
 use ece::encrypt;
 
 use crate::error::WebPushError;
@@ -5,9 +7,21 @@ use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
 
 /// Content encoding profiles.
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ContentEncoding {
     //Make sure this enum remains exhaustive as that allows for easier migrations to new versions.
     Aes128Gcm,
+    AesGcm,
+}
+
+impl ContentEncoding {
+    /// Gets the associated string for this content encoding, as would be used in the content-encoding header.
+    pub fn to_str(&self) -> &'static str {
+        match &self {
+            ContentEncoding::Aes128Gcm => "aes128gcm",
+            ContentEncoding::AesGcm => "aesgcm",
+        }
+    }
 }
 
 /// Struct for handling payload encryption.
@@ -52,27 +66,52 @@ impl<'a> HttpEce<'a> {
 
                 let mut headers = Vec::new();
 
-                //VAPID uses a special Authorisation header, which contains a ecdhsa key and a jwt.
-                if let Some(signature) = &self.vapid_signature {
-                    headers.push((
-                        "Authorization",
-                        format!(
-                            "vapid t={}, k={}",
-                            signature.auth_t,
-                            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
-                        ),
-                    ));
-                }
+                self.add_vapid_headers(&mut headers);
 
                 match result {
                     Ok(data) => Ok(WebPushPayload {
                         content: data,
                         crypto_headers: headers,
-                        content_encoding: "aes128gcm",
+                        content_encoding: self.encoding,
                     }),
                     _ => Err(WebPushError::InvalidCryptoKeys),
                 }
             }
+            ContentEncoding::AesGcm => {
+                let result = ece::legacy::encrypt_aesgcm(self.peer_public_key, self.peer_secret, content);
+
+                let data = result.map_err(|_| WebPushError::InvalidCryptoKeys)?;
+
+                // Get headers exclusive to the aesgcm scheme (Crypto-Key ect.)
+                let mut headers = data.headers(self.vapid_signature.as_ref().map(|v| v.auth_k.as_slice()));
+
+                self.add_vapid_headers(&mut headers);
+
+                // ECE library base64 encodes content in aesgcm, but not aes128gcm, so decode base64 here to match the 128 API
+                let data = base64::decode_config(data.body(), base64::URL_SAFE_NO_PAD)
+                    .expect("ECE library should always base64 encode");
+
+                Ok(WebPushPayload {
+                    content: data,
+                    crypto_headers: headers,
+                    content_encoding: self.encoding,
+                })
+            }
+        }
+    }
+
+    /// Adds VAPID authorisation header to headers, if VAPID is being used.
+    fn add_vapid_headers(&self, headers: &mut Vec<(&str, String)>) {
+        //VAPID uses a special Authorisation header, which contains a ecdhsa key and a jwt.
+        if let Some(signature) = &self.vapid_signature {
+            headers.push((
+                "Authorization",
+                format!(
+                    "vapid t={}, k={}",
+                    signature.auth_t,
+                    base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
+                ),
+            ));
         }
     }
 }

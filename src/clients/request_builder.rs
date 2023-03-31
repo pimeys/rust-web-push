@@ -51,10 +51,10 @@ where
 
     if let Some(payload) = message.payload {
         builder = builder
-            .header(CONTENT_ENCODING, payload.content_encoding)
+            .header(CONTENT_ENCODING, payload.content_encoding.to_str())
             .header(CONTENT_LENGTH, format!("{}", payload.content.len() as u64).as_bytes())
             .header(CONTENT_TYPE, "application/octet-stream");
-
+        
         for (k, v) in payload.crypto_headers.into_iter() {
             let v: &str = v.as_ref();
             builder = builder.header(k, v);
