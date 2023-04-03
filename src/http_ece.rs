@@ -7,10 +7,12 @@ use crate::message::WebPushPayload;
 use crate::vapid::VapidSignature;
 
 /// Content encoding profiles.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub enum ContentEncoding {
     //Make sure this enum remains exhaustive as that allows for easier migrations to new versions.
+    #[default]
     Aes128Gcm,
+    /// Note: this is an older version of ECE, and should not be used unless you know for sure it is required. In all other cases, use aes128gcm.
     AesGcm,
 }
 
