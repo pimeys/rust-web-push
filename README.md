@@ -5,57 +5,25 @@ Rust Web Push
 [![crates.io](https://img.shields.io/crates/d/web-push)](https://crates.io/crates/web_push)
 [![docs.rs](https://docs.rs/web-push/badge.svg)](https://docs.rs/web-push)
 
-[Matrix chat](https://matrix.to/#/#rust-push:nauk.io?via=nauk.io&via=matrix.org&via=shine.horse)
+This crate implements the server half of the web push API, in Rust!
 
-Web push notification sender.
+For more background on the web push framework itself, please
+reference [this excellent document.](https://web.dev/notifications/)
 
 ## Requirements
 
 Clients require an async executor. System Openssl is needed for compilation.
 
-## Migration to greater than v0.7
+## Migration notes
 
-- The `aesgcm` variant of `ContentEncoding` has been removed. Aes128Gcm support was added in v0.8, so all uses
-  of `ContentEncoding::aesgcm` can simply be changed to `ContentEncoding::Aes128Gcm` with no change to functionality.
-  This will add support for Edge in the process.
-
-- `WebPushClient::new()` now returns a `Result`, as the default client now has a fallible constructor. Please handle
-  this error in the case of resource starvation.
-
-- All GCM/FCM support has been removed. If you relied on this functionality, consider
-  the [fcm crate](https://crates.io/crates/fcm). If you just require web push, you will need to use VAPID to send
-  payloads. See below for info.
-
-- A new error variant `WebPushError::InvalidClaims` has been added. This may break exhaustive matches.
-
-## Usage
-
-To send a web push from command line, first subscribe to receive push notifications with your browser and store the
-subscription info into a json file. It should have the following content:
-
-``` json
-{
-  "endpoint": "https://updates.push.services.mozilla.com/wpush/v1/TOKEN",
-  "keys": {
-    "auth": "####secret####",
-    "p256dh": "####public_key####"
-  }
-}
-```
-
-Google has
-[good instructions](https://developers.google.com/web/fundamentals/push-notifications/subscribing-a-user) for building a
-frontend to receive notifications.
-
-Store the subscription info to `examples/test.json` and send a notification with
-`cargo run --example simple_send -- -f examples/test.json -p "It works!"`.
+This library is still in active development, and will have breaking changes in accordance with semver. Please view the
+GitHub release notes for detailed notes.
 
 Example
 --------
 
 ```rust
 use web_push::*;
-use base64::URL_SAFE;
 use std::fs::File;
 
 #[tokio::main]
@@ -64,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let p256dh = "key_from_browser_as_base64";
     let auth = "auth_from_browser_as_base64";
 
-    //You would likely get this by deserializing a browser `pushSubscription` object.  
+    //You would likely get this by deserializing a browser `pushSubscription` object via serde.  
     let subscription_info = SubscriptionInfo::new(
         endpoint,
         p256dh,
@@ -109,6 +77,28 @@ openssl ec -in private_key.pem -pubout -outform DER|tail -c 65|base64|tr '/+' '_
 
 The signature is created with `VapidSignatureBuilder`. It automatically adds the required claims `aud` and `exp`. Adding
 these claims to the builder manually will override the default values.
+
+## Using the example program
+
+To send a web push from command line, first subscribe to receive push notifications with your browser and store the
+subscription info into a json file. It should have the following content:
+
+``` json
+{
+  "endpoint": "https://updates.push.services.mozilla.com/wpush/v1/TOKEN",
+  "keys": {
+    "auth": "####secret####",
+    "p256dh": "####public_key####"
+  }
+}
+```
+
+Google has
+[good instructions](https://developers.google.com/web/fundamentals/push-notifications/subscribing-a-user) for building a
+frontend to receive notifications.
+
+Store the subscription info to `examples/test.json` and send a notification with
+`cargo run --example simple_send -- -f examples/test.json -p "It works!"`.
 
 Overview
 --------

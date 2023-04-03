@@ -45,6 +45,13 @@ impl VapidSigner {
             claims.custom.remove("exp");
         }
 
+        // Add sub if not provided as some browsers (like firefox) require it even though the API doesn't say its needed >:[
+        if !claims.custom.contains_key("sub") {
+            claims = claims.with_subject("mailto:example@example.com".to_string());
+        }
+
+        log::trace!("Using jwt: {:?}", claims);
+
         let auth_k = key.public_key();
 
         //Generate JWT signature

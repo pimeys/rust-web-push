@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         ap.refer(&mut encoding).add_option(
             &["-e", "--encoding"],
             StoreOption,
-            "Content Encoding Scheme : currently only accepts 'aes128gcm'. Defaults to 'aes128gcm'. Reserved for future standards.",
+            "Content Encoding Scheme : 'aes128gcm' or 'aesgcm'",
         );
 
         ap.refer(&mut subscription_info_file).add_option(
@@ -47,8 +47,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     let ece_scheme = match encoding.as_deref() {
         Some("aes128gcm") => ContentEncoding::Aes128Gcm,
+        Some("aesgcm") => ContentEncoding::AesGcm,
         None => ContentEncoding::Aes128Gcm,
-        Some(_) => panic!("Content encoding can only be 'aes128gcm'"),
+        Some(_) => panic!("Content encoding can only be 'aes128gcm' or 'aesgcm'"),
     };
 
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();

@@ -51,7 +51,7 @@ pub struct WebPushPayload {
     /// Headers depending on the authorization scheme and encryption standard.
     pub crypto_headers: Vec<(&'static str, String)>,
     /// The encryption standard.
-    pub content_encoding: &'static str,
+    pub content_encoding: ContentEncoding,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
@@ -145,16 +145,12 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
     ///
-    /// Currently, Aes128Gcm is the recommended and only encoding standard implemented.
+    /// Aes128gcm is preferred, if the browser supports it.
     pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
 
-    /// Builds and if set, encrypts the payload. Any errors due to bad encryption will be
-    /// [`WebPushError::Unspecified`], meaning
-    /// something was wrong in the given public key or authentication.
-    /// You can further debug these issues by checking the API responses visible with
-    /// `log::trace` level.
+    /// Builds and if set, encrypts the payload.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
 
