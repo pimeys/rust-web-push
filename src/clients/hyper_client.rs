@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use std::convert::Infallible;
 
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
@@ -22,22 +21,21 @@ pub struct HyperWebPushClient {
 
 impl Default for HyperWebPushClient {
     fn default() -> Self {
-        Self::new().unwrap()
+        Self::new()
+    }
+}
+
+impl HyperWebPushClient {
+    /// Creates a new client.
+    pub fn new() -> Self {
+        Self {
+            client: Client::builder().build(HttpsConnector::new()),
+        }
     }
 }
 
 #[async_trait]
 impl WebPushClient for HyperWebPushClient {
-    type CreationError = Infallible;
-
-    /// Creates a new client.
-    fn new() -> Result<Self, Self::CreationError> {
-        //This method can never fail, but returns error to match API of the isahc client.
-        Ok(Self {
-            client: Client::builder().build(HttpsConnector::new()),
-        })
-    }
-
     /// Sends a notification. Never times out.
     async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);

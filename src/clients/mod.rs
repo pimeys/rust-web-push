@@ -17,16 +17,7 @@ pub mod isahc_client;
 /// An async client for sending the notification payload.
 /// Other features, such as thread safety, may vary by implementation.
 #[async_trait]
-pub trait WebPushClient
-where
-    Self: Sized,
-{
-    /// Errors that can occur when creating a client.
-    type CreationError;
-
-    /// Creates a new client.
-    fn new() -> Result<Self, Self::CreationError>;
-
+pub trait WebPushClient {
     /// Sends a notification. Never times out.
     async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError>;
 }

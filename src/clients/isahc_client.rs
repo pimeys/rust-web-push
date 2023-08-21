@@ -26,17 +26,17 @@ impl Default for IsahcWebPushClient {
     }
 }
 
-#[async_trait]
-impl WebPushClient for IsahcWebPushClient {
-    type CreationError = WebPushError;
-
+impl IsahcWebPushClient {
     /// Creates a new client. Can fail under resource depletion.
-    fn new() -> Result<Self, Self::CreationError> {
+    pub fn new() -> Result<Self, WebPushError> {
         Ok(Self {
             client: HttpClient::new()?,
         })
     }
+}
 
+#[async_trait]
+impl WebPushClient for IsahcWebPushClient {
     /// Sends a notification. Never times out.
     async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);
