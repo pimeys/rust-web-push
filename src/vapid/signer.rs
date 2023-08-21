@@ -33,7 +33,8 @@ impl VapidSigner {
         } else {
             //Use provided claims if given. This is here to avoid breaking changes.
             let aud = claims.custom.get("aud").unwrap().clone();
-            claims = claims.with_audience(aud);
+            //NOTE: This as_str is needed, else \" gets added around the string
+            claims = claims.with_audience(aud.as_str().ok_or(WebPushError::InvalidClaims)?);
             claims.custom.remove("aud");
         }
 
