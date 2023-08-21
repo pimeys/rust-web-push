@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
-    let mut builder = WebPushMessageBuilder::new(&subscription_info).unwrap();
+    let mut builder = WebPushMessageBuilder::new(&subscription_info);
 
     if let Some(ref payload) = push_payload {
         builder.set_payload(ece_scheme, payload.as_bytes());

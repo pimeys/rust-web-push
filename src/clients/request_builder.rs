@@ -30,7 +30,7 @@ struct ErrorInfo {
 ///  "xS03Fi5ErfTNH_l9WHE9Ig",
 ///  );
 ///
-///  let mut builder = WebPushMessageBuilder::new(&info).unwrap();
+///  let mut builder = WebPushMessageBuilder::new(&info);
 ///
 ///  //Build the request for isahc
 ///  let request = build_request::<isahc::Body>(builder.build().unwrap());
@@ -112,7 +112,7 @@ mod tests {
 
         let info = serde_json::from_value(sub).unwrap();
 
-        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
+        let mut builder = WebPushMessageBuilder::new(&info);
 
         builder.set_ttl(420);
         builder.set_urgency(Urgency::VeryLow);
@@ -139,7 +139,7 @@ mod tests {
 
         let info = serde_json::from_value(sub).unwrap();
 
-        let mut builder = WebPushMessageBuilder::new(&info).unwrap();
+        let mut builder = WebPushMessageBuilder::new(&info);
 
         builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
