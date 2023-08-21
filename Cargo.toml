@@ -13,7 +13,8 @@ categories = ["web-programming", "asynchronous"]
 edition = "2021"
 
 [features]
-default = ["isahc", "futures-lite/futures-io"] #futures are only used for read_to_end() in isach client.
+default = ["isahc-client"]
+isahc-client = ["isahc", "futures-lite/futures-io"]  #futures are only used for read_to_end() in isach client.
 hyper-client = ["hyper", "hyper-tls"] #use features = ["hyper-client"], default-features = false for about 300kb size decrease.
 
 [dependencies]
@@ -32,6 +33,7 @@ sec1_decode = "^0.1.0"
 base64 = "^0.13"
 chrono = "^0.4"
 log = "^0.4"
+async-trait = "0.1.73"
 
 [dev-dependencies]
 argparse = "^0.2"

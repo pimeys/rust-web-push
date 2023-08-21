@@ -1,10 +1,11 @@
+use async_trait::async_trait;
 use std::convert::Infallible;
 
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 
-use crate::clients::request_builder;
+use crate::clients::{request_builder, WebPushClient};
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
 
@@ -15,27 +16,30 @@ use crate::message::WebPushMessage;
 ///
 /// This client is [`hyper`](https://crates.io/crates/hyper) based, and will only work in Tokio contexts.
 #[derive(Clone)]
-pub struct WebPushClient {
+pub struct HyperWebPushClient {
     client: Client<HttpsConnector<HttpConnector>>,
 }
 
-impl Default for WebPushClient {
+impl Default for HyperWebPushClient {
     fn default() -> Self {
         Self::new().unwrap()
     }
 }
 
-impl WebPushClient {
+#[async_trait]
+impl WebPushClient for HyperWebPushClient {
+    type CreationError = Infallible;
+
     /// Creates a new client.
-    pub fn new() -> Result<WebPushClient, Infallible> {
+    fn new() -> Result<Self, Self::CreationError> {
         //This method can never fail, but returns error to match API of the isahc client.
-        Ok(WebPushClient {
+        Ok(Self {
             client: Client::builder().build(HttpsConnector::new()),
         })
     }
 
     /// Sends a notification. Never times out.
-    pub async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
+    async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);
 
         let request: HttpRequest<Body> = request_builder::build_request(message);

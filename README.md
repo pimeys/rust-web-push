@@ -24,6 +24,7 @@ Example
 
 ```rust
 use web_push::*;
+use web_push::clients::isahc_client::IsahcWebPushClient;
 use std::fs::File;
 
 #[tokio::main]
@@ -49,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     builder.set_payload(ContentEncoding::Aes128Gcm, content);
     builder.set_vapid_signature(sig_builder);
 
-    let client = WebPushClient::new()?;
+    let client = IsahcWebPushClient::new()?;
 
     //Finally, send the notification!
     client.send(builder.build()?).await?;

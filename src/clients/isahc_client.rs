@@ -1,8 +1,10 @@
+use async_trait::async_trait;
 use futures_lite::AsyncReadExt;
 use http::header::{CONTENT_LENGTH, RETRY_AFTER};
 use isahc::HttpClient;
 
 use crate::clients::request_builder;
+use crate::clients::WebPushClient;
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
 
@@ -14,26 +16,29 @@ use crate::message::WebPushMessage;
 ///
 /// This client is built on [`isahc`](https://crates.io/crates/isahc), and will therefore work on any async executor.
 #[derive(Clone)]
-pub struct WebPushClient {
+pub struct IsahcWebPushClient {
     client: HttpClient,
 }
 
-impl Default for WebPushClient {
+impl Default for IsahcWebPushClient {
     fn default() -> Self {
         Self::new().unwrap()
     }
 }
 
-impl WebPushClient {
+#[async_trait]
+impl WebPushClient for IsahcWebPushClient {
+    type CreationError = WebPushError;
+
     /// Creates a new client. Can fail under resource depletion.
-    pub fn new() -> Result<WebPushClient, WebPushError> {
-        Ok(WebPushClient {
+    fn new() -> Result<Self, Self::CreationError> {
+        Ok(Self {
             client: HttpClient::new()?,
         })
     }
 
     /// Sends a notification. Never times out.
-    pub async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
+    async fn send(&self, message: WebPushMessage) -> Result<(), WebPushError> {
         trace!("Message: {:?}", message);
 
         let request = request_builder::build_request::<isahc::AsyncBody>(message);

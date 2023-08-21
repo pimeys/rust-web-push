@@ -34,7 +34,7 @@
 //! builder.set_payload(ContentEncoding::Aes128Gcm, content);
 //! builder.set_vapid_signature(sig_builder);
 //!
-//! let client = WebPushClient::new()?;
+//! let client = IsahcWebPushClient::new()?;
 //!
 //! //Finally, send the notification!
 //! client.send(builder.build()?).await?;
@@ -47,11 +47,14 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(feature = "hyper-client")]
-pub use crate::clients::hyper_client::WebPushClient;
-#[cfg(not(feature = "hyper-client"))]
-pub use crate::clients::isahc_client::WebPushClient;
 pub use crate::clients::request_builder;
+pub use crate::clients::WebPushClient;
+
+#[cfg(feature = "hyper-client")]
+pub use crate::clients::hyper_client::HyperWebPushClient;
+#[cfg(feature = "isahc-client")]
+pub use crate::clients::isahc_client::IsahcWebPushClient;
+
 pub use crate::error::WebPushError;
 pub use crate::http_ece::ContentEncoding;
 pub use crate::message::{
