@@ -49,6 +49,10 @@ where
         builder = builder.header("Urgency", urgency.to_string());
     }
 
+    if let Some(topic) = message.topic {
+        builder = builder.header("Topic", topic);
+    }
+
     if let Some(payload) = message.payload {
         builder = builder
             .header(CONTENT_ENCODING, payload.content_encoding.to_str())
@@ -116,14 +120,17 @@ mod tests {
 
         builder.set_ttl(420);
         builder.set_urgency(Urgency::VeryLow);
+        builder.set_topic("some-topic".into());
 
         let request = build_request::<isahc::Body>(builder.build().unwrap());
         let ttl = request.headers().get("TTL").unwrap().to_str().unwrap();
         let urgency = request.headers().get("Urgency").unwrap().to_str().unwrap();
+        let topic = request.headers().get("Topic").unwrap().to_str().unwrap();
         let expected_uri: Uri = "fcm.googleapis.com".parse().unwrap();
 
         assert_eq!("420", ttl);
         assert_eq!("very-low", urgency);
+        assert_eq!("some-topic", topic);
         assert_eq!(expected_uri.host(), request.uri().host());
     }
 

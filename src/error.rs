@@ -37,6 +37,8 @@ pub enum WebPushError {
     InvalidPackageName,
     /// The TTL value provided was not valid or was not provided
     InvalidTtl,
+    /// The Topic value provided was invalid
+    InvalidTopic,
     /// The request was missing required crypto keys
     MissingCryptoKeys,
     /// One or more of the crypto key elements are invalid.
@@ -109,6 +111,7 @@ impl WebPushError {
             WebPushError::TlsError => "tls_error",
             WebPushError::InvalidPackageName => "invalid_package_name",
             WebPushError::InvalidTtl => "invalid_ttl",
+            WebPushError::InvalidTopic => "invalid_topic",
             WebPushError::InvalidResponse => "invalid_response",
             WebPushError::MissingCryptoKeys => "missing_crypto_keys",
             WebPushError::InvalidCryptoKeys => "invalid_crypto_keys",
@@ -150,6 +153,7 @@ impl fmt::Display for WebPushError {
             WebPushError::InvalidPackageName =>
                 write!(f, "Make sure the message was addressed to a registration token whose package name matches the value passed in the request."),
             WebPushError::InvalidTtl => write!(f, "The TTL value provided was not valid or was not provided"),
+            WebPushError::InvalidTopic => write!(f, "The Topic value provided was invalid"),
             WebPushError::InvalidResponse => write!(f, "The response data couldn't be parses"),
             WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
             WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),

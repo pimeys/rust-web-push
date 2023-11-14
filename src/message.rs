@@ -87,6 +87,8 @@ pub struct WebPushMessage {
     pub ttl: u32,
     /// The urgency of the message (very-low | low | normal | high)
     pub urgency: Option<Urgency>,
+    /// The topic of the mssage
+    pub topic: Option<String>,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
 }
@@ -102,6 +104,7 @@ pub struct WebPushMessageBuilder<'a> {
     payload: Option<WebPushPayloadBuilder<'a>>,
     ttl: u32,
     urgency: Option<Urgency>,
+    topic: Option<String>,
     vapid_signature: Option<VapidSignature>,
 }
 
@@ -115,6 +118,7 @@ impl<'a> WebPushMessageBuilder<'a> {
             subscription_info,
             ttl: 2_419_200,
             urgency: None,
+            topic: None,
             payload: None,
             vapid_signature: None,
         }
@@ -136,6 +140,18 @@ impl<'a> WebPushMessageBuilder<'a> {
         self.urgency = Some(urgency);
     }
 
+    /// Assign a topic to the push message. A message that has been stored
+    /// by the push service can be replaced with new content if the message
+    /// has been assigned a topic. If the user agent is offline during the
+    /// time that the push messages are sent, updating a push message avoid
+    /// the situation where outdated or redundant messages are sent to the
+    /// user agent. A message with a topic replaces any outstanding push
+    /// messages with an identical topic. It is an arbitrary string
+    /// consisting of at most 32 base64url characters.
+    pub fn set_topic(&mut self, topic: String) {
+        self.topic = Some(topic);
+    }
+
     /// Add a VAPID signature to the request. To be generated with the
     /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
     pub fn set_vapid_signature(&mut self, vapid_signature: VapidSignature) {
@@ -153,6 +169,18 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// Builds and if set, encrypts the payload.
     pub fn build(self) -> Result<WebPushMessage, WebPushError> {
         let endpoint: Uri = self.subscription_info.endpoint.parse()?;
+        let topic: Option<String> = self
+            .topic
+            .map(|topic| {
+                if topic.len() > 32 {
+                    Err(WebPushError::InvalidTopic)
+                } else if topic.chars().all(is_base64url_char) {
+                    Ok(topic)
+                } else {
+                    Err(WebPushError::InvalidTopic)
+                }
+            })
+            .transpose()?;
 
         if let Some(payload) = self.payload {
             let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
@@ -164,6 +192,7 @@ impl<'a> WebPushMessageBuilder<'a> {
                 endpoint,
                 ttl: self.ttl,
                 urgency: self.urgency,
+                topic,
                 payload: Some(http_ece.encrypt(payload.content)?),
             })
         } else {
@@ -171,8 +200,13 @@ impl<'a> WebPushMessageBuilder<'a> {
                 endpoint,
                 ttl: self.ttl,
                 urgency: self.urgency,
+                topic,
                 payload: None,
             })
         }
     }
+}
+
+fn is_base64url_char(c: char) -> bool {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '-' || c == '_');
 }
