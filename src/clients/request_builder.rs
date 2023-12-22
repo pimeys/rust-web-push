@@ -86,7 +86,7 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
             Ok(body_str) => match serde_json::from_str::<ErrorInfo>(&body_str) {
                 Ok(error_info) => Err(WebPushError::BadRequest(Some(error_info.error))),
                 Err(_) if body_str.is_empty() => Err(WebPushError::BadRequest(None)),
-                Err(_) => Err(WebPushError::BadRequest(None)),
+                Err(_) => Err(WebPushError::BadRequest(Some(body_str))),
             },
         },
 
