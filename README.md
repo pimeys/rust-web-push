@@ -99,7 +99,7 @@ Google has
 frontend to receive notifications.
 
 Store the subscription info to `examples/test.json` and send a notification with
-`cargo run --example simple_send -- -f examples/test.json -p "It works!"`.
+`cargo run --example simple_send -- -v ./private_key.pem -f examples/test.json -p "It works!"`.
 
 Overview
 --------
