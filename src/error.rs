@@ -26,10 +26,6 @@ pub enum WebPushError {
     EndpointNotFound,
     /// Maximum allowed payload size is 3800 characters
     PayloadTooLarge,
-    /// Could not initialize a TLS connection
-    TlsError,
-    /// Error in SSL signing
-    SslError,
     /// Error in reading a file
     Io(IoError),
     /// Make sure the message was addressed to a registration token whose
@@ -108,14 +104,12 @@ impl WebPushError {
             WebPushError::EndpointNotValid => "endpoint_not_valid",
             WebPushError::EndpointNotFound => "endpoint_not_found",
             WebPushError::PayloadTooLarge => "payload_too_large",
-            WebPushError::TlsError => "tls_error",
             WebPushError::InvalidPackageName => "invalid_package_name",
             WebPushError::InvalidTtl => "invalid_ttl",
             WebPushError::InvalidTopic => "invalid_topic",
             WebPushError::InvalidResponse => "invalid_response",
             WebPushError::MissingCryptoKeys => "missing_crypto_keys",
             WebPushError::InvalidCryptoKeys => "invalid_crypto_keys",
-            WebPushError::SslError => "ssl_error",
             WebPushError::Io(_) => "io_error",
             WebPushError::Other(_) => "other",
             WebPushError::InvalidClaims => "invalidClaims",
@@ -144,10 +138,6 @@ impl fmt::Display for WebPushError {
                 write!(f, "The URL specified is no longer valid and should no longer be used"),
             WebPushError::EndpointNotFound =>
                 write!(f, "The URL specified is invalid and should not be used again"),
-            WebPushError::TlsError =>
-                write!(f, "Could not initialize a TLS connection"),
-            WebPushError::SslError =>
-                write!(f, "Error signing with SSL"),
             WebPushError::Io(err) =>
                 write!(f, "i/o error: {}", err),
             WebPushError::InvalidPackageName =>
