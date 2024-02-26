@@ -6,7 +6,7 @@ use base64::DecodeError;
 use http::uri::InvalidUri;
 use serde_json::error::Error as JsonError;
 
-#[derive(PartialEq, Debug, Clone, Ord, PartialOrd, Eq, Deserialize, Serialize, Hash)]
+#[derive(Debug)]
 pub enum WebPushError {
     /// An unknown error happened encrypting the message,
     Unspecified,
@@ -31,7 +31,7 @@ pub enum WebPushError {
     /// Error in SSL signing
     SslError,
     /// Error in reading a file
-    IoError,
+    Io(IoError),
     /// Make sure the message was addressed to a registration token whose
     /// package name matches the value passed in the request (Google).
     InvalidPackageName,
@@ -85,8 +85,8 @@ impl From<isahc::Error> for WebPushError {
 }
 
 impl From<IoError> for WebPushError {
-    fn from(_: IoError) -> WebPushError {
-        WebPushError::IoError
+    fn from(err: IoError) -> WebPushError {
+        WebPushError::Io(err)
     }
 }
 
@@ -116,7 +116,7 @@ impl WebPushError {
             WebPushError::MissingCryptoKeys => "missing_crypto_keys",
             WebPushError::InvalidCryptoKeys => "invalid_crypto_keys",
             WebPushError::SslError => "ssl_error",
-            WebPushError::IoError => "io_error",
+            WebPushError::Io(_) => "io_error",
             WebPushError::Other(_) => "other",
             WebPushError::InvalidClaims => "invalidClaims",
         }
@@ -125,7 +125,7 @@ impl WebPushError {
 
 impl fmt::Display for WebPushError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
+        match self {
             WebPushError::Unspecified =>
                 write!(f, "An unknown error happened encrypting the message"),
             WebPushError::Unauthorized =>
@@ -148,8 +148,8 @@ impl fmt::Display for WebPushError {
                 write!(f, "Could not initialize a TLS connection"),
             WebPushError::SslError =>
                 write!(f, "Error signing with SSL"),
-            WebPushError::IoError =>
-                write!(f, "Error opening a file"),
+            WebPushError::Io(err) =>
+                write!(f, "i/o error: {}", err),
             WebPushError::InvalidPackageName =>
                 write!(f, "Make sure the message was addressed to a registration token whose package name matches the value passed in the request."),
             WebPushError::InvalidTtl => write!(f, "The TTL value provided was not valid or was not provided"),
