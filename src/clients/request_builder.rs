@@ -4,15 +4,7 @@
 use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
 use http::{Request, StatusCode};
 
-use crate::{error::WebPushError, message::WebPushMessage};
-
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
-struct ErrorInfo {
-    code: u16,
-    errno: u16,
-    error: String,
-    message: String,
-}
+use crate::{error::ErrorInfo, error::WebPushError, message::WebPushMessage};
 
 /// Builds the request to send to the push service.
 ///
@@ -72,25 +64,28 @@ where
 
 /// Parses the response from the push service, and will return `Err` if the request was bad.
 pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), WebPushError> {
+    if response_status.is_success() {
+        return Ok(());
+    }
+
+    let info: ErrorInfo = serde_json::from_slice(&body).unwrap_or_else(|_| ErrorInfo {
+        code: response_status.as_u16(),
+        errno: 999,
+        error: "unknown error".into(),
+        message: String::from_utf8(body).unwrap_or_else(|_| "-".into()),
+    });
+
     match response_status {
-        status if status.is_success() => Ok(()),
-        status if status.is_server_error() => Err(WebPushError::ServerError(None)),
-
-        StatusCode::UNAUTHORIZED => Err(WebPushError::Unauthorized),
-        StatusCode::GONE => Err(WebPushError::EndpointNotValid),
-        StatusCode::NOT_FOUND => Err(WebPushError::EndpointNotFound),
+        StatusCode::UNAUTHORIZED => Err(WebPushError::Unauthorized(info)),
+        StatusCode::GONE => Err(WebPushError::EndpointNotValid(info)),
+        StatusCode::NOT_FOUND => Err(WebPushError::EndpointNotFound(info)),
         StatusCode::PAYLOAD_TOO_LARGE => Err(WebPushError::PayloadTooLarge),
-
-        StatusCode::BAD_REQUEST => match String::from_utf8(body) {
-            Err(_) => Err(WebPushError::BadRequest(None)),
-            Ok(body_str) => match serde_json::from_str::<ErrorInfo>(&body_str) {
-                Ok(error_info) => Err(WebPushError::BadRequest(Some(error_info.error))),
-                Err(_) if body_str.is_empty() => Err(WebPushError::BadRequest(None)),
-                Err(_) => Err(WebPushError::BadRequest(Some(body_str))),
-            },
-        },
-
-        e => Err(WebPushError::Other(format!("{:?}", e))),
+        StatusCode::BAD_REQUEST => Err(WebPushError::BadRequest(info)),
+        status if status.is_server_error() => Err(WebPushError::ServerError {
+            retry_after: None,
+            info,
+        }),
+        _ => Err(WebPushError::Other(info)),
     }
 }
 
@@ -164,71 +159,76 @@ mod tests {
 
     #[test]
     fn parses_a_successful_response_correctly() {
-        assert_eq!(Ok(()), parse_response(StatusCode::OK, vec![]))
+        assert!(matches!(parse_response(StatusCode::OK, vec![]), Ok(())));
     }
 
     #[test]
     fn parses_an_unauthorized_response_correctly() {
-        assert_eq!(
-            Err(WebPushError::Unauthorized),
-            parse_response(StatusCode::UNAUTHORIZED, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::UNAUTHORIZED, vec![]),
+            Err(WebPushError::Unauthorized(_))
+        ));
     }
 
     #[test]
     fn parses_a_gone_response_correctly() {
-        assert_eq!(
-            Err(WebPushError::EndpointNotValid),
-            parse_response(StatusCode::GONE, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::GONE, vec![]),
+            Err(WebPushError::EndpointNotValid(_))
+        ));
     }
 
     #[test]
     fn parses_a_not_found_response_correctly() {
-        assert_eq!(
-            Err(WebPushError::EndpointNotFound),
-            parse_response(StatusCode::NOT_FOUND, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::NOT_FOUND, vec![]),
+            Err(WebPushError::EndpointNotFound(_))
+        ));
     }
 
     #[test]
     fn parses_a_payload_too_large_response_correctly() {
-        assert_eq!(
-            Err(WebPushError::PayloadTooLarge),
-            parse_response(StatusCode::PAYLOAD_TOO_LARGE, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::PAYLOAD_TOO_LARGE, vec![]),
+            Err(WebPushError::PayloadTooLarge)
+        ));
     }
 
     #[test]
     fn parses_a_server_error_response_correctly() {
-        assert_eq!(
-            Err(WebPushError::ServerError(None)),
-            parse_response(StatusCode::INTERNAL_SERVER_ERROR, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::INTERNAL_SERVER_ERROR, vec![]),
+            Err(WebPushError::ServerError { .. })
+        ));
     }
 
     #[test]
     fn parses_a_bad_request_response_with_no_body_correctly() {
-        assert_eq!(
-            Err(WebPushError::BadRequest(None)),
-            parse_response(StatusCode::BAD_REQUEST, vec![])
-        )
+        assert!(matches!(
+            parse_response(StatusCode::BAD_REQUEST, vec![]),
+            Err(WebPushError::BadRequest(_))
+        ));
     }
 
     #[test]
     fn parses_a_bad_request_response_with_body_correctly() {
         let json = r#"
             {
-                "code": 404,
+                "code": 400,
                 "errno": 103,
                 "error": "FooBar",
                 "message": "No message found"
             }
         "#;
 
-        assert_eq!(
-            Err(WebPushError::BadRequest(Some(String::from("FooBar")))),
-            parse_response(StatusCode::BAD_REQUEST, json.as_bytes().to_vec())
-        )
+        assert!(matches!(
+            parse_response(StatusCode::BAD_REQUEST, json.as_bytes().to_vec()),
+            Err(WebPushError::BadRequest(ErrorInfo {
+                code: 400,
+                errno: 103,
+                error: _,
+                message: _,
+            })),
+        ));
     }
 }

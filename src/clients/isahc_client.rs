@@ -90,8 +90,12 @@ impl WebPushClient for IsahcWebPushClient {
 
         trace!("Response: {:?}", response);
 
-        if let Err(WebPushError::ServerError(None)) = response {
-            Err(WebPushError::ServerError(retry_after))
+        if let Err(WebPushError::ServerError {
+            retry_after: None,
+            info,
+        }) = response
+        {
+            Err(WebPushError::ServerError { retry_after, info })
         } else {
             Ok(response?)
         }

@@ -6,24 +6,45 @@ use base64::DecodeError;
 use http::uri::InvalidUri;
 use serde_json::error::Error as JsonError;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorInfo {
+    pub code: u16,
+    pub errno: u16,
+    pub error: String,
+    pub message: String,
+}
+
+impl fmt::Display for ErrorInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "code {}, errno {}: {} ({})",
+            self.code, self.errno, self.error, self.message
+        )
+    }
+}
+
 #[derive(Debug)]
 pub enum WebPushError {
     /// An unknown error happened encrypting the message,
     Unspecified,
     /// Please provide valid credentials to send the notification
-    Unauthorized,
+    Unauthorized(ErrorInfo),
     /// Request was badly formed
-    BadRequest(Option<String>),
+    BadRequest(ErrorInfo),
     /// Contains an optional `Duration`, until the user can retry the request
-    ServerError(Option<Duration>),
+    ServerError {
+        retry_after: Option<Duration>,
+        info: ErrorInfo,
+    },
     /// The feature is not implemented yet
-    NotImplemented,
+    NotImplemented(ErrorInfo),
     /// The provided URI is invalid
     InvalidUri,
     /// The URL specified is no longer valid and should no longer be used
-    EndpointNotValid,
+    EndpointNotValid(ErrorInfo),
     /// The URL specified is invalid and should not be used again
-    EndpointNotFound,
+    EndpointNotFound(ErrorInfo),
     /// Maximum allowed payload size is 3800 characters
     PayloadTooLarge,
     /// Error in reading a file
@@ -43,7 +64,7 @@ pub enum WebPushError {
     InvalidResponse,
     /// A claim had invalid data
     InvalidClaims,
-    Other(String),
+    Other(ErrorInfo),
 }
 
 impl Error for WebPushError {}
@@ -96,13 +117,13 @@ impl WebPushError {
     pub fn short_description(&self) -> &'static str {
         match *self {
             WebPushError::Unspecified => "unspecified",
-            WebPushError::Unauthorized => "unauthorized",
+            WebPushError::Unauthorized(_) => "unauthorized",
             WebPushError::BadRequest(_) => "bad_request",
-            WebPushError::ServerError(_) => "server_error",
-            WebPushError::NotImplemented => "not_implemented",
+            WebPushError::ServerError { .. } => "server_error",
+            WebPushError::NotImplemented(_) => "not_implemented",
             WebPushError::InvalidUri => "invalid_uri",
-            WebPushError::EndpointNotValid => "endpoint_not_valid",
-            WebPushError::EndpointNotFound => "endpoint_not_found",
+            WebPushError::EndpointNotValid(_) => "endpoint_not_valid",
+            WebPushError::EndpointNotFound(_) => "endpoint_not_found",
             WebPushError::PayloadTooLarge => "payload_too_large",
             WebPushError::InvalidPackageName => "invalid_package_name",
             WebPushError::InvalidTtl => "invalid_ttl",
@@ -122,22 +143,22 @@ impl fmt::Display for WebPushError {
         match self {
             WebPushError::Unspecified =>
                 write!(f, "An unknown error happened encrypting the message"),
-            WebPushError::Unauthorized =>
-                write!(f, "Please provide valid credentials to send the notification"),
-            WebPushError::BadRequest(_) =>
-                write!(f, "Request was badly formed"),
-            WebPushError::ServerError(_) =>
-                write!(f, "Server was unable to process the request, please try again later"),
+            WebPushError::Unauthorized(info) =>
+                write!(f, "unauthorized: {}", info),
+            WebPushError::BadRequest(info) =>
+                write!(f, "bad request: {}", info),
+            WebPushError::ServerError { info, .. } =>
+                write!(f, "server error: {}", info),
             WebPushError::PayloadTooLarge =>
                 write!(f, "Maximum allowed payload size is 3070 characters"),
             WebPushError::InvalidUri =>
                 write!(f, "The provided URI is invalid"),
-            WebPushError::NotImplemented =>
-                write!(f, "The feature is not implemented yet"),
-            WebPushError::EndpointNotValid =>
-                write!(f, "The URL specified is no longer valid and should no longer be used"),
-            WebPushError::EndpointNotFound =>
-                write!(f, "The URL specified is invalid and should not be used again"),
+            WebPushError::NotImplemented(info) =>
+                write!(f, "not implemented: {}", info),
+            WebPushError::EndpointNotValid(info) =>
+                write!(f, "endpoint not valid: {}", info),
+            WebPushError::EndpointNotFound(info) =>
+                write!(f, "endpoint not found: {}", info),
             WebPushError::Io(err) =>
                 write!(f, "i/o error: {}", err),
             WebPushError::InvalidPackageName =>
@@ -147,7 +168,7 @@ impl fmt::Display for WebPushError {
             WebPushError::InvalidResponse => write!(f, "The response data couldn't be parses"),
             WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
             WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),
-            WebPushError::Other(_) => write!(f, "An unknown error when connecting the notification service"),
+            WebPushError::Other(info) => write!(f, "other: {}", info),
             WebPushError::InvalidClaims => write!(f, "At least one JWT claim was invalid.")
         }
     }
