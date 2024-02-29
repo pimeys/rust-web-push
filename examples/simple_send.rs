@@ -58,6 +58,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     if let Some(ref payload) = push_payload {
         builder.set_payload(ece_scheme, payload.as_bytes());
+    } else {
+        builder.set_payload(ece_scheme, "Hello world!".as_bytes());
     }
 
     if let Some(time) = ttl {
@@ -76,7 +78,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
         let signature = sig_builder.build().unwrap();
 
         builder.set_vapid_signature(signature);
-        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
     };
 
     let client = IsahcWebPushClient::new()?;
