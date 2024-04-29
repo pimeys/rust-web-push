@@ -26,6 +26,13 @@ impl Default for IsahcWebPushClient {
     }
 }
 
+impl From<HttpClient> for IsahcWebPushClient {
+    /// Creates a new client from a custom Isahc HTTP client.
+    fn from(client: HttpClient) -> Self {
+        Self { client }
+    }
+}
+
 impl IsahcWebPushClient {
     /// Creates a new client. Can fail under resource depletion.
     pub fn new() -> Result<Self, WebPushError> {
