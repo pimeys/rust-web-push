@@ -208,5 +208,5 @@ impl<'a> WebPushMessageBuilder<'a> {
 }
 
 fn is_base64url_char(c: char) -> bool {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '-' || c == '_');
+    c.is_ascii_uppercase() || c.is_ascii_lowercase() || c.is_ascii_digit() || (c == '-' || c == '_')
 }
