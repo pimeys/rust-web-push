@@ -25,6 +25,13 @@ impl Default for HyperWebPushClient {
     }
 }
 
+impl From<Client<HttpsConnector<HttpConnector>>> for HyperWebPushClient {
+    /// Creates a new client from a custom hyper HTTP client.
+    fn from(client: Client<HttpsConnector<HttpConnector>>) -> Self {
+        Self { client }
+    }
+}
+
 impl HyperWebPushClient {
     /// Creates a new client.
     pub fn new() -> Self {
