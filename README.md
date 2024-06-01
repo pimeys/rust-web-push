@@ -12,7 +12,8 @@ reference [this excellent document.](https://web.dev/notifications/)
 
 ## Requirements
 
-Clients require an async executor. System Openssl is needed for compilation.
+- Clients require an async executor.
+- OpenSSL is required for compilation. You must install it on your host or use the `vendored` feature of the [openssl](https://docs.rs/openssl/) crate.
 
 ## Migration notes
 
@@ -24,7 +25,6 @@ Example
 
 ```rust
 use web_push::*;
-use web_push::clients::isahc_client::IsahcWebPushClient;
 use std::fs::File;
 
 #[tokio::main]
