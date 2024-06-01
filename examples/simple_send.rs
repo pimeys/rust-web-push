@@ -82,8 +82,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     let client = IsahcWebPushClient::new()?;
 
-    let response = client.send(builder.build()?).await?;
-    println!("Sent: {:?}", response);
+    let result = client.send(builder.build()?).await;
+
+    if let Err(error) = result {
+        println!("An error occured: {:?}", error);
+    }
 
     Ok(())
 }
