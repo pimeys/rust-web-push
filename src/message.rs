@@ -1,3 +1,5 @@
+use base64::prelude::BASE64_URL_SAFE;
+use base64::Engine;
 use http::uri::Uri;
 use std::fmt::{Display, Formatter};
 
@@ -183,8 +185,8 @@ impl<'a> WebPushMessageBuilder<'a> {
             .transpose()?;
 
         if let Some(payload) = self.payload {
-            let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
-            let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
+            let p256dh = BASE64_URL_SAFE.decode(&self.subscription_info.keys.p256dh)?;
+            let auth = BASE64_URL_SAFE.decode(&self.subscription_info.keys.auth)?;
 
             let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);
 
