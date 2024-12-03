@@ -274,9 +274,9 @@ pub struct PartialVapidSignatureBuilder {
     key: VapidKey,
 }
 
-impl<'a> PartialVapidSignatureBuilder {
+impl PartialVapidSignatureBuilder {
     /// Adds the VAPID subscription info for a particular client.
-    pub fn add_sub_info(self, subscription_info: &'a SubscriptionInfo) -> VapidSignatureBuilder {
+    pub fn add_sub_info(self, subscription_info: &SubscriptionInfo) -> VapidSignatureBuilder<'_> {
         VapidSignatureBuilder {
             key: self.key,
             claims: jwt_simple::prelude::Claims::with_custom_claims(BTreeMap::new(), Duration::from_hours(12)),
