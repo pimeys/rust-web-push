@@ -26,7 +26,7 @@ impl fmt::Display for ErrorInfo {
 
 #[derive(Debug)]
 pub enum WebPushError {
-    /// An unknown error happened encrypting the message,
+    /// An unknown error happened while encrypting or sending the message
     Unspecified,
     /// Please provide valid credentials to send the notification
     Unauthorized(ErrorInfo),
@@ -141,35 +141,27 @@ impl WebPushError {
 impl fmt::Display for WebPushError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            WebPushError::Unspecified =>
-                write!(f, "An unknown error happened encrypting the message"),
-            WebPushError::Unauthorized(info) =>
-                write!(f, "unauthorized: {}", info),
-            WebPushError::BadRequest(info) =>
-                write!(f, "bad request: {}", info),
-            WebPushError::ServerError { info, .. } =>
-                write!(f, "server error: {}", info),
-            WebPushError::PayloadTooLarge =>
-                write!(f, "Maximum allowed payload size is 3070 characters"),
-            WebPushError::InvalidUri =>
-                write!(f, "The provided URI is invalid"),
-            WebPushError::NotImplemented(info) =>
-                write!(f, "not implemented: {}", info),
-            WebPushError::EndpointNotValid(info) =>
-                write!(f, "endpoint not valid: {}", info),
-            WebPushError::EndpointNotFound(info) =>
-                write!(f, "endpoint not found: {}", info),
-            WebPushError::Io(err) =>
-                write!(f, "i/o error: {}", err),
-            WebPushError::InvalidPackageName =>
-                write!(f, "Make sure the message was addressed to a registration token whose package name matches the value passed in the request."),
-            WebPushError::InvalidTtl => write!(f, "The TTL value provided was not valid or was not provided"),
-            WebPushError::InvalidTopic => write!(f, "The Topic value provided was invalid"),
-            WebPushError::InvalidResponse => write!(f, "The response data couldn't be parses"),
-            WebPushError::MissingCryptoKeys  => write!(f, "The request is missing cryptographic keys"),
-            WebPushError::InvalidCryptoKeys  => write!(f, "The request is having invalid cryptographic keys"),
+            WebPushError::Unspecified => write!(f, "unspecified error"),
+            WebPushError::Unauthorized(info) => write!(f, "unauthorized: {}", info),
+            WebPushError::BadRequest(info) => write!(f, "bad request: {}", info),
+            WebPushError::ServerError { info, .. } => write!(f, "server error: {}", info),
+            WebPushError::PayloadTooLarge => write!(f, "maximum payload size of 3070 characters exceeded"),
+            WebPushError::InvalidUri => write!(f, "invalid uri provided"),
+            WebPushError::NotImplemented(info) => write!(f, "not implemented: {}", info),
+            WebPushError::EndpointNotValid(info) => write!(f, "endpoint not valid: {}", info),
+            WebPushError::EndpointNotFound(info) => write!(f, "endpoint not found: {}", info),
+            WebPushError::Io(err) => write!(f, "i/o error: {}", err),
+            WebPushError::InvalidPackageName => write!(
+                f,
+                "package name of registration token does not match package name provided in the request"
+            ),
+            WebPushError::InvalidTtl => write!(f, "invalid or missing ttl value"),
+            WebPushError::InvalidTopic => write!(f, "invalid topic value"),
+            WebPushError::InvalidResponse => write!(f, "could not parse response data"),
+            WebPushError::MissingCryptoKeys => write!(f, "request is missing cryptographic keys"),
+            WebPushError::InvalidCryptoKeys => write!(f, "request has invalid cryptographic keys"),
             WebPushError::Other(info) => write!(f, "other: {}", info),
-            WebPushError::InvalidClaims => write!(f, "At least one JWT claim was invalid.")
+            WebPushError::InvalidClaims => write!(f, "at least one jwt claim was invalid"),
         }
     }
 }
