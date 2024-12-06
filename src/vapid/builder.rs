@@ -76,7 +76,6 @@ use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
 /// let signature = sig_builder.build().unwrap();
 /// # }
 /// ```
-
 pub struct VapidSignatureBuilder<'a> {
     claims: Claims,
     key: VapidKey,
