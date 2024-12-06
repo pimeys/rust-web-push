@@ -147,7 +147,7 @@ mod tests {
         //This content is one above limit.
         let content = [0u8; 3801];
 
-        assert_eq!(Err(WebPushError::PayloadTooLarge), http_ece.encrypt(&content));
+        assert!(matches!(http_ece.encrypt(&content), Err(WebPushError::PayloadTooLarge)));
     }
 
     /// Tests that the content encryption is properly reversible while using aes128gcm.
