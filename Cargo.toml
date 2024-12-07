@@ -18,19 +18,19 @@ isahc-client = ["isahc", "futures-lite/futures-io"]  #futures are only used for 
 hyper-client = ["hyper", "hyper-tls"] #use features = ["hyper-client"], default-features = false for about 300kb size decrease.
 
 [dependencies]
-hyper = { version = "^1", features = ["client", "http1"], optional = true }
-hyper-tls = { version = "^0.6", optional = true }
+hyper = { version = "^0.14", features = ["client", "http1"], optional = true }
+hyper-tls = { version = "^0.5", optional = true }
 isahc = { version = "^1.4.0", optional = true }
-futures-lite = { version = "^2", optional = true }
+futures-lite = { version = "^1.12", optional = true }
 http = "^0.2"
 serde = "^1.0"
 serde_json = "^1.0"
 serde_derive = "^1.0"
-jwt-simple = "0.12"
+jwt-simple = "0.11.2"
 ece = "^2.2"
-pem = "3"
+pem = "1.1.0"
 sec1_decode = "^0.1.0"
-base64 = "^0.22"
+base64 = "^0.13"
 chrono = "^0.4"
 log = "^0.4"
 async-trait = "^0.1"

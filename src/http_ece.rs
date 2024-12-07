@@ -1,7 +1,5 @@
 //! Payload encryption algorithm
 
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
-use base64::Engine;
 use ece::encrypt;
 
 use crate::error::WebPushError;
@@ -92,7 +90,7 @@ impl<'a> HttpEce<'a> {
                 self.add_vapid_headers(&mut headers);
 
                 // ECE library base64 encodes content in aesgcm, but not aes128gcm, so decode base64 here to match the 128 API
-                let data = BASE64_URL_SAFE_NO_PAD.decode(data.body())
+                let data = base64::decode_config(data.body(), base64::URL_SAFE_NO_PAD)
                     .expect("ECE library should always base64 encode");
 
                 Ok(WebPushPayload {
@@ -113,7 +111,7 @@ impl<'a> HttpEce<'a> {
                 format!(
                     "vapid t={}, k={}",
                     signature.auth_t,
-                    BASE64_URL_SAFE_NO_PAD.encode(&signature.auth_k)
+                    base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
                 ),
             ));
         }
@@ -129,8 +127,7 @@ impl<'a> HttpEce<'a> {
 
 #[cfg(test)]
 mod tests {
-    use base64::prelude::BASE64_URL_SAFE;
-    use base64::Engine;
+    use base64::{self, URL_SAFE};
     use regex::Regex;
 
     use crate::error::WebPushError;
@@ -140,11 +137,12 @@ mod tests {
 
     #[test]
     fn test_payload_too_big() {
-        let p256dh = BASE64_URL_SAFE.decode(
+        let p256dh = base64::decode_config(
             "BLMaF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-           )
+            URL_SAFE,
+        )
         .unwrap();
-        let auth = BASE64_URL_SAFE.decode("xS03Fj5ErfTNH_l9WHE9Ig").unwrap();
+        let auth = base64::decode_config("xS03Fj5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
         let http_ece = HttpEce::new(ContentEncoding::Aes128Gcm, &p256dh, &auth, None);
         //This content is one above limit.
         let content = [0u8; 3801];
@@ -193,11 +191,12 @@ mod tests {
     }
 
     fn setup_payload(vapid_signature: Option<VapidSignature>, encoding: ContentEncoding) -> WebPushPayload {
-        let p256dh = BASE64_URL_SAFE.decode(
+        let p256dh = base64::decode_config(
             "BLMbF9ffKBiWQLCKvTHb6LO8Nb6dcUh6TItC455vu2kElga6PQvUmaFyCdykxY2nOSSL3yKgfbmFLRTUaGv4yV8",
-            )
+            URL_SAFE,
+        )
         .unwrap();
-        let auth = BASE64_URL_SAFE.decode("xS03Fi5ErfTNH_l9WHE9Ig").unwrap();
+        let auth = base64::decode_config("xS03Fi5ErfTNH_l9WHE9Ig", URL_SAFE).unwrap();
 
         let http_ece = HttpEce::new(encoding, &p256dh, &auth, vapid_signature);
         let content = "Hello, world!".as_bytes();
