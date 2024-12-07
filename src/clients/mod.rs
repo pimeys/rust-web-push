@@ -14,6 +14,9 @@ pub mod hyper_client;
 #[cfg(feature = "isahc-client")]
 pub mod isahc_client;
 
+/// We should not handle larger bodies than 512kB.
+const MAX_CONTENT_LENGTH: usize = 512_000;
+
 /// An async client for sending the notification payload.
 /// Other features, such as thread safety, may vary by implementation.
 #[async_trait]
