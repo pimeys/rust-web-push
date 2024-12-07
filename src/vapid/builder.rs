@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 use std::io::Read;
 
+use base64::alphabet::Alphabet;
+use base64::engine::{GeneralPurpose, GeneralPurposeConfig};
+use base64::Engine;
 use http::uri::Uri;
 use jwt_simple::prelude::*;
 use serde_json::Value;
@@ -73,7 +76,6 @@ use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
 /// let signature = sig_builder.build().unwrap();
 /// # }
 /// ```
-
 pub struct VapidSignatureBuilder<'a> {
     claims: Claims,
     key: VapidKey,
@@ -166,11 +168,12 @@ impl<'a> VapidSignatureBuilder<'a> {
     /// ```
     pub fn from_base64(
         encoded: &str,
-        config: base64::Config,
+        alphabet: &Alphabet,
+        config: GeneralPurposeConfig,
         subscription_info: &'a SubscriptionInfo,
     ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
         let pr_key = ES256KeyPair::from_bytes(
-            &base64::decode_config(encoded, config).map_err(|_| WebPushError::InvalidCryptoKeys)?,
+            &GeneralPurpose::new(alphabet, config).decode(encoded).map_err(|_| WebPushError::InvalidCryptoKeys)?,
         )
         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
@@ -181,10 +184,11 @@ impl<'a> VapidSignatureBuilder<'a> {
     /// allowing the reuse of one builder for multiple messages by cloning the resulting builder.
     pub fn from_base64_no_sub(
         encoded: &str,
-        config: base64::Config,
+        alphabet: &Alphabet,
+        config: GeneralPurposeConfig,
     ) -> Result<PartialVapidSignatureBuilder, WebPushError> {
         let pr_key = ES256KeyPair::from_bytes(
-            &base64::decode_config(encoded, config).map_err(|_| WebPushError::InvalidCryptoKeys)?,
+            &GeneralPurpose::new(alphabet, config).decode(encoded).map_err(|_| WebPushError::InvalidCryptoKeys)?,
         )
         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
@@ -230,8 +234,8 @@ impl<'a> VapidSignatureBuilder<'a> {
         //Parse many PEM in the assumption of extra unneeded sections.
         let parsed = pem::parse_many(&buffer).map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
-        let found_pkcs8 = parsed.iter().any(|pem| pem.tag == "PRIVATE KEY");
-        let found_sec1 = parsed.iter().any(|pem| pem.tag == "EC PRIVATE KEY");
+        let found_pkcs8 = parsed.iter().any(|pem| pem.tag() == "PRIVATE KEY");
+        let found_sec1 = parsed.iter().any(|pem| pem.tag() == "EC PRIVATE KEY");
 
         //Handle each kind of PEM file differently, as EC keys can be in SEC1 or PKCS8 format.
         if found_sec1 {
@@ -296,6 +300,10 @@ impl PartialVapidSignatureBuilder {
 mod tests {
     use std::fs::File;
 
+    use base64::alphabet::STANDARD;
+    use base64::engine::GeneralPurposeConfig;
+    use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+    use base64::Engine;
     use ::lazy_static::lazy_static;
 
     use crate::message::SubscriptionInfo;
@@ -328,7 +336,7 @@ mod tests {
 
         assert_eq!(
             "BMo1HqKF6skMZYykrte9duqYwBD08mDQKTunRkJdD3sTJ9E-yyN6sJlPWTpKNhp-y2KeS6oANHF-q3w37bClb7U",
-            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
+            BASE64_URL_SAFE_NO_PAD.encode(&signature.auth_k)
         );
 
         assert!(!signature.auth_t.is_empty());
@@ -341,7 +349,7 @@ mod tests {
 
         assert_eq!(
             "BMo1HqKF6skMZYykrte9duqYwBD08mDQKTunRkJdD3sTJ9E-yyN6sJlPWTpKNhp-y2KeS6oANHF-q3w37bClb7U",
-            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
+            BASE64_URL_SAFE_NO_PAD.encode(&signature.auth_k)
         );
 
         assert!(!signature.auth_t.is_empty());
@@ -350,12 +358,12 @@ mod tests {
     #[test]
     fn test_builder_from_base64() {
         let builder =
-            VapidSignatureBuilder::from_base64(PRIVATE_BASE64, base64::URL_SAFE_NO_PAD, &SUBSCRIPTION_INFO).unwrap();
+            VapidSignatureBuilder::from_base64(PRIVATE_BASE64, &STANDARD, GeneralPurposeConfig::new().with_encode_padding(false), &SUBSCRIPTION_INFO).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
             "BMjQIp55pdbU8pfCBKyXcZjlmER_mXt5LqNrN1hrXbdBS5EnhIbMu3Au-RV53iIpztzNXkGI56BFB1udQ8Bq_H4",
-            base64::encode_config(&signature.auth_k, base64::URL_SAFE_NO_PAD)
+            BASE64_URL_SAFE_NO_PAD.encode(&signature.auth_k)
         );
 
         assert!(!signature.auth_t.is_empty());

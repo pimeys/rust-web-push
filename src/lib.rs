@@ -62,7 +62,8 @@ pub use crate::message::{
 };
 pub use crate::vapid::builder::PartialVapidSignatureBuilder;
 pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
-pub use base64::{Config, BCRYPT, BINHEX, CRYPT, IMAP_MUTF7, STANDARD, STANDARD_NO_PAD, URL_SAFE, URL_SAFE_NO_PAD};
+pub use base64::alphabet::{BCRYPT, BIN_HEX, CRYPT, IMAP_MUTF7, STANDARD, URL_SAFE};
+pub use base64::engine::GeneralPurposeConfig;
 
 mod clients;
 mod error;
