@@ -173,7 +173,9 @@ impl<'a> VapidSignatureBuilder<'a> {
         subscription_info: &'a SubscriptionInfo,
     ) -> Result<VapidSignatureBuilder<'a>, WebPushError> {
         let pr_key = ES256KeyPair::from_bytes(
-            &GeneralPurpose::new(alphabet, config).decode(encoded).map_err(|_| WebPushError::InvalidCryptoKeys)?,
+            &GeneralPurpose::new(alphabet, config)
+                .decode(encoded)
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?,
         )
         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
@@ -188,7 +190,9 @@ impl<'a> VapidSignatureBuilder<'a> {
         config: GeneralPurposeConfig,
     ) -> Result<PartialVapidSignatureBuilder, WebPushError> {
         let pr_key = ES256KeyPair::from_bytes(
-            &GeneralPurpose::new(alphabet, config).decode(encoded).map_err(|_| WebPushError::InvalidCryptoKeys)?,
+            &GeneralPurpose::new(alphabet, config)
+                .decode(encoded)
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?,
         )
         .map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
@@ -300,11 +304,11 @@ impl PartialVapidSignatureBuilder {
 mod tests {
     use std::fs::File;
 
+    use ::lazy_static::lazy_static;
     use base64::alphabet::STANDARD;
     use base64::engine::GeneralPurposeConfig;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use base64::Engine;
-    use ::lazy_static::lazy_static;
 
     use crate::message::SubscriptionInfo;
     use crate::vapid::VapidSignatureBuilder;
@@ -357,8 +361,13 @@ mod tests {
 
     #[test]
     fn test_builder_from_base64() {
-        let builder =
-            VapidSignatureBuilder::from_base64(PRIVATE_BASE64, &STANDARD, GeneralPurposeConfig::new().with_encode_padding(false), &SUBSCRIPTION_INFO).unwrap();
+        let builder = VapidSignatureBuilder::from_base64(
+            PRIVATE_BASE64,
+            &STANDARD,
+            GeneralPurposeConfig::new().with_encode_padding(false),
+            &SUBSCRIPTION_INFO,
+        )
+        .unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
