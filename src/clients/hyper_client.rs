@@ -73,6 +73,10 @@ impl WebPushClient for HyperWebPushClient {
             .and_then(|s| s.parse().ok())
             .unwrap_or(0);
 
+        if content_length > super::MAX_CONTENT_LENGTH {
+            return Err(WebPushError::ResponseTooLarge(content_length));
+        }
+
         let mut body: Vec<u8> = Vec::with_capacity(content_length);
         let mut chunks = response.into_body();
 

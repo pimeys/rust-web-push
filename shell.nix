@@ -1,10 +1,9 @@
-{ pkgs ? import <nixpkgs> {} }:
-
+{pkgs ? import <nixpkgs> {}}:
 with pkgs;
-
-mkShell {
-  buildInputs = with pkgs; [
-    openssl
-    pkg-config
-  ];
-}
+  mkShell {
+    buildInputs = with pkgs; [
+      rustup
+      openssl
+      pkg-config
+    ];
+  }

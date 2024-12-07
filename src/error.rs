@@ -64,6 +64,8 @@ pub enum WebPushError {
     InvalidResponse,
     /// A claim had invalid data
     InvalidClaims,
+    /// The response was too large
+    ResponseTooLarge(usize),
     Other(ErrorInfo),
 }
 
@@ -133,6 +135,7 @@ impl WebPushError {
             WebPushError::InvalidCryptoKeys => "invalid_crypto_keys",
             WebPushError::Io(_) => "io_error",
             WebPushError::Other(_) => "other",
+            WebPushError::ResponseTooLarge(_) => "response_too_large",
             WebPushError::InvalidClaims => "invalidClaims",
         }
     }
@@ -160,6 +163,7 @@ impl fmt::Display for WebPushError {
             WebPushError::InvalidResponse => write!(f, "could not parse response data"),
             WebPushError::MissingCryptoKeys => write!(f, "request is missing cryptographic keys"),
             WebPushError::InvalidCryptoKeys => write!(f, "request has invalid cryptographic keys"),
+            WebPushError::ResponseTooLarge(size) => write!(f, "response too large: {} bytes", size),
             WebPushError::Other(info) => write!(f, "other: {}", info),
             WebPushError::InvalidClaims => write!(f, "at least one jwt claim was invalid"),
         }
