@@ -230,8 +230,8 @@ impl<'a> VapidSignatureBuilder<'a> {
         //Parse many PEM in the assumption of extra unneeded sections.
         let parsed = pem::parse_many(&buffer).map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
-        let found_pkcs8 = parsed.iter().any(|pem| pem.tag == "PRIVATE KEY");
-        let found_sec1 = parsed.iter().any(|pem| pem.tag == "EC PRIVATE KEY");
+        let found_pkcs8 = parsed.iter().any(|pem| pem.tag() == "PRIVATE KEY");
+        let found_sec1 = parsed.iter().any(|pem| pem.tag() == "EC PRIVATE KEY");
 
         //Handle each kind of PEM file differently, as EC keys can be in SEC1 or PKCS8 format.
         if found_sec1 {
