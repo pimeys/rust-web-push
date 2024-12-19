@@ -10,7 +10,7 @@ use crate::{error::WebPushError, vapid::VapidKey};
 /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct VapidSignature {
-    /// The signed JWT, base64 encoded
+    /// The signed JWT, base64-encoded
     pub auth_t: String,
     /// The public key bytes
     pub auth_k: Vec<u8>,
