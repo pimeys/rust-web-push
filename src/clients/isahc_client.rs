@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use futures_lite::AsyncReadExt;
-use http::header::{CONTENT_LENGTH, RETRY_AFTER};
+use http::header::RETRY_AFTER;
 use isahc::HttpClient;
 
 use crate::clients::request_builder;
-use crate::clients::WebPushClient;
+use crate::clients::{WebPushClient, MAX_RESPONSE_SIZE};
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
 
@@ -67,21 +67,16 @@ impl WebPushClient for IsahcWebPushClient {
         let response_status = response.status();
         trace!("Response status: {}", response_status);
 
-        let content_length: usize = response
-            .headers()
-            .get(CONTENT_LENGTH)
-            .and_then(|s| s.to_str().ok())
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0);
-
-        let mut body: Vec<u8> = Vec::with_capacity(content_length);
-        let mut chunks = response.into_body();
-
-        chunks
+        let mut body = Vec::new();
+        if response
+            .into_body()
+            .take(MAX_RESPONSE_SIZE as u64 + 1)
             .read_to_end(&mut body)
-            .await
-            .map_err(|_| WebPushError::InvalidResponse)?;
-
+            .await?
+            > MAX_RESPONSE_SIZE
+        {
+            return Err(WebPushError::ResponseTooLarge);
+        }
         trace!("Body: {:?}", body);
 
         trace!("Body text: {:?}", std::str::from_utf8(&body));

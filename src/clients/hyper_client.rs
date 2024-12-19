@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 
-use http::header::{CONTENT_LENGTH, RETRY_AFTER};
+use http::header::RETRY_AFTER;
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 
-use crate::clients::{request_builder, WebPushClient};
+use crate::clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE};
 use crate::error::{RetryAfter, WebPushError};
 use crate::message::WebPushMessage;
 
@@ -66,18 +66,13 @@ impl WebPushClient for HyperWebPushClient {
         let response_status = response.status();
         trace!("Response status: {}", response_status);
 
-        let content_length: usize = response
-            .headers()
-            .get(CONTENT_LENGTH)
-            .and_then(|s| s.to_str().ok())
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0);
-
-        let mut body: Vec<u8> = Vec::with_capacity(content_length);
         let mut chunks = response.into_body();
-
+        let mut body = Vec::new();
         while let Some(chunk) = chunks.data().await {
             body.extend(&chunk?);
+            if body.len() > MAX_RESPONSE_SIZE {
+                return Err(WebPushError::ResponseTooLarge);
+            }
         }
         trace!("Body: {:?}", body);
 
