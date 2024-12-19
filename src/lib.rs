@@ -9,7 +9,6 @@
 //!
 //! ```no_run
 //! # use web_push::*;
-//! # use base64::URL_SAFE;
 //! # use std::fs::File;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
@@ -17,7 +16,7 @@
 //! let p256dh = "key_from_browser_as_base64";
 //! let auth = "auth_from_browser_as_base64";
 //!
-//! //You would likely get this by deserializing a browser `pushSubscription` object.  
+//! //You would likely get this by deserializing a browser `pushSubscription` object.
 //! let subscription_info = SubscriptionInfo::new(
 //!     endpoint,
 //!     p256dh,
@@ -62,7 +61,6 @@ pub use crate::message::{
 };
 pub use crate::vapid::builder::PartialVapidSignatureBuilder;
 pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
-pub use base64::{Config, BCRYPT, BINHEX, CRYPT, IMAP_MUTF7, STANDARD, STANDARD_NO_PAD, URL_SAFE, URL_SAFE_NO_PAD};
 
 mod clients;
 mod error;
