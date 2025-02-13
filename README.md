@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     );
 
     //Read signing material for payload.
-    let file = File::open("private.pem").unwrap();
+    let file = File::open("private_key.pem").unwrap();
     let mut sig_builder = VapidSignatureBuilder::from_pem(file, &subscription_info)?.build()?;
 
     //Now add payload and encrypt.
