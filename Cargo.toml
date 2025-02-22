@@ -1,7 +1,7 @@
 [package]
 name = "web-push"
 description = "Web push notification client with support for http-ece encryption and VAPID authentication."
-version = "0.10.3"
+version = "0.10.4"
 authors = ["Julius de Bruijn <julius+github@nauk.io>", "Andrew Ealovega <Andrew@Ealovega.dev>"]
 license = "Apache-2.0"
 homepage = "https://github.com/pimeys/rust-web-push"
