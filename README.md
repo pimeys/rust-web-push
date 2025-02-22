@@ -98,8 +98,8 @@ Google has
 [good instructions](https://developers.google.com/web/fundamentals/push-notifications/subscribing-a-user) for building a
 frontend to receive notifications.
 
-Store the subscription info to `examples/test.json` and send a notification with
-`cargo run --example simple_send -- -v ./private_key.pem -f examples/test.json -p "It works!"`.
+Store the subscription info to `test.json` and send a notification with
+`cd examples/simple-send && cargo run -- -v ../../private_key.pem -f ../../test.json -p "It works!"`.
 
 Overview
 --------

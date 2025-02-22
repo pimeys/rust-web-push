@@ -1,0 +1,11 @@
+[package]
+name = "example-simple-send"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+argparse = "0.2"
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+web-push = { path = "../..", features = ["isahc-client"] }

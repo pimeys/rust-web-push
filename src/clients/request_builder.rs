@@ -29,9 +29,10 @@ use crate::{
 ///
 ///  let mut builder = WebPushMessageBuilder::new(&info);
 ///
-///  //Build the request for isahc
+///  // Build the request for isahc
+///  # #[cfg(feature = "isahc-client")]
 ///  let request = build_request::<isahc::Body>(builder.build().unwrap());
-///  //Send using a http client
+///  // Send using a http client
 /// ```
 pub fn build_request<T>(message: WebPushMessage) -> Request<T>
 where
@@ -103,6 +104,7 @@ mod tests {
         Urgency,
     };
 
+    #[cfg(feature = "isahc-client")]
     #[test]
     fn builds_a_correct_request_with_empty_payload() {
         //This *was* a real token
@@ -133,6 +135,7 @@ mod tests {
         assert_eq!(expected_uri.host(), request.uri().host());
     }
 
+    #[cfg(feature = "isahc-client")]
     #[test]
     fn builds_a_correct_request_with_payload() {
         //This *was* a real token
