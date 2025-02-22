@@ -1,3 +1,4 @@
+use ct_codecs::{Base64UrlSafeNoPadding, Decoder};
 use http::uri::Uri;
 use std::fmt::{Display, Formatter};
 
@@ -8,9 +9,9 @@ use crate::vapid::VapidSignature;
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
 pub struct SubscriptionKeys {
-    /// The public key. Base64 encoded.
+    /// The public key. Base64-encoded, URL-safe alphabet, no padding.
     pub p256dh: String,
-    /// Authentication secret. Base64 encoded.
+    /// Authentication secret. Base64-encoded, URL-safe alphabet, no padding.
     pub auth: String,
 }
 
@@ -183,8 +184,10 @@ impl<'a> WebPushMessageBuilder<'a> {
             .transpose()?;
 
         if let Some(payload) = self.payload {
-            let p256dh = base64::decode_config(&self.subscription_info.keys.p256dh, base64::URL_SAFE)?;
-            let auth = base64::decode_config(&self.subscription_info.keys.auth, base64::URL_SAFE)?;
+            let p256dh = Base64UrlSafeNoPadding::decode_to_vec(&self.subscription_info.keys.p256dh, None)
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?;
+            let auth = Base64UrlSafeNoPadding::decode_to_vec(&self.subscription_info.keys.auth, None)
+                .map_err(|_| WebPushError::InvalidCryptoKeys)?;
 
             let http_ece = HttpEce::new(payload.encoding, &p256dh, &auth, self.vapid_signature);
 

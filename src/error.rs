@@ -2,7 +2,6 @@ use std::string::FromUtf8Error;
 use std::time::{Duration, SystemTime};
 use std::{convert::From, error::Error, fmt, io::Error as IoError};
 
-use base64::DecodeError;
 use http::uri::InvalidUri;
 use serde_json::error::Error as JsonError;
 
@@ -87,12 +86,6 @@ impl From<isahc::Error> for WebPushError {
 impl From<IoError> for WebPushError {
     fn from(_: IoError) -> WebPushError {
         WebPushError::IoError
-    }
-}
-
-impl From<DecodeError> for WebPushError {
-    fn from(_: DecodeError) -> WebPushError {
-        WebPushError::InvalidCryptoKeys
     }
 }
 
