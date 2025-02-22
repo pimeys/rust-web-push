@@ -75,7 +75,7 @@ impl WebPushClient for IsahcWebPushClient {
             .await?
             > MAX_RESPONSE_SIZE
         {
-            return Err(WebPushError::InvalidResponse); // TODO: Use new error code
+            return Err(WebPushError::ResponseTooLarge);
         }
         trace!("Body: {:?}", body);
 
@@ -85,8 +85,12 @@ impl WebPushClient for IsahcWebPushClient {
 
         trace!("Response: {:?}", response);
 
-        if let Err(WebPushError::ServerError(None)) = response {
-            Err(WebPushError::ServerError(retry_after))
+        if let Err(WebPushError::ServerError {
+            retry_after: None,
+            info,
+        }) = response
+        {
+            Err(WebPushError::ServerError { retry_after, info })
         } else {
             Ok(response?)
         }

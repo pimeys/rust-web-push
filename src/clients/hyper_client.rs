@@ -71,7 +71,7 @@ impl WebPushClient for HyperWebPushClient {
         while let Some(chunk) = chunks.data().await {
             body.extend(&chunk?);
             if body.len() > MAX_RESPONSE_SIZE {
-                return Err(WebPushError::InvalidResponse);
+                return Err(WebPushError::ResponseTooLarge);
             }
         }
         trace!("Body: {:?}", body);
@@ -82,8 +82,12 @@ impl WebPushClient for HyperWebPushClient {
 
         debug!("Response: {:?}", response);
 
-        if let Err(WebPushError::ServerError(None)) = response {
-            Err(WebPushError::ServerError(retry_after))
+        if let Err(WebPushError::ServerError {
+            retry_after: None,
+            info,
+        }) = response
+        {
+            Err(WebPushError::ServerError { retry_after, info })
         } else {
             Ok(response?)
         }
