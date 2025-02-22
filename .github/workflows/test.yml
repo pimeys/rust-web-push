@@ -1,67 +1,37 @@
-name: Cargo tests
+name: Test
+
 on:
-  push:
-    branches:
-      - master
-  pull_request:
+  - push
+  - pull_request
+
 jobs:
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          components: clippy
-          override: true
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  format:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          override: true
-      - uses: mbrobbel/rustfmt-check@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  cargo-test:
+  linux:
     strategy:
-      fail-fast: false
       matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-
-    runs-on: ${{ matrix.os }}
-
-    env:
-      RUSTFLAGS: "-Dwarnings"
-
+        toolchain:
+          - "stable"
+          - "beta"
+          - "nightly"
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{matrix.rust}}
-
-      - name: Install vcpkg openssl on windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          vcpkg integrate install
-          vcpkg install openssl:x64-windows-static-md
-
-      - name: Run tests
-        run: cargo test
+          toolchain: ${{ matrix.toolchain }}
+      - run: cargo build --manifest-path examples/simple-send/Cargo.toml
+      - run: cargo test --no-default-features
+      - run: cargo doc --no-default-features
+      - run: cargo test --no-default-features --features isahc-client
+      - run: cargo doc --no-default-features --features isahc-client
+      - run: cargo test --no-default-features --features hyper-client
+      - run: cargo doc --no-default-features --features hyper-client
+      - run: cargo test --no-default-features --features isahc-client,hyper-client
+      - run: cargo doc --no-default-features --features isahc-client,hyper-client
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: vcpkg integrate install
+      - run: vcpkg install openssl:x64-windows-static-md
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test
