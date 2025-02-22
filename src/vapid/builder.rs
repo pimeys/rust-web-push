@@ -291,21 +291,16 @@ impl PartialVapidSignatureBuilder {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-
     use ct_codecs::{Base64UrlSafeNoPadding, Encoder};
-    use lazy_static::lazy_static;
 
     use crate::{message::SubscriptionInfo, vapid::VapidSignatureBuilder};
 
-    lazy_static! {
-        static ref PRIVATE_PEM: File = File::open("resources/vapid_test_key.pem").unwrap();
-        static ref PRIVATE_DER: File = File::open("resources/vapid_test_key.der").unwrap();
-    }
+    static PRIVATE_PEM: &[u8] = include_bytes!("../../resources/vapid_test_key.pem");
+    static PRIVATE_DER: &[u8] = include_bytes!("../../resources/vapid_test_key.der");
+    static PRIVATE_BASE64: &str = "IQ9Ur0ykXoHS9gzfYX0aBjy9lvdrjx_PFUXmie9YRcY";
 
-    lazy_static! {
-        static ref SUBSCRIPTION_INFO: SubscriptionInfo =
-            serde_json::from_value(
+    fn example_subscription_info() -> SubscriptionInfo {
+        serde_json::from_value(
                 serde_json::json!({
                     "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABaso4Vajy4STM25r5y5oFfyN451rUmES6mhQngxABxbZB5q_o75WpG25oKdrlrh9KdgWFKdYBc-buLPhvCTqR5KdsK8iCZHQume-ndtZJWKOgJbQ20GjbxHmAT1IAv8AIxTwHO-JTQ2Np2hwkKISp2_KUtpnmwFzglLP7vlCd16hTNJ2I",
                     "keys": {
@@ -313,14 +308,13 @@ mod tests {
                         "p256dh": "BH1HTeKM7-NwaLGHEqxeu2IamQaVVLkcsFHPIHmsCnqxcBHPQBprF41bEMOr3O1hUQ2jU1opNEm1F_lZV_sxMP8"
                     }
                 })
-            ).unwrap();
+            ).unwrap()
     }
-
-    static PRIVATE_BASE64: &str = "IQ9Ur0ykXoHS9gzfYX0aBjy9lvdrjx_PFUXmie9YRcY";
 
     #[test]
     fn test_builder_from_pem() {
-        let builder = VapidSignatureBuilder::from_pem(&*PRIVATE_PEM, &SUBSCRIPTION_INFO).unwrap();
+        let subscription_info = example_subscription_info();
+        let builder = VapidSignatureBuilder::from_pem(PRIVATE_PEM, &subscription_info).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
@@ -333,7 +327,8 @@ mod tests {
 
     #[test]
     fn test_builder_from_der() {
-        let builder = VapidSignatureBuilder::from_der(&*PRIVATE_DER, &SUBSCRIPTION_INFO).unwrap();
+        let subscription_info = example_subscription_info();
+        let builder = VapidSignatureBuilder::from_der(PRIVATE_DER, &subscription_info).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
@@ -346,7 +341,8 @@ mod tests {
 
     #[test]
     fn test_builder_from_base64() {
-        let builder = VapidSignatureBuilder::from_base64(PRIVATE_BASE64, &SUBSCRIPTION_INFO).unwrap();
+        let subscription_info = example_subscription_info();
+        let builder = VapidSignatureBuilder::from_base64(PRIVATE_BASE64, &subscription_info).unwrap();
         let signature = builder.build().unwrap();
 
         assert_eq!(
