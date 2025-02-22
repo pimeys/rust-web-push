@@ -9,6 +9,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
+          - "1.79"
           - "stable"
           - "beta"
           - "nightly"
