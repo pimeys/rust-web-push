@@ -1,12 +1,13 @@
 use async_trait::async_trait;
-
 use http::header::RETRY_AFTER;
 use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
 use hyper_tls::HttpsConnector;
 
-use crate::clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE};
-use crate::error::{RetryAfter, WebPushError};
-use crate::message::WebPushMessage;
+use crate::{
+    clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE},
+    error::{RetryAfter, WebPushError},
+    message::WebPushMessage,
+};
 
 /// An async client for sending the notification payload.
 ///

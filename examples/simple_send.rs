@@ -1,5 +1,6 @@
-use argparse::{ArgumentParser, Store, StoreOption};
 use std::{fs::File, io::Read};
+
+use argparse::{ArgumentParser, Store, StoreOption};
 use web_push::*;
 
 #[tokio::main]

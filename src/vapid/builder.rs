@@ -1,15 +1,15 @@
-use std::collections::BTreeMap;
-use std::io::Read;
+use std::{collections::BTreeMap, io::Read};
 
 use ct_codecs::Base64UrlSafeNoPadding;
 use http::uri::Uri;
 use jwt_simple::prelude::*;
 use serde_json::Value;
 
-use crate::error::WebPushError;
-use crate::message::SubscriptionInfo;
-use crate::vapid::signer::Claims;
-use crate::vapid::{VapidKey, VapidSignature, VapidSigner};
+use crate::{
+    error::WebPushError,
+    message::SubscriptionInfo,
+    vapid::{signer::Claims, VapidKey, VapidSignature, VapidSigner},
+};
 
 /// A VAPID signature builder for generating an optional signature to the
 /// request. This encryption is required for payloads in all current and future browsers.
@@ -296,8 +296,7 @@ mod tests {
     use ct_codecs::{Base64UrlSafeNoPadding, Encoder};
     use lazy_static::lazy_static;
 
-    use crate::message::SubscriptionInfo;
-    use crate::vapid::VapidSignatureBuilder;
+    use crate::{message::SubscriptionInfo, vapid::VapidSignatureBuilder};
 
     lazy_static! {
         static ref PRIVATE_PEM: File = File::open("resources/vapid_test_key.pem").unwrap();

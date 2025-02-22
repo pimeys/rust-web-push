@@ -46,21 +46,17 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
-pub use crate::clients::request_builder;
-pub use crate::clients::WebPushClient;
-
 #[cfg(feature = "hyper-client")]
 pub use crate::clients::hyper_client::HyperWebPushClient;
 #[cfg(feature = "isahc-client")]
 pub use crate::clients::isahc_client::IsahcWebPushClient;
-
-pub use crate::error::WebPushError;
-pub use crate::http_ece::ContentEncoding;
-pub use crate::message::{
-    SubscriptionInfo, SubscriptionKeys, Urgency, WebPushMessage, WebPushMessageBuilder, WebPushPayload,
+pub use crate::{
+    clients::{request_builder, WebPushClient},
+    error::WebPushError,
+    http_ece::ContentEncoding,
+    message::{SubscriptionInfo, SubscriptionKeys, Urgency, WebPushMessage, WebPushMessageBuilder, WebPushPayload},
+    vapid::{builder::PartialVapidSignatureBuilder, VapidSignature, VapidSignatureBuilder},
 };
-pub use crate::vapid::builder::PartialVapidSignatureBuilder;
-pub use crate::vapid::{VapidSignature, VapidSignatureBuilder};
 
 mod clients;
 mod error;

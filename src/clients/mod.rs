@@ -3,8 +3,9 @@
 //! [`request_builder`] contains the functions used to send and consume push http messages.
 //! This module should be consumed by each client, by using [`http`]'s flexible api.
 
-use crate::{WebPushError, WebPushMessage};
 use async_trait::async_trait;
+
+use crate::{WebPushError, WebPushMessage};
 
 pub mod request_builder;
 

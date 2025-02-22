@@ -3,9 +3,7 @@
 use ct_codecs::{Base64UrlSafeNoPadding, Decoder, Encoder};
 use ece::encrypt;
 
-use crate::error::WebPushError;
-use crate::message::WebPushPayload;
-use crate::vapid::VapidSignature;
+use crate::{error::WebPushError, message::WebPushPayload, vapid::VapidSignature};
 
 /// Content encoding profiles.
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
@@ -129,13 +127,14 @@ impl<'a> HttpEce<'a> {
 
 #[cfg(test)]
 mod tests {
+    use ct_codecs::{Base64UrlSafeNoPadding, Decoder};
     use regex::Regex;
 
-    use crate::error::WebPushError;
-    use crate::http_ece::{ContentEncoding, HttpEce};
-    use crate::VapidSignature;
-    use crate::WebPushPayload;
-    use ct_codecs::{Base64UrlSafeNoPadding, Decoder};
+    use crate::{
+        error::WebPushError,
+        http_ece::{ContentEncoding, HttpEce},
+        VapidSignature, WebPushPayload,
+    };
 
     #[test]
     fn test_payload_too_big() {

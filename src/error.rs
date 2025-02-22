@@ -1,6 +1,11 @@
-use std::string::FromUtf8Error;
-use std::time::{Duration, SystemTime};
-use std::{convert::From, error::Error, fmt, io::Error as IoError};
+use std::{
+    convert::From,
+    error::Error,
+    fmt,
+    io::Error as IoError,
+    string::FromUtf8Error,
+    time::{Duration, SystemTime},
+};
 
 use http::uri::InvalidUri;
 use serde_json::error::Error as JsonError;

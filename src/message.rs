@@ -1,10 +1,13 @@
-use ct_codecs::{Base64UrlSafeNoPadding, Decoder};
-use http::uri::Uri;
 use std::fmt::{Display, Formatter};
 
-use crate::error::WebPushError;
-use crate::http_ece::{ContentEncoding, HttpEce};
-use crate::vapid::VapidSignature;
+use ct_codecs::{Base64UrlSafeNoPadding, Decoder};
+use http::uri::Uri;
+
+use crate::{
+    error::WebPushError,
+    http_ece::{ContentEncoding, HttpEce},
+    vapid::VapidSignature,
+};
 
 /// Encryption keys from the client.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]

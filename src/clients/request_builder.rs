@@ -1,10 +1,15 @@
 //! Functions used to send and consume push http messages.
 //! This module can be used to build custom clients.
 
-use http::header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE};
-use http::{Request, StatusCode};
+use http::{
+    header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE},
+    Request, StatusCode,
+};
 
-use crate::{error::ErrorInfo, error::WebPushError, message::WebPushMessage};
+use crate::{
+    error::{ErrorInfo, WebPushError},
+    message::WebPushMessage,
+};
 
 /// Builds the request to send to the push service.
 ///
@@ -93,11 +98,10 @@ pub fn parse_response(response_status: StatusCode, body: Vec<u8>) -> Result<(), 
 mod tests {
     use http::Uri;
 
-    use crate::clients::request_builder::*;
-    use crate::error::WebPushError;
-    use crate::http_ece::ContentEncoding;
-    use crate::message::WebPushMessageBuilder;
-    use crate::Urgency;
+    use crate::{
+        clients::request_builder::*, error::WebPushError, http_ece::ContentEncoding, message::WebPushMessageBuilder,
+        Urgency,
+    };
 
     #[test]
     fn builds_a_correct_request_with_empty_payload() {

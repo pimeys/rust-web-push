@@ -3,10 +3,11 @@ use futures_lite::AsyncReadExt;
 use http::header::RETRY_AFTER;
 use isahc::HttpClient;
 
-use crate::clients::request_builder;
-use crate::clients::{WebPushClient, MAX_RESPONSE_SIZE};
-use crate::error::{RetryAfter, WebPushError};
-use crate::message::WebPushMessage;
+use crate::{
+    clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE},
+    error::{RetryAfter, WebPushError},
+    message::WebPushMessage,
+};
 
 /// An async client for sending the notification payload. This client is expensive to create, and
 /// should be reused.
