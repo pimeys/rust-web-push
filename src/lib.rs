@@ -4,7 +4,7 @@
 //! content payload encryption it uses [RFC8188](https://datatracker.ietf.org/doc/html/rfc8188).
 //! The client is asynchronous and can run on any executor. Optional [`hyper`](https://crates.io/crates/hyper)
 //! based clients are available with the features `hyper-client` (using native-tls) and
-//! `hyper-rustls-client` (using rustls, ideal for docker/musl builds).
+//! `hyper-rustls-client` (using rustls + pure-Rust crypto, ideal for docker/musl builds).
 //!
 //! # Example
 //!

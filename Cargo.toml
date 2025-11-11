@@ -17,7 +17,7 @@ edition = "2021"
 default = ["isahc-client"]
 isahc-client = ["isahc", "futures-lite/futures-io"]
 hyper-client = ["hyper", "hyper-tls"] # use features = ["hyper-client"], default-features = false for about 300kb size decrease
-hyper-rustls-client = ["hyper", "hyper-rustls"]
+hyper-rustls-client = ["hyper", "hyper-rustls"] # pure-Rust TLS with RustCrypto, ideal for docker/musl builds
 
 [dependencies]
 hyper = { version = "0.14", features = ["client", "http1"], optional = true }
@@ -30,7 +30,7 @@ serde = "1.0"
 serde_json = "1.0"
 serde_derive = "1.0"
 jwt-simple = { version = "0.12.11", default-features = false, features = ["pure-rust"] }
-ece = "2.2"
+ece = { git = "https://github.com/buraktabn/rust-ece", default-features = false, features = ["backend-rustcrypto", "serializable-keys"] }
 pem = "3.0.4"
 sec1_decode = "0.1.0"
 chrono = "0.4"
