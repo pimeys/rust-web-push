@@ -10,8 +10,8 @@ documentation = "https://docs.rs/web-push/"
 readme = "README.md"
 keywords = ["web-push", "http-ece", "vapid"]
 categories = ["web-programming", "asynchronous"]
-rust-version = "1.80"
-edition = "2021"
+rust-version = "1.85"
+edition = "2024"
 
 [features]
 default = ["isahc-client"]
