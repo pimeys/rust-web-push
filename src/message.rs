@@ -86,12 +86,12 @@ impl Display for Urgency {
 pub struct WebPushMessage {
     /// The endpoint URI where to send the payload.
     pub endpoint: Uri,
-    /// Time to live, how long the message should wait in the server if user is
-    /// not online. Some services require this value to be set.
+    /// Maximum time to live in seconds. Determines how long the message should
+    /// be retained by the push server if the user is not online.
     pub ttl: u32,
-    /// The urgency of the message (very-low | low | normal | high)
+    /// The urgency of the message.
     pub urgency: Option<Urgency>,
-    /// The topic of the mssage
+    /// The topic of the mssage.
     pub topic: Option<String>,
     /// The encrypted request payload, if sending any data.
     pub payload: Option<WebPushPayload>,
@@ -128,18 +128,26 @@ impl<'a> WebPushMessageBuilder<'a> {
         }
     }
 
-    /// How long the server should keep the message if it cannot be delivered
-    /// currently. If not set, the message is deleted immediately on failed
-    /// delivery.
-    pub fn set_ttl(&mut self, ttl: u32) {
-        self.ttl = ttl;
+    /// Maximum time to live in seconds. Determines how long the message should
+    /// be retained by the push server if the user is not online for delivery.
+    ///
+    /// Some services may not accurately account for TTL or choose to retain
+    /// messages for a shorter duration.
+    ///
+    /// A TTL of 0 seconds is valid and the message is delivered only if the
+    /// user is immediately available for delivery.
+    ///
+    /// Defaults to 28 days.
+    pub fn set_ttl(&mut self, seconds: u32) {
+        self.ttl = seconds;
     }
 
     /// Urgency indicates to the push service how important a message is to the
     /// user. This can be used by the push service to help conserve the battery
     /// life of a user's device by only waking up for important messages when
     /// battery is low.
-    /// Possible values are 'very-low', 'low', 'normal' and 'high'.
+    ///
+    /// Defaults to not specify an urgency.
     pub fn set_urgency(&mut self, urgency: Urgency) {
         self.urgency = Some(urgency);
     }
@@ -152,12 +160,14 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// user agent. A message with a topic replaces any outstanding push
     /// messages with an identical topic. It is an arbitrary string
     /// consisting of at most 32 base64url characters.
+    ///
+    /// Defaults to not specify a topic.
     pub fn set_topic(&mut self, topic: String) {
         self.topic = Some(topic);
     }
 
     /// Add a VAPID signature to the request. To be generated with the
-    /// [VapidSignatureBuilder](struct.VapidSignatureBuilder.html).
+    /// [`VapidSignatureBuilder`](struct.VapidSignatureBuilder.html).
     pub fn set_vapid_signature(&mut self, vapid_signature: VapidSignature) {
         self.vapid_signature = Some(vapid_signature);
     }
@@ -165,7 +175,7 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
     ///
-    /// Aes128gcm is preferred, if the browser supports it.
+    /// `Aes128Gcm` is preferred, if the browser supports it.
     pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
     }
