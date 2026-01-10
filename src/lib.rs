@@ -2,8 +2,9 @@
 //!
 //! A library for creating and sending push notifications to a web browser. For
 //! content payload encryption it uses [RFC8188](https://datatracker.ietf.org/doc/html/rfc8188).
-//! The client is asynchronous and can run on any executor. An optional [`hyper`](https://crates.io/crates/hyper) based client is
-//! available with the feature `hyper-client`.
+//! The client is asynchronous and can run on any executor. Optional [`hyper`](https://crates.io/crates/hyper)
+//! based clients are available with the features `hyper-client` (using native-tls) and
+//! `hyper-rustls-client` (using rustls + pure-Rust crypto, ideal for docker/musl builds).
 //!
 //! # Example
 //!
@@ -50,6 +51,8 @@ extern crate serde_derive;
 
 #[cfg(feature = "hyper-client")]
 pub use crate::clients::hyper_client::HyperWebPushClient;
+#[cfg(feature = "hyper-rustls-client")]
+pub use crate::clients::hyper_rustls_client::HyperRustlsWebPushClient;
 #[cfg(feature = "isahc-client")]
 pub use crate::clients::isahc_client::IsahcWebPushClient;
 pub use crate::{

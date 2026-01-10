@@ -12,6 +12,9 @@ pub mod request_builder;
 #[cfg(feature = "hyper-client")]
 pub mod hyper_client;
 
+#[cfg(feature = "hyper-rustls-client")]
+pub mod hyper_rustls_client;
+
 #[cfg(feature = "isahc-client")]
 pub mod isahc_client;
 
