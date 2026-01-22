@@ -28,10 +28,13 @@ impl fmt::Display for ErrorInfo {
     }
 }
 
+/// Web push failed.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum WebPushError {
-    /// An unknown error happened while encrypting or sending the message
-    Unspecified,
+    /// HTTP client error (network, DNS, TLS, protocol-level HTTP) while trying
+    /// to send the notification.
+    ClientError(Box<dyn Error>),
     /// Please provide valid credentials to send the notification
     Unauthorized(ErrorInfo),
     /// Request was badly formed
@@ -93,20 +96,6 @@ impl From<InvalidUri> for WebPushError {
     }
 }
 
-#[cfg(feature = "hyper-client")]
-impl From<hyper::Error> for WebPushError {
-    fn from(_: hyper::Error) -> Self {
-        Self::Unspecified
-    }
-}
-
-#[cfg(feature = "isahc-client")]
-impl From<isahc::Error> for WebPushError {
-    fn from(_: isahc::Error) -> Self {
-        Self::Unspecified
-    }
-}
-
 impl From<IoError> for WebPushError {
     fn from(err: IoError) -> WebPushError {
         WebPushError::Io(err)
@@ -116,7 +105,7 @@ impl From<IoError> for WebPushError {
 impl WebPushError {
     pub fn short_description(&self) -> &'static str {
         match *self {
-            WebPushError::Unspecified => "unspecified",
+            WebPushError::ClientError(_) => "client_error",
             WebPushError::Unauthorized(_) => "unauthorized",
             WebPushError::BadRequest(_) => "bad_request",
             WebPushError::ServerError { .. } => "server_error",
@@ -142,7 +131,7 @@ impl WebPushError {
 impl fmt::Display for WebPushError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            WebPushError::Unspecified => write!(f, "unspecified error"),
+            WebPushError::ClientError(err) => write!(f, "client error: {}", err),
             WebPushError::Unauthorized(info) => write!(f, "unauthorized: {}", info),
             WebPushError::BadRequest(info) => write!(f, "bad request: {}", info),
             WebPushError::ServerError { info, .. } => write!(f, "server error: {}", info),
@@ -168,21 +157,18 @@ impl fmt::Display for WebPushError {
     }
 }
 
-pub struct RetryAfter;
-impl RetryAfter {
-    pub fn from_str(header_value: &str) -> Option<Duration> {
-        if let Ok(seconds) = header_value.parse::<u64>() {
-            Some(Duration::from_secs(seconds))
-        } else {
-            chrono::DateTime::parse_from_rfc2822(header_value)
-                .map(|date_time| {
-                    let systime: SystemTime = date_time.into();
+pub fn parse_retry_after(header_value: &str) -> Option<Duration> {
+    if let Ok(seconds) = header_value.parse::<u64>() {
+        Some(Duration::from_secs(seconds))
+    } else {
+        chrono::DateTime::parse_from_rfc2822(header_value)
+            .map(|date_time| {
+                let systime: SystemTime = date_time.into();
 
-                    systime
-                        .duration_since(SystemTime::now())
-                        .unwrap_or_else(|_| Duration::new(0, 0))
-                })
-                .ok()
-        }
+                systime
+                    .duration_since(SystemTime::now())
+                    .unwrap_or_else(|_| Duration::new(0, 0))
+            })
+            .ok()
     }
 }

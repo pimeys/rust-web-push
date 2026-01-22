@@ -4,8 +4,8 @@ use http::header::RETRY_AFTER;
 use isahc::HttpClient;
 
 use crate::{
-    clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE},
-    error::{RetryAfter, WebPushError},
+    clients::{MAX_RESPONSE_SIZE, WebPushClient, request_builder},
+    error::{WebPushError, parse_retry_after},
     message::WebPushMessage,
 };
 
@@ -38,7 +38,7 @@ impl IsahcWebPushClient {
     /// Creates a new client. Can fail under resource depletion.
     pub fn new() -> Result<Self, WebPushError> {
         Ok(Self {
-            client: HttpClient::new()?,
+            client: HttpClient::new().map_err(|err| WebPushError::ClientError(Box::new(err)))?,
         })
     }
 }
@@ -55,7 +55,9 @@ impl WebPushClient for IsahcWebPushClient {
 
         let requesting = self.client.send_async(request);
 
-        let response = requesting.await?;
+        let response = requesting
+            .await
+            .map_err(|err| WebPushError::ClientError(Box::new(err)))?;
 
         trace!("Response: {:?}", response);
 
@@ -63,7 +65,7 @@ impl WebPushClient for IsahcWebPushClient {
             .headers()
             .get(RETRY_AFTER)
             .and_then(|ra| ra.to_str().ok())
-            .and_then(RetryAfter::from_str);
+            .and_then(parse_retry_after);
 
         let response_status = response.status();
         trace!("Response status: {}", response_status);
@@ -73,7 +75,8 @@ impl WebPushClient for IsahcWebPushClient {
             .into_body()
             .take(MAX_RESPONSE_SIZE as u64 + 1)
             .read_to_end(&mut body)
-            .await?
+            .await
+            .map_err(|err| WebPushError::ClientError(Box::new(err)))?
             > MAX_RESPONSE_SIZE
         {
             return Err(WebPushError::ResponseTooLarge);

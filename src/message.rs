@@ -58,6 +58,7 @@ pub struct WebPushPayload {
     pub content_encoding: ContentEncoding,
 }
 
+/// Urgency of a web push message.
 #[derive(Debug, Deserialize, Serialize, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Default, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum Urgency {

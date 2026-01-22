@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use http::header::RETRY_AFTER;
-use hyper::{body::HttpBody, client::HttpConnector, Body, Client, Request as HttpRequest};
+use hyper::{Body, Client, Request as HttpRequest, body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
 
 use crate::{
-    clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE},
-    error::{RetryAfter, WebPushError},
+    clients::{MAX_RESPONSE_SIZE, WebPushClient, request_builder},
+    error::{WebPushError, parse_retry_after},
     message::WebPushMessage,
 };
 
@@ -54,7 +54,9 @@ impl WebPushClient for HyperWebPushClient {
 
         let requesting = self.client.request(request);
 
-        let response = requesting.await?;
+        let response = requesting
+            .await
+            .map_err(|err| WebPushError::ClientError(Box::new(err)))?;
 
         trace!("Response: {:?}", response);
 
@@ -62,7 +64,7 @@ impl WebPushClient for HyperWebPushClient {
             .headers()
             .get(RETRY_AFTER)
             .and_then(|ra| ra.to_str().ok())
-            .and_then(RetryAfter::from_str);
+            .and_then(parse_retry_after);
 
         let response_status = response.status();
         trace!("Response status: {}", response_status);
@@ -70,7 +72,7 @@ impl WebPushClient for HyperWebPushClient {
         let mut chunks = response.into_body();
         let mut body = Vec::new();
         while let Some(chunk) = chunks.data().await {
-            body.extend(&chunk?);
+            body.extend(&chunk.map_err(|err| WebPushError::ClientError(Box::new(err)))?);
             if body.len() > MAX_RESPONSE_SIZE {
                 return Err(WebPushError::ResponseTooLarge);
             }
