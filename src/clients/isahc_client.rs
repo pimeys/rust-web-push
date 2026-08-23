@@ -4,7 +4,7 @@ use http::header::RETRY_AFTER;
 use isahc::HttpClient;
 
 use crate::{
-    clients::{request_builder, WebPushClient, MAX_RESPONSE_SIZE},
+    clients::{MAX_RESPONSE_SIZE, WebPushClient, request_builder},
     error::{RetryAfter, WebPushError},
     message::WebPushMessage,
 };

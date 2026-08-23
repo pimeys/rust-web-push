@@ -93,9 +93,9 @@ impl From<InvalidUri> for WebPushError {
     }
 }
 
-#[cfg(feature = "hyper-client")]
-impl From<hyper::Error> for WebPushError {
-    fn from(_: hyper::Error) -> Self {
+#[cfg(feature = "reqwest-client")]
+impl From<reqwest::Error> for WebPushError {
+    fn from(_: reqwest::Error) -> Self {
         Self::Unspecified
     }
 }

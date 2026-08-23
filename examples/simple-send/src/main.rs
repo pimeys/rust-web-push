@@ -55,30 +55,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
 
     let subscription_info: SubscriptionInfo = serde_json::from_str(&contents).unwrap();
 
-    let mut builder = WebPushMessageBuilder::new(&subscription_info);
-
-    if let Some(ref payload) = push_payload {
-        builder.set_payload(ece_scheme, payload.as_bytes());
-    } else {
-        builder.set_payload(ece_scheme, "Hello world!".as_bytes());
-    }
+    let mut builder = WebPushMessageBuilder::new(&subscription_info)
+        .payload(ece_scheme, push_payload.as_deref().unwrap_or("Hello world!").as_bytes());
 
     if let Some(time) = ttl {
-        builder.set_ttl(time);
+        builder = builder.ttl(time);
     }
 
     if let Some(ref vapid_file) = vapid_private_key {
-        let file = File::open(vapid_file).unwrap();
+        let pem = std::fs::read_to_string(vapid_file).unwrap();
 
-        let mut sig_builder = VapidSignatureBuilder::from_pem(file, &subscription_info).unwrap();
+        let signature = VapidSignatureBuilder::from_pem(&pem, &subscription_info)
+            .unwrap()
+            .with_claim("sub", "mailto:test@example.com")
+            .with_claim("foo", "bar")
+            .with_claim("omg", 123)
+            .build()
+            .unwrap();
 
-        sig_builder.add_claim("sub", "mailto:test@example.com");
-        sig_builder.add_claim("foo", "bar");
-        sig_builder.add_claim("omg", 123);
-
-        let signature = sig_builder.build().unwrap();
-
-        builder.set_vapid_signature(signature);
+        builder = builder.vapid_signature(signature);
     };
 
     let client = IsahcWebPushClient::new()?;

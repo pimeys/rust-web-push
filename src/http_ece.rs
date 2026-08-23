@@ -131,9 +131,9 @@ mod tests {
     use regex::Regex;
 
     use crate::{
+        VapidSignature, WebPushPayload,
         error::WebPushError,
         http_ece::{ContentEncoding, HttpEce},
-        VapidSignature, WebPushPayload,
     };
 
     #[test]

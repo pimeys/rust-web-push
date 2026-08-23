@@ -2,8 +2,8 @@
 //! This module can be used to build custom clients.
 
 use http::{
+    Method, Request, StatusCode,
     header::{CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE},
-    Request, StatusCode,
 };
 
 use crate::{
@@ -39,7 +39,7 @@ where
     T: From<Vec<u8>> + From<&'static str>, //This bound can be reduced to a &[u8] instead of str if needed
 {
     let mut builder = Request::builder()
-        .method("POST")
+        .method(Method::POST)
         .uri(message.endpoint)
         .header("TTL", format!("{}", message.ttl).as_bytes());
 
@@ -100,8 +100,8 @@ mod tests {
     use http::Uri;
 
     use crate::{
-        clients::request_builder::*, error::WebPushError, http_ece::ContentEncoding, message::WebPushMessageBuilder,
-        Urgency,
+        Urgency, clients::request_builder::*, error::WebPushError, http_ece::ContentEncoding,
+        message::WebPushMessageBuilder,
     };
 
     #[cfg(feature = "isahc-client")]
@@ -117,11 +117,10 @@ mod tests {
 
         let info = serde_json::from_value(sub).unwrap();
 
-        let mut builder = WebPushMessageBuilder::new(&info);
-
-        builder.set_ttl(420);
-        builder.set_urgency(Urgency::VeryLow);
-        builder.set_topic("some-topic".into());
+        let builder = WebPushMessageBuilder::new(&info)
+            .ttl(420)
+            .urgency(Urgency::VeryLow)
+            .topic("some-topic".to_owned());
 
         let request = build_request::<isahc::Body>(builder.build().unwrap());
         let ttl = request.headers().get("TTL").unwrap().to_str().unwrap();
@@ -148,9 +147,7 @@ mod tests {
 
         let info = serde_json::from_value(sub).unwrap();
 
-        let mut builder = WebPushMessageBuilder::new(&info);
-
-        builder.set_payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
+        let builder = WebPushMessageBuilder::new(&info).payload(ContentEncoding::Aes128Gcm, "test".as_bytes());
 
         let request = build_request::<isahc::Body>(builder.build().unwrap());
 

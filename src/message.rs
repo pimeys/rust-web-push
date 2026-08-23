@@ -138,8 +138,9 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// user is immediately available for delivery.
     ///
     /// Defaults to 28 days.
-    pub fn set_ttl(&mut self, seconds: u32) {
+    pub fn ttl(mut self, seconds: u32) -> Self {
         self.ttl = seconds;
+        self
     }
 
     /// Urgency indicates to the push service how important a message is to the
@@ -148,8 +149,9 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// battery is low.
     ///
     /// Defaults to not specify an urgency.
-    pub fn set_urgency(&mut self, urgency: Urgency) {
+    pub fn urgency(mut self, urgency: Urgency) -> Self {
         self.urgency = Some(urgency);
+        self
     }
 
     /// Assign a topic to the push message. A message that has been stored
@@ -162,22 +164,25 @@ impl<'a> WebPushMessageBuilder<'a> {
     /// consisting of at most 32 base64url characters.
     ///
     /// Defaults to not specify a topic.
-    pub fn set_topic(&mut self, topic: String) {
+    pub fn topic(mut self, topic: String) -> Self {
         self.topic = Some(topic);
+        self
     }
 
     /// Add a VAPID signature to the request. To be generated with the
     /// [`VapidSignatureBuilder`](struct.VapidSignatureBuilder.html).
-    pub fn set_vapid_signature(&mut self, vapid_signature: VapidSignature) {
+    pub fn vapid_signature(mut self, vapid_signature: VapidSignature) -> Self {
         self.vapid_signature = Some(vapid_signature);
+        self
     }
 
     /// If set, the client will get content in the notification. Has a maximum size of
     /// 3800 characters.
     ///
     /// `Aes128Gcm` is preferred, if the browser supports it.
-    pub fn set_payload(&mut self, encoding: ContentEncoding, content: &'a [u8]) {
+    pub fn payload(mut self, encoding: ContentEncoding, content: &'a [u8]) -> Self {
         self.payload = Some(WebPushPayloadBuilder { content, encoding });
+        self
     }
 
     /// Builds and if set, encrypts the payload.

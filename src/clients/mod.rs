@@ -9,11 +9,11 @@ use crate::{WebPushError, WebPushMessage};
 
 pub mod request_builder;
 
-#[cfg(feature = "hyper-client")]
-pub mod hyper_client;
-
 #[cfg(feature = "isahc-client")]
 pub mod isahc_client;
+
+#[cfg(feature = "reqwest-client")]
+pub mod reqwest_client;
 
 const MAX_RESPONSE_SIZE: usize = 64 * 1024;
 

@@ -1,7 +1,7 @@
 //! Contains tooling for signing with VAPID.
 
-pub use self::{builder::VapidSignatureBuilder, signer::VapidSignature};
-use self::{key::VapidKey, signer::VapidSigner};
+use self::signer::VapidSigner;
+pub use self::{builder::VapidSignatureBuilder, key::VapidKey, signer::VapidSignature};
 
 pub mod builder;
 mod key;
